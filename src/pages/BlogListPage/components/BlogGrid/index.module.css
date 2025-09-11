@@ -1,0 +1,24 @@
+.blogGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--text-color);
+  opacity: 0.6;
+}
+
+.emptyState h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .blogGrid {
+    gap: 1rem;
+  }
+}

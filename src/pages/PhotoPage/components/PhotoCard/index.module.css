@@ -1,0 +1,116 @@
+.photoCard {
+  break-inside: avoid;
+  margin-bottom: 1rem;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px var(--shadow);
+  transition: all 0.3s ease;
+  background: var(--card-bg);
+  cursor: pointer;
+}
+
+.photoCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px var(--shadow);
+}
+
+.imageContainer {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+.placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    135deg,
+    rgba(var(--secondary-color-rgb, 52, 152, 219), 0.1) 0%,
+    rgba(var(--primary-color-rgb, 44, 62, 80), 0.1) 100%
+  );
+  backdrop-filter: blur(20px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  transition: opacity 0.5s ease;
+}
+
+.placeholder.loaded {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.shimmer {
+  width: 60px;
+  height: 60px;
+  border: 3px solid var(--secondary-color);
+  border-top: 3px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.image {
+  width: 100%;
+  height: auto;
+  display: block;
+  opacity: 0;
+  transition: opacity 0.5s ease, transform 0.3s ease;
+}
+
+.image.visible {
+  opacity: 1;
+}
+
+/* 简单的悬停覆盖层，不显示图标 */
+.hoverOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 3;
+}
+
+.photoCard:hover .hoverOverlay {
+  opacity: 1;
+}
+
+.photoCard:hover .image {
+  transform: scale(1.02);
+}
+
+.errorState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-color);
+  opacity: 0.6;
+  min-height: 200px;
+}
+
+.errorIcon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .photoCard {
+    margin-bottom: 0.5rem;
+  }
+}

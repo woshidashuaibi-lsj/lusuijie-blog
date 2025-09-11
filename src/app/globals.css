@@ -1,26 +1,115 @@
-@import "tailwindcss";
+/* CSS Reset */
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
 
+/* Light Theme Variables */
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --primary-color: #2c3e50;
+  --secondary-color: #3498db;
+  --text-color: #2c3e50;
+  --border-color: #e1e8ed;
+  --hover-color: #f8f9fa;
+  --card-bg: #ffffff;
+  --nav-bg: #ffffff;
+  --shadow: rgba(0, 0, 0, 0.1);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Dark Theme Variables */
+:root.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --primary-color: #4a90e2;
+  --secondary-color: #64b5f6;
+  --text-color: #ededed;
+  --border-color: #333333;
+  --hover-color: #1a1a1a;
+  --card-bg: #111111;
+  --nav-bg: #111111;
+  --shadow: rgba(255, 255, 255, 0.1);
 }
 
+/* Auto dark mode support */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.dark) {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --primary-color: #4a90e2;
+    --secondary-color: #64b5f6;
+    --text-color: #ededed;
+    --border-color: #333333;
+    --hover-color: #1a1a1a;
+    --card-bg: #111111;
+    --nav-bg: #111111;
+    --shadow: rgba(255, 255, 255, 0.1);
   }
 }
 
+/* View Transition API 支持 */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 9999;
+}
+
+/* Base styles - 更新字体设置 */
+html,
 body {
+  max-width: 100vw;
+  overflow-x: hidden;
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "LXGW WenKai Lite", "LXGW WenKai", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, "Noto Sans CJK SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  line-height: 1.6;
+  transition: background 0.2s ease, color 0.2s ease;
+  /* 改善中文字体渲染 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Container utility */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Basic link styles */
+a {
+  color: var(--secondary-color);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* 改进按钮样式 */
+button {
+  font-family: inherit;
+}
+
+/* 优化中文排版 */
+p, article, section {
+  text-align: justify;
+  text-justify: inter-ideograph;
+}
+
+/* 代码字体保持等宽 */
+code, pre, kbd, samp {
+  font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", "SF Mono", Monaco, "Inconsolata", "Liberation Mono", "Menlo", Consolas, monospace;
 }

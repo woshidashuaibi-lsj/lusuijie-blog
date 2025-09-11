@@ -1,0 +1,235 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.95);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(5px);
+}
+
+.modalContent {
+  position: relative;
+  width: 95vw;
+  height: 95vh;
+  max-width: 1400px;
+  max-height: 900px;
+  display: flex;
+  flex-direction: column;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.topBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.photoCounter {
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeButton:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* 图片区域 - 使用 flexbox 布局 */
+.imageArea {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  min-height: 0; /* 允许 flex 项收缩 */
+}
+
+.imageContainer {
+  position: relative;
+  flex: 1;
+  height: 100%;
+  max-width: calc(100% - 120px); /* 为左右箭头留空间 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image {
+  border-radius: 8px;
+  max-height: 100%;
+  max-width: 100%;
+}
+
+/* 导航按钮 - 位于图片两侧 */
+.navButton {
+  position: relative;
+  background: rgba(0, 0, 0, 0.7);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  flex-shrink: 0;
+}
+
+.navButton:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: scale(1.1);
+}
+
+.navButton:active {
+  transform: scale(0.95);
+}
+
+.prevButton {
+  margin-right: 1rem;
+}
+
+.nextButton {
+  margin-left: 1rem;
+}
+
+/* 底部信息栏 */
+.bottomInfo {
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(10px);
+  padding: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.photoTitle {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: white;
+}
+
+.photoDescription {
+  font-size: 1rem;
+  opacity: 0.9;
+  line-height: 1.5;
+  margin-bottom: 0.5rem;
+}
+
+.photoMeta {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .modalContent {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+  }
+  
+  .topBar,
+  .bottomInfo {
+    padding: 1rem;
+  }
+  
+  .navButton {
+    width: 45px;
+    height: 45px;
+  }
+  
+  .imageContainer {
+    max-width: calc(100% - 100px);
+  }
+  
+  .prevButton {
+    margin-right: 0.5rem;
+  }
+  
+  .nextButton {
+    margin-left: 0.5rem;
+  }
+  
+  .photoTitle {
+    font-size: 1.1rem;
+  }
+  
+  .photoDescription {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .navButton {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .imageContainer {
+    max-width: calc(100% - 90px);
+  }
+  
+  .topBar {
+    padding: 0.75rem;
+  }
+  
+  .bottomInfo {
+    padding: 0.75rem;
+  }
+}
+
+/* 键盘导航提示 */
+@media (min-width: 769px) {
+  .navButton::after {
+    content: '';
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.6);
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  
+  .prevButton::after {
+    content: '← 或 左键';
+  }
+  
+  .nextButton::after {
+    content: '→ 或 右键';
+  }
+  
+  .navButton:hover::after {
+    opacity: 1;
+  }
+}

@@ -1,0 +1,83 @@
+.photoGrid {
+  /* 整体容器样式 */
+}
+
+.categorySection {
+  margin-bottom: 4rem;
+}
+
+.categoryTitle {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: 2rem;
+  text-align: center;
+  position: relative;
+  scroll-margin-top: 120px; /* 为固定导航栏留空间 */
+}
+
+.categoryTitle::after {
+  content: '';
+  position: absolute;
+  bottom: -0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 2px;
+  background: var(--secondary-color);
+  border-radius: 1px;
+}
+
+.photosGrid {
+  column-count: 3;
+  column-gap: 1rem;
+  column-fill: balance;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  color: var(--text-color);
+  opacity: 0.6;
+}
+
+.emptyIcon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.emptyState h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.emptyState p {
+  font-size: 1rem;
+}
+
+/* 响应式调整 */
+@media (max-width: 1200px) {
+  .photosGrid {
+    column-count: 2;
+  }
+}
+
+@media (max-width: 768px) {
+  .photosGrid {
+    column-count: 1;
+    column-gap: 0;
+  }
+  
+  .categoryTitle {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .categorySection {
+    margin-bottom: 3rem;
+  }
+}

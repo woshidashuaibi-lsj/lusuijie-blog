@@ -1,0 +1,25 @@
+.blogListSection {
+  padding: 4rem 0;
+}
+
+.sectionTitle {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+  color: var(--primary-color);
+  position: relative;
+}
+
+.sectionTitle::after {
+  content: '';
+  position: absolute;
+  bottom: -0.5rem;
+  left: 0;
+  width: 50px;
+  height: 2px;
+  background: var(--secondary-color);
+}
+
+.blogList {
+  max-width: 800px;
+}

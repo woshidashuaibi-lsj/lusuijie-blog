@@ -1,0 +1,57 @@
+.blogItem {
+  margin-bottom: 2rem;
+}
+
+.blogLink {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.blogLink:hover {
+  text-decoration: none;
+}
+
+.blogTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--primary-color);
+  transition: color 0.2s;
+}
+
+.blogLink:hover .blogTitle {
+  color: var(--secondary-color);
+}
+
+.blogMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-color);
+  opacity: 0.6;
+  margin-bottom: 1rem;
+  transition: color 0.2s ease;
+}
+
+.separator {
+  color: var(--text-color);
+  opacity: 0.4;
+}
+
+.blogExcerpt {
+  color: var(--text-color);
+  line-height: 1.6;
+  margin: 0;
+  opacity: 0.8;
+  transition: color 0.2s ease;
+}
+
+.blogDivider {
+  margin: 2rem 0;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--border-color), transparent);
+  border: none;
+  transition: background 0.2s ease;
+}

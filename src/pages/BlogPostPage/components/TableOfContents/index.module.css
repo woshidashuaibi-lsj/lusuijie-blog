@@ -1,0 +1,195 @@
+.tableOfContents {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.5rem 1rem;
+  box-shadow: 0 4px 12px var(--shadow);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.tableOfContents:hover {
+  box-shadow: 0 8px 24px var(--shadow);
+  transform: translateY(-2px);
+}
+
+.title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--secondary-color);
+  margin-bottom: 1rem;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 0.5rem;
+}
+
+.nav {
+  max-height: 60vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+}
+
+.nav::-webkit-scrollbar {
+  width: 4px;
+}
+
+.nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.nav::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 2px;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.item {
+  margin-bottom: 0.25rem;
+}
+
+.link {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0.75rem 0.5rem;
+  color: var(--text-color);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  opacity: 0.7;
+  border-radius: 6px;
+  position: relative;
+}
+
+.link::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 0;
+  background: var(--secondary-color);
+  transition: height 0.2s ease;
+  border-radius: 2px;
+}
+
+.link:hover {
+  opacity: 1;
+  background: var(--hover-color);
+  color: var(--secondary-color);
+  transform: translateX(4px);
+}
+
+.link:hover::before {
+  height: 20px;
+}
+
+.link.active {
+  opacity: 1;
+  color: var(--secondary-color);
+  font-weight: 500;
+  background: rgba(52, 152, 219, 0.1);
+}
+
+.link.active::before {
+  height: 100%;
+}
+
+/* 不同级别的标题样式 */
+.level1 { 
+  padding-left: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.level2 { 
+  padding-left: 1.25rem;
+  font-size: 0.85rem;
+}
+
+.level3 { 
+  padding-left: 2rem;
+  font-size: 0.8rem;
+  opacity: 0.6;
+}
+
+.level4 { 
+  padding-left: 2.75rem;
+  font-size: 0.75rem;
+  opacity: 0.5;
+}
+
+/* 响应式设计 */
+@media (max-width: 1023px) {
+  .tableOfContents {
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    backdrop-filter: none;
+  }
+  
+  .title {
+    text-align: center;
+  }
+  
+  /* 移动端显示为水平滚动 */
+  .list {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+  }
+  
+  .item {
+    flex-shrink: 0;
+    margin-bottom: 0;
+  }
+  
+  .link {
+    white-space: nowrap;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    background: var(--hover-color);
+    border: 1px solid var(--border-color);
+  }
+  
+  .link::before {
+    display: none;
+  }
+  
+  .link.active {
+    background: var(--secondary-color);
+    color: white;
+    border-color: var(--secondary-color);
+  }
+  
+  .level1,
+  .level2,
+  .level3,
+  .level4 {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/* 暗色模式优化 */
+@media (prefers-color-scheme: dark) {
+  .tableOfContents {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  .tableOfContents:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  }
+}

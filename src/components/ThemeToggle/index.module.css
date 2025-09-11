@@ -1,0 +1,33 @@
+.themeButton {
+  background: none;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-color);
+}
+
+.themeButton:hover {
+  background: var(--hover-color);
+  transform: scale(1.05);
+  border-color: var(--secondary-color);
+  color: var(--secondary-color);
+}
+
+.themeButton:active {
+  transform: scale(0.95);
+}
+
+@media (max-width: 480px) {
+  .themeButton {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+  }
+}

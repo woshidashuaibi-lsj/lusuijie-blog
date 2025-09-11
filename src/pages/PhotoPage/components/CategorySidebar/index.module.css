@@ -1,0 +1,233 @@
+.sidebar {
+  /* background: rgba(var(--card-bg-rgb, 255, 255, 255), 0.9); */
+  backdrop-filter: blur(20px);
+  /* border: 1px solid var(--border-color); */
+  border-radius: 12px;
+  /* box-shadow: 0 4px 16px var(--shadow); */
+  overflow: hidden;
+  transition: all 0.3s ease;
+  /* 为垂直居中固定定位做准备 */
+  max-height: inherit;
+
+   opacity: 0;
+  transform: translateX(-20px);
+  transition: all 0.5s ease;
+}
+
+
+.sidebar.visible {
+  opacity: 0.7;
+  transform: translateX(0);
+}
+
+.sidebar.visible.hovered,
+.sidebar.visible:hover {
+  opacity: 1;
+  transform: translateY(-2px);
+}
+
+.sidebar:not(.hovered) {
+  opacity: 0.7;
+}
+
+.sidebar.hovered,
+.sidebar:hover {
+  opacity: 1;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px var(--shadow);
+}
+
+.sidebarContent {
+  padding: 1.5rem 1rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.categoryNav {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+  /* 美化滚动条 */
+  padding-right: 0.5rem;
+}
+
+.categoryNav::-webkit-scrollbar {
+  width: 4px;
+}
+
+.categoryNav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.categoryNav::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 2px;
+}
+
+.categoryNav::-webkit-scrollbar-thumb:hover {
+  background: var(--secondary-color);
+}
+
+.categoryList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.categoryItem {
+  /* 样式重置 */
+}
+
+.categoryButton {
+  display: block;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 1rem 0.75rem;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.categoryButton::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 0;
+  background: var(--secondary-color);
+  border-radius: 2px;
+  transition: height 0.2s ease;
+}
+
+.categoryButton:hover::before,
+.categoryButton.active::before {
+  height: 60%;
+}
+
+.categoryButton.active {
+  background: rgba(var(--secondary-color-rgb, 52, 152, 219), 0.1);
+  color: var(--secondary-color);
+  font-weight: 500;
+}
+
+.categoryButton:hover:not(.active) {
+  background: var(--hover-color);
+  transform: translateX(8px);
+}
+
+.categoryName {
+  font-size: 1rem;
+  line-height: 1.4;
+  display: block;
+  transition: color 0.2s ease;
+}
+
+.sidebar:not(.hovered) .categoryButton:not(.active) .categoryName {
+  opacity: 0.5;
+}
+
+.sidebar.hovered .categoryButton .categoryName,
+.sidebar:hover .categoryButton .categoryName {
+  opacity: 1;
+}
+
+/* 添加顶部和底部渐变效果，指示可滚动 */
+.categoryNav::before,
+.categoryNav::after {
+  content: '';
+  position: sticky;
+  display: block;
+  height: 10px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.categoryNav::before {
+  top: 0;
+  background: linear-gradient(to bottom, var(--card-bg), transparent);
+}
+
+.categoryNav::after {
+  bottom: 0;
+  background: linear-gradient(to top, var(--card-bg), transparent);
+}
+
+/* 响应式设计 */
+@media (max-width: 1024px) {
+  .sidebar {
+    opacity: 1 !important;
+    transform: none !important;
+    max-height: none;
+  }
+  
+  .sidebarContent {
+    padding: 1rem;
+  }
+  
+  .categoryNav {
+    max-height: none;
+    padding-right: 0;
+    overflow-y: visible;
+  }
+  
+  .categoryNav::before,
+  .categoryNav::after {
+    display: none;
+  }
+  
+  .categoryList {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .categoryButton {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    background: var(--hover-color);
+    border: 1px solid var(--border-color);
+    white-space: nowrap;
+  }
+  
+  .categoryButton::before {
+    display: none;
+  }
+  
+  .categoryButton.active {
+    background: var(--secondary-color);
+    color: white;
+    border-color: var(--secondary-color);
+  }
+  
+  .categoryButton:hover:not(.active) {
+    transform: translateY(-1px);
+  }
+  
+  .categoryName {
+    font-size: 0.9rem;
+    opacity: 1 !important;
+  }
+}
+
+/* 为暗色主题优化 */
+:root.dark .sidebar {
+  background: rgba(var(--card-bg-rgb, 17, 17, 17), 0.9);
+}
+
+:root.dark .categoryNav::before {
+  background: linear-gradient(to bottom, var(--card-bg), transparent);
+}
+
+:root.dark .categoryNav::after {
+  background: linear-gradient(to top, var(--card-bg), transparent);
+}

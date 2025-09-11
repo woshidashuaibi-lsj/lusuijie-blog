@@ -1,0 +1,62 @@
+.blogPostPage {
+  padding: 2rem 0;
+  min-height: 100vh;
+  position: relative;
+}
+
+.articleWrapper {
+  max-width: 800px; /* 文章内容的最大宽度 */
+  margin: 0 auto;
+}
+
+.mainContent {
+  width: 100%;
+}
+
+/* 浮动目录 */
+.floatingToc {
+  position: fixed;
+  left: 2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 220px;
+  z-index: 10;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+/* 大屏幕显示目录 */
+@media (min-width: 1400px) {
+  .floatingToc {
+    left: calc((100vw - 1200px) / 2 - 140px);
+  }
+}
+
+/* 中等屏幕调整 */
+@media (max-width: 1399px) and (min-width: 1024px) {
+  .floatingToc {
+    left: 1rem;
+    width: 200px;
+  }
+}
+
+/* 小屏幕隐藏浮动目录，显示顶部目录 */
+@media (max-width: 1023px) {
+  .floatingToc {
+    position: static;
+    transform: none;
+    width: 100%;
+    margin-bottom: 2rem;
+    max-height: none;
+  }
+  
+  .articleWrapper {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .blogPostPage {
+    padding: 1rem 0;
+  }
+}
