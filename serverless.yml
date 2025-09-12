@@ -1,0 +1,12 @@
+component: nextjs
+name: my-blog
+
+inputs:
+  src: ./
+  region: ap-guangzhou
+  runtime: Nodejs18.x
+  apigatewayConf:
+    protocols:
+      - http
+      - https
+    environment: release
