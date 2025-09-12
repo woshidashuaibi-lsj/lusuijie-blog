@@ -23,3 +23,10 @@
 .blogList {
   max-width: 800px;
 }
+.emptyState {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  padding: 3rem 0;
+  opacity: 0.8;
+}

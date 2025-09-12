@@ -5,13 +5,13 @@ import { PhotoCategory } from '@/types/photo';
 import styles from './index.module.css';
 
 interface CategorySidebarProps {
-  categories: PhotoCategory[];
+  categories?: PhotoCategory[];
   activeCategory: string;
   onCategoryChange: (category: string) => void;
 }
 
 export default function CategorySidebar({
-  categories,
+  categories = [],
   activeCategory,
   onCategoryChange,
 }: CategorySidebarProps) {
@@ -24,7 +24,11 @@ export default function CategorySidebar({
     return () => clearTimeout(timer);
   }, []);
 
-  const scrollToCategory = (categoryId: string) => {
+  const handleCategoryClick = (categoryId: string) => {
+    // 调用父组件的回调函数
+    onCategoryChange(categoryId);
+
+    // 滚动到对应的分类
     const element = document.getElementById(`category-${categoryId}`);
     if (element) {
       element.scrollIntoView({
@@ -34,6 +38,11 @@ export default function CategorySidebar({
       });
     }
   };
+
+  // 如果没有分类数据，返回空组件
+  if (!categories || categories.length === 0) {
+    return null;
+  }
 
   return (
     <div 
@@ -47,7 +56,7 @@ export default function CategorySidebar({
             {categories.map((category) => (
               <li key={category.id} className={styles.categoryItem}>
                 <button
-                  onClick={() => scrollToCategory(category.id)}
+                  onClick={() => handleCategoryClick(category.id)}
                   className={`${styles.categoryButton} ${
                     activeCategory === category.id ? styles.active : ''
                   }`}

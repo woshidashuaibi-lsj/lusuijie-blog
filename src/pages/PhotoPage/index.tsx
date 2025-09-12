@@ -9,15 +9,15 @@ import PhotoModal from './components/PhotoModal';
 import styles from './index.module.css';
 
 interface InstantPageProps {
-  photosByCategories: Record<string, Photo[]>;
-  categories: PhotoCategory[];
-  allPhotos: Photo[];
+  photosByCategories?: Record<string, Photo[]>;
+  categories?: PhotoCategory[];
+  allPhotos?: Photo[];
 }
 
 export default function InstantPage({
-  photosByCategories,
-  categories,
-  allPhotos,
+  photosByCategories = {},
+  categories = [],
+  allPhotos = [],
 }: InstantPageProps) {
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>('');
@@ -31,14 +31,14 @@ export default function InstantPage({
   };
 
   const handlePrevPhoto = () => {
-    if (!selectedPhoto) return;
+    if (!selectedPhoto || !allPhotos || allPhotos.length === 0) return;
     const currentIndex = allPhotos.findIndex(p => p.id === selectedPhoto.id);
     const prevIndex = currentIndex > 0 ? currentIndex - 1 : allPhotos.length - 1;
     setSelectedPhoto(allPhotos[prevIndex]);
   };
 
   const handleNextPhoto = () => {
-    if (!selectedPhoto) return;
+    if (!selectedPhoto || !allPhotos || allPhotos.length === 0) return;
     const currentIndex = allPhotos.findIndex(p => p.id === selectedPhoto.id);
     const nextIndex = currentIndex < allPhotos.length - 1 ? currentIndex + 1 : 0;
     setSelectedPhoto(allPhotos[nextIndex]);
@@ -70,7 +70,7 @@ export default function InstantPage({
       </div>
 
       {/* 照片预览模态框 */}
-      {selectedPhoto && (
+      {selectedPhoto && allPhotos && allPhotos.length > 0 && (
         <PhotoModal
           photo={selectedPhoto}
           totalPhotos={allPhotos.length}

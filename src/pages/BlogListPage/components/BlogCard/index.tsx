@@ -8,7 +8,7 @@ import { zhCN } from 'date-fns/locale';
 import styles from './index.module.css';
 
 interface BlogCardProps {
-  post: BlogPost;
+  post?: BlogPost;
 }
 
 export default function BlogCard({ post }: BlogCardProps) {
@@ -19,6 +19,18 @@ export default function BlogCard({ post }: BlogCardProps) {
       return dateString;
     }
   };
+
+  // 如果没有文章数据，显示错误状态
+  if (!post) {
+    return (
+      <article className={styles.blogItem}>
+        <div className={styles.errorCard}>
+          <h3>文章数据缺失</h3>
+          <p>无法显示文章内容</p>
+        </div>
+      </article>
+    );
+  }
 
   return (
     <article className={styles.blogItem}>

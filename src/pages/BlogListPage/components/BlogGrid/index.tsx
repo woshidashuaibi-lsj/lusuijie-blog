@@ -3,11 +3,11 @@ import BlogCard from '../BlogCard';
 import styles from './index.module.css';
 
 interface BlogGridProps {
-  posts: BlogPost[];
+  posts?: BlogPost[];
 }
 
-export default function BlogGrid({ posts }: BlogGridProps) {
-  if (posts.length === 0) {
+export default function BlogGrid({ posts = [] }: BlogGridProps) {
+  if (!posts || posts.length === 0) {
     return (
       <div className={styles.emptyState}>
         <h3>暂无文章</h3>

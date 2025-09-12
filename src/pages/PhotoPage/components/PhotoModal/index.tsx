@@ -6,9 +6,9 @@ import { Photo } from '@/types/photo';
 import styles from './index.module.css';
 
 interface PhotoModalProps {
-  photo: Photo;
-  totalPhotos: number;
-  currentIndex: number;
+  photo?: Photo;
+  totalPhotos?: number;
+  currentIndex?: number;
   onClose: () => void;
   onPrev: () => void;
   onNext: () => void;
@@ -16,8 +16,8 @@ interface PhotoModalProps {
 
 export default function PhotoModal({
   photo,
-  totalPhotos,
-  currentIndex,
+  totalPhotos = 0,
+  currentIndex = 1,
   onClose,
   onPrev,
   onNext,
@@ -46,6 +46,27 @@ export default function PhotoModal({
       document.body.style.overflow = 'unset';
     };
   }, [onClose, onPrev, onNext]);
+
+  // 如果没有照片数据，显示错误状态
+  if (!photo) {
+    return (
+      <div className={styles.modalOverlay} onClick={onClose}>
+        <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+          <div className={styles.topBar}>
+            <button className={styles.closeButton} onClick={onClose} aria-label="关闭">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+              </svg>
+            </button>
+          </div>
+          <div className={styles.errorState}>
+            <h3>照片加载失败</h3>
+            <p>无法显示照片内容</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>

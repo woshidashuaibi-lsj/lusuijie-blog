@@ -6,13 +6,13 @@ import PhotoCard from '../PhotoCard';
 import styles from './index.module.css';
 
 interface PhotoGridProps {
-  photosByCategories: Record<string, Photo[]>;
+  photosByCategories?: Record<string, Photo[]>;
   onPhotoClick: (photo: Photo) => void;
   onActiveCategoryChange: (category: string) => void;
 }
 
 export default function PhotoGrid({
-  photosByCategories,
+  photosByCategories = {},
   onPhotoClick,
   onActiveCategoryChange,
 }: PhotoGridProps) {
@@ -67,7 +67,8 @@ export default function PhotoGrid({
     }
   };
 
-  if (Object.keys(photosByCategories).length === 0) {
+  // 安全检查 photosByCategories
+  if (!photosByCategories || Object.keys(photosByCategories).length === 0) {
     return (
       <div className={styles.emptyState}>
         <div className={styles.emptyIcon}>📸</div>

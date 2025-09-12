@@ -23,6 +23,14 @@ const nextConfig = {
         protocol: "https",
         hostname: "**.myqcloud.com", // 腾讯云对象存储
       },
+      {
+        protocol: "https",
+        hostname: "woshidashuaibi-lsj.github.io", // GitHub Pages 域名
+      },
+      {
+        protocol: "https",
+        hostname: "**.github.io", // 通用 GitHub Pages 域名
+      },
     ],
   },
 

@@ -1,11 +1,10 @@
 import { BlogPost } from '@/types/blog';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
-import Image from 'next/image';
 import styles from './index.module.css';
 
 interface BlogHeaderProps {
-  post: BlogPost;
+  post?: BlogPost;
 }
 
 export default function BlogHeader({ post }: BlogHeaderProps) {
@@ -16,6 +15,11 @@ export default function BlogHeader({ post }: BlogHeaderProps) {
       return dateString;
     }
   };
+
+  // 如果没有文章数据，返回空组件
+  if (!post) {
+    return null;
+  }
 
   return (
     <header className={styles.blogHeader}>

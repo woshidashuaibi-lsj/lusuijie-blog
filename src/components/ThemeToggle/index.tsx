@@ -24,12 +24,18 @@ const ThemeToggle = () => {
     
     localStorage.setItem('theme', isDarkBefore ? 'light' : 'dark');
 
-    if (!(document as any).startViewTransition) {
+    const hasViewTransitions = 'startViewTransition' in document;
+
+    if (!hasViewTransitions) {
       document.documentElement.classList.toggle('dark');
       return;
     }
 
-    const transition = (document as any).startViewTransition(() => {
+    const startViewTransition = (document as typeof document & {
+      startViewTransition: (callback: () => void) => { ready: Promise<void> };
+    }).startViewTransition;
+
+    const transition = startViewTransition(() => {
       document.documentElement.classList.toggle('dark');
     });
 

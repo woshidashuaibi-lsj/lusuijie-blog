@@ -58,6 +58,28 @@
   background: rgba(255, 255, 255, 0.2);
 }
 
+.errorState {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  text-align: center;
+  padding: 2rem;
+}
+
+.errorState h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: #ff6b6b;
+}
+
+.errorState p {
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
 /* 图片区域 - 使用 flexbox 布局 */
 .imageArea {
   flex: 1;
@@ -184,6 +206,14 @@
   
   .photoDescription {
     font-size: 0.9rem;
+  }
+
+  .errorState {
+    padding: 1rem;
+  }
+
+  .errorState h3 {
+    font-size: 1.2rem;
   }
 }
 

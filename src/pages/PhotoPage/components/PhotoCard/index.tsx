@@ -6,7 +6,7 @@ import { Photo } from '@/types/photo';
 import styles from './index.module.css';
 
 interface PhotoCardProps {
-  photo: Photo;
+  photo?: Photo;
   onClick: () => void;
 }
 
@@ -21,6 +21,18 @@ export default function PhotoCard({ photo, onClick }: PhotoCardProps) {
   const handleError = () => {
     setIsError(true);
   };
+
+  // 如果没有照片数据，显示错误状态
+  if (!photo) {
+    return (
+      <div className={styles.photoCard}>
+        <div className={styles.errorState}>
+          <div className={styles.errorIcon}>❌</div>
+          <p>照片数据缺失</p>
+        </div>
+      </div>
+    );
+  }
 
   if (isError) {
     return (

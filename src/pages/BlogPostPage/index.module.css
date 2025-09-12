@@ -13,6 +13,25 @@
   width: 100%;
 }
 
+.errorState {
+  text-align: center;
+  padding: 4rem 2rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.errorState h1 {
+  font-size: 2rem;
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.errorState p {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
 /* 浮动目录 */
 .floatingToc {
   position: fixed;
@@ -58,5 +77,13 @@
 @media (max-width: 768px) {
   .blogPostPage {
     padding: 1rem 0;
+  }
+
+  .errorState {
+    padding: 2rem 1rem;
+  }
+
+  .errorState h1 {
+    font-size: 1.5rem;
   }
 }

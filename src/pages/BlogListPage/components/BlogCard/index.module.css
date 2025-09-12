@@ -19,6 +19,27 @@
   text-decoration: none;
 }
 
+.errorCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.errorCard h3 {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  color: #ff6b6b;
+}
+
+.errorCard p {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
 .itemContent {
   display: flex;
   align-items: flex-start;
@@ -176,6 +197,10 @@
   .tags {
     justify-content: center;
   }
+
+  .errorCard {
+    padding: 1.5rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -195,5 +220,9 @@
   
   .separator {
     display: none;
+  }
+
+  .errorCard {
+    padding: 1rem;
   }
 }

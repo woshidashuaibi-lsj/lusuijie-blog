@@ -6,17 +6,17 @@ import Pagination from './components/Pagination';
 import styles from './index.module.css';
 
 interface BlogListPageProps {
-  posts: BlogPost[];
-  currentPage: number;
-  totalPages: number;
-  totalPosts: number;
+  posts?: BlogPost[];
+  currentPage?: number;
+  totalPages?: number;
+  totalPosts?: number;
 }
 
 export default function BlogListPage({
-  posts,
-  currentPage,
-  totalPages,
-  totalPosts,
+  posts = [],
+  currentPage = 1,
+  totalPages = 1,
+  totalPosts = 0,
 }: BlogListPageProps) {
   return (
     <>

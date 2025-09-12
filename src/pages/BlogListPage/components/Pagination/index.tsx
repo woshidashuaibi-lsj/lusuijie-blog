@@ -5,14 +5,19 @@ import { useSearchParams } from 'next/navigation';
 import styles from './index.module.css';
 
 interface PaginationProps {
-  currentPage: number;
-  totalPages: number;
+  currentPage?: number;
+  totalPages?: number;
 }
 
-export default function Pagination({ currentPage, totalPages }: PaginationProps) {
+export default function Pagination({
+  currentPage = 1,
+  totalPages = 1
+}: PaginationProps) {
   const searchParams = useSearchParams();
   
   const createPageUrl = (page: number) => {
+    if (!searchParams) return '/blog';
+
     const params = new URLSearchParams(searchParams.toString());
     if (page === 1) {
       params.delete('page');
