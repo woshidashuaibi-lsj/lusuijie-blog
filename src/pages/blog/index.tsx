@@ -1,4 +1,4 @@
-import { GetServerSideProps } from 'next';
+import { GetStaticProps } from 'next';
 import { getAllPosts } from '@/lib/blog';
 import type { BlogPost } from '@/types/blog';
 import BlogListPage from '@/pages/BlogListPage';
@@ -28,24 +28,15 @@ export default function BlogRoute({ posts, currentPage, totalPages, totalPosts }
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async ({ query }) => {
-  const page = parseInt((query.page as string) || '1', 10);
-  const postsPerPage = 10;
-
+export const getStaticProps: GetStaticProps = async () => {
   const allPosts = getAllPosts();
-  const totalPosts = allPosts.length;
-  const totalPages = Math.ceil(totalPosts / postsPerPage);
-
-  const startIndex = (page - 1) * postsPerPage;
-  const endIndex = startIndex + postsPerPage;
-  const currentPosts = allPosts.slice(startIndex, endIndex);
 
   return {
     props: {
-      posts: currentPosts,
-      currentPage: page,
-      totalPages,
-      totalPosts,
+      posts: allPosts,
+      currentPage: 1,
+      totalPages: 1,
+      totalPosts: allPosts.length,
     },
   };
 };

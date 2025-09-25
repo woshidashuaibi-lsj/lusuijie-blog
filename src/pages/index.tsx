@@ -19,6 +19,5 @@ export const getStaticProps: GetStaticProps = async () => {
     props: {
       featuredPosts,
     },
-    revalidate: 60, // 每60秒重新生成页面
   };
 };

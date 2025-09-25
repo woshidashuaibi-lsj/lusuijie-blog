@@ -6,9 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "export": "next build",
+    "deploy": "npm run export && node scripts/upload-oss.js"
   },
   "dependencies": {
+    "ali-oss": "^6.23.0",
     "date-fns": "^4.1.0",
     "gray-matter": "^4.0.3",
     "next": "15.5.3",
@@ -30,6 +33,7 @@
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.21",
     "css-loader": "^7.1.2",
+    "dotenv": "^17.2.2",
     "eslint": "^9",
     "eslint-config-next": "15.5.3",
     "less": "^4.4.1",
