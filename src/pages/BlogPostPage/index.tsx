@@ -3,6 +3,7 @@ import Navigation from '@/components/Navigation';
 import BlogHeader from './components/BlogHeader';
 import BlogContent from './components/BlogContent';
 import TableOfContents from './components/TableOfContents';
+import Comments from '@/components/Comments';
 import styles from './index.module.css';
 
 interface BlogPostPageProps {
@@ -43,6 +44,8 @@ export default function BlogPostPage({ post, htmlContent = '' }: BlogPostPagePro
             <main className={styles.mainContent}>
               <BlogContent htmlContent={htmlContent} />
             </main>
+            {/* 添加评论区 */}
+            <Comments post={post} />
           </article>
         </div>
       </div>

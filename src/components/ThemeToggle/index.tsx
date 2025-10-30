@@ -31,11 +31,10 @@ const ThemeToggle = () => {
       return;
     }
 
-    const startViewTransition = (document as typeof document & {
+    // 直接调用而不提取方法
+    const transition = (document as typeof document & {
       startViewTransition: (callback: () => void) => { ready: Promise<void> };
-    }).startViewTransition;
-
-    const transition = startViewTransition(() => {
+    }).startViewTransition(() => {
       document.documentElement.classList.toggle('dark');
     });
 
@@ -62,8 +61,7 @@ const ThemeToggle = () => {
           }
         );
       } else {
-        // 从亮色到暗色：让旧的亮色内容收缩，同时新的暗色内容从背景显示
-        // 方案：反转动画，让 old 内容收缩
+        // 从亮色到暗色
         document.documentElement.animate(
           {
             clipPath: [
@@ -78,7 +76,6 @@ const ThemeToggle = () => {
           }
         );
         
-        // 同时让新内容立即可见
         document.documentElement.animate(
           {
             opacity: [0, 1],

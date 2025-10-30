@@ -1,0 +1,206 @@
+.aboutPage {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 0;
+}
+
+.heroSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.avatarContainer {
+  margin-bottom: 2rem;
+}
+
+.avatar {
+  border-radius: 50%;
+  border: 4px solid #f3f4f6;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.name {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  color: #1f2937;
+}
+
+.subtitle {
+  font-size: 1.25rem;
+  color: #6b7280;
+  margin: 0 0 1.5rem 0;
+}
+
+.description {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: #4b5563;
+  max-width: 600px;
+}
+
+.section {
+  margin-bottom: 3rem;
+}
+
+.sectionTitle {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0 0 1.5rem 0;
+  color: #1f2937;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 0.5rem;
+}
+
+.skillsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+}
+
+.skillTag {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 500;
+  transition: transform 0.2s ease;
+}
+
+.skillTag:hover {
+  transform: translateY(-2px);
+}
+
+.aboutContent {
+  display: grid;
+  gap: 2rem;
+}
+
+.aboutItem h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 0.75rem 0;
+  color: #1f2937;
+}
+
+.aboutItem p {
+  line-height: 1.7;
+  color: #4b5563;
+}
+
+.interestsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.interestItem {
+  background: #f9fafb;
+  border: 2px solid #e5e7eb;
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.interestItem:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+  transform: translateY(-1px);
+}
+
+.contactGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.5rem;
+}
+
+.contactItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  text-decoration: none;
+  color: #374151;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.contactItem:hover {
+  border-color: #9ca3af;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.contactIcon {
+  font-size: 1.5rem;
+}
+
+.closingSection {
+  margin-top: 4rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.closingText {
+  color: white;
+  font-size: 1.1rem;
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .aboutPage {
+    padding: 1rem 0;
+  }
+  
+  .name {
+    font-size: 2rem;
+  }
+  
+  .subtitle {
+    font-size: 1.1rem;
+  }
+  
+  .description {
+    font-size: 1rem;
+  }
+  
+  .skillsGrid {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  }
+  
+  .interestsGrid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+  
+  .contactGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .heroSection {
+    margin-bottom: 2rem;
+  }
+  
+  .section {
+    margin-bottom: 2rem;
+  }
+  
+  .sectionTitle {
+    font-size: 1.5rem;
+  }
+}

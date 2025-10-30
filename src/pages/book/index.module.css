@@ -1,0 +1,131 @@
+.booklistContainer {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2.5rem 0 1rem 0;
+}
+
+.header {
+  text-align: left;
+  margin-bottom: 2rem;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #222;
+}
+
+.bookEmoji {
+  font-size: 1.5rem;
+  vertical-align: middle;
+}
+
+.booklistMain {
+  width: 100%;
+}
+
+.bookGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+  gap: 1.8rem;
+}
+
+.bookCard {
+  display: flex;
+  align-items: center;
+  background: #f7f8fa;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(120,120,140,0.07);
+  padding: 1.2rem 1.5rem;
+  transition: box-shadow 0.2s, transform 0.2s;
+  border: 1px solid #ececec;
+  min-height: 180px;
+}
+
+.bookCard:hover {
+  box-shadow: 0 8px 32px rgba(60, 60, 100, 0.12);
+  border-color: #a5b4fc;
+  transform: translateY(-2px);
+}
+
+.bookCover {
+  width: 110px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  margin-right: 2rem;
+  background: #e9e9eb;
+}
+
+.bookInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+.bookTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 0.4rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.bookTitle a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.bookTitle a:hover {
+  color: #6366f1;
+}
+
+.bookAuthor {
+  color: #6366f1;
+  font-size: 1rem;
+  margin-bottom: 0.4rem;
+}
+
+.bookRating {
+  color: #f59e42;
+  font-weight: 500;
+  font-size: 1rem;
+  margin-bottom: 0.4rem;
+}
+
+.ratingNum {
+  font-size: 1.07rem;
+  font-weight: bold;
+  color: #f59e42;
+}
+
+.myComment {
+  background: #f2f6fc;
+  border-left: 3px solid #6366f1;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  font-size: 0.97rem;
+  color: #333;
+  margin-top: 0.1rem;
+  word-break: break-word;
+}
+
+@media (max-width: 800px) {
+  .bookGrid {
+    grid-template-columns: 1fr;
+    gap: 1.2rem;
+  }
+  .bookCard {
+    flex-direction: column;
+    align-items: flex-start;
+    min-height: unset;
+    padding: 1rem;
+  }
+  .bookCover {
+    margin-right: 0;
+    margin-bottom: 1rem;
+  }
+}

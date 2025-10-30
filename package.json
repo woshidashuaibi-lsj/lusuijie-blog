@@ -8,9 +8,12 @@
     "start": "next start",
     "lint": "eslint",
     "export": "next build",
-    "deploy": "npm run export && node scripts/upload-oss.js"
+    "deploy": "npm run export && node scripts/upload-oss.js",
+    "upload:images": "node scripts/upload-images.js",
+    "upload:blog-assets": "node scripts/manage-images.js"
   },
   "dependencies": {
+    "@giscus/react": "^3.1.0",
     "ali-oss": "^6.23.0",
     "date-fns": "^4.1.0",
     "gray-matter": "^4.0.3",

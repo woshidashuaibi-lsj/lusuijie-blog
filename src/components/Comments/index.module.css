@@ -1,0 +1,29 @@
+.commentsSection {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.commentsTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #1f2937;
+}
+
+.giscusWrapper {
+  width: 100%;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .commentsSection {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+  }
+  
+  .commentsTitle {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+  }
+}
