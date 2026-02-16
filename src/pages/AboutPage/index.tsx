@@ -2,7 +2,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import Navigation from '@/components/Navigation';
 import styles from './index.module.css';
-import RecommendTool from '@/components/TestTool';
 
 const skills = [
   'JavaScript',
@@ -69,7 +68,7 @@ export default function AboutPage() {
           {/* 关于我区域 */}
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>👨‍💻 关于我</h2>
-            <div className={styles.aboutContent}>
+            {/* <div className={styles.aboutContent}>
               <div className={styles.aboutItem}>
                 <h3>🎓 学习经历</h3>
                 <p>
@@ -91,7 +90,8 @@ export default function AboutPage() {
                   希望能够帮助到其他开发者。
                 </p>
               </div>
-            </div>
+            </div> */}
+            <div>让我想想该怎么介绍自己</div>
           </section>
 
           {/* 兴趣爱好区域 */}
@@ -119,7 +119,7 @@ export default function AboutPage() {
                 <span>GitHub</span>
               </Link>
               <Link 
-                href="mailto:your-email@example.com" 
+                href="mailto:1275662488@qq.com" 
                 className={styles.contactItem}
               >
                 <span className={styles.contactIcon}>📧</span>

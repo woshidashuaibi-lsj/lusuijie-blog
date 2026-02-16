@@ -15,7 +15,7 @@ const navItems = [
 // 外链按钮配置
 const externalLinks = [
   {
-    href: 'https://github.com',
+    href: 'https://github.com/woshidashuaibi-lsj',
     label: 'GitHub',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">

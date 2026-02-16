@@ -17,7 +17,7 @@ export default function BlogPost({ post, htmlContent }: BlogPostProps) {
   return (
     <>
       <Head>
-        <title>{post.title} | 我的博客</title>
+        <title>{post.title} | 阿杰的博客</title>
         <meta name="description" content={post.description} />
         <meta property="og:title" content={post.title} />
         <meta property="og:description" content={post.description} />

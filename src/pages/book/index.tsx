@@ -40,9 +40,9 @@ export default function BookListPage() {
       <Navigation />
       <div className={styles.booklistContainer}>
         <header className={styles.header}>
-          <h1>我的书单 <span className={styles.bookEmoji}>📚</span></h1>
+          <h1>我的书单 <span className={styles.bookEmoji}>📚（还需要时间整理整理）</span></h1>
         </header>
-        <main className={styles.booklistMain}>
+        {/* <main className={styles.booklistMain}>
           <div className={styles.bookGrid}>
             {books.map((book) => (
               <div key={book.title} className={styles.bookCard}>
@@ -66,7 +66,7 @@ export default function BookListPage() {
               </div>
             ))}
           </div>
-        </main>
+        </main> */}
       </div>
     </>
   );

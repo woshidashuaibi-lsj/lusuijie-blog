@@ -15,7 +15,7 @@ export default function BlogRoute({ posts, currentPage, totalPages, totalPosts }
   return (
     <>
       <Head>
-        <title>文章列表 | 我的博客</title>
+        <title>文章列表 | 阿杰的博客</title>
         <meta name="description" content="浏览所有博客文章" />
       </Head>
       <BlogListPage

@@ -14,7 +14,7 @@ export default function PhotoRoute({ photosByCategories, categories, allPhotos }
   return (
     <>
       <Head>
-        <title>照片墙 | 我的博客</title>
+        <title>照片墙 | 阿杰的博客</title>
         <meta name="description" content="记录生活中的美好瞬间" />
       </Head>
       <InstantPage

@@ -8,12 +8,28 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   text-align: center;
   margin-bottom: 4rem;
+  background-image: url('/images/hero-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  width: 100vw;
+  height: 600px;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  padding: 2rem 1rem;
+  /* 添加深色遮罩以增强文本可读性 */
+  background-color: rgba(0, 0, 0, 0.4);
+  background-blend-mode: overlay;
 }
 
 .avatarContainer {
-  margin-bottom: 2rem;
+  display: none;
 }
 
 .avatar {
@@ -26,20 +42,23 @@
   font-size: 2.5rem;
   font-weight: 700;
   margin: 0 0 0.5rem 0;
-  color: #1f2937;
+  color: white;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 .subtitle {
   font-size: 1.25rem;
-  color: #6b7280;
+  color: rgba(255, 255, 255, 0.9);
   margin: 0 0 1.5rem 0;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
 }
 
 .description {
   font-size: 1.1rem;
   line-height: 1.7;
-  color: #4b5563;
+  color: rgba(255, 255, 255, 0.9);
   max-width: 600px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
 }
 
 .section {
@@ -166,6 +185,11 @@
     padding: 1rem 0;
   }
   
+  .heroSection {
+    height: 500px;
+    background-attachment: scroll;
+  }
+  
   .name {
     font-size: 2rem;
   }
@@ -193,7 +217,20 @@
 
 @media (max-width: 480px) {
   .heroSection {
+    height: 400px;
     margin-bottom: 2rem;
+  }
+  
+  .name {
+    font-size: 1.5rem;
+  }
+  
+  .subtitle {
+    font-size: 1rem;
+  }
+  
+  .description {
+    font-size: 0.95rem;
   }
   
   .section {
