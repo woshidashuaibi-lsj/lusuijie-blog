@@ -9,7 +9,6 @@ export default function App({ Component, pageProps }: AppProps) {
         <title>阿杰的博客</title>
         <meta name="description" content="使用 Next.js 构建的个人博客网站" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.jpg" type="image/jpeg" />
         <link
           rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.7.0/style.css"

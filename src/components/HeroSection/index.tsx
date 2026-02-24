@@ -13,7 +13,7 @@ export default function HeroSection() {
           </div>
           <div className={styles.heroAvatar}>
             <Image
-              src="/images/avatar.png"
+              src="https://woshidashuaibi-lsj.github.io/dashuaibi-blog.github.io/avatar.png"
               alt="个人头像"
               width={150}
               height={150}
