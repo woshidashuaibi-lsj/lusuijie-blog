@@ -1,0 +1,153 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.panel {
+  background: #fff;
+  border-radius: 16px 16px 0 0;
+  width: 100%;
+  max-width: 500px;
+  padding: 1.5rem;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
+  animation: slideUp 0.2s ease-out;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.panelTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #222;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: #999;
+  cursor: pointer;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.closeBtn:hover {
+  background: #f5f5f5;
+  color: #333;
+}
+
+.section {
+  margin-bottom: 1.5rem;
+}
+
+.section:last-child {
+  margin-bottom: 0;
+}
+
+.sectionLabel {
+  display: block;
+  font-size: 0.88rem;
+  color: #888;
+  margin-bottom: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.fontSizeControl {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.fontBtn {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  border: 1.5px solid #e5e5e5;
+  background: #fafafa;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #444;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fontBtn:hover:not(:disabled) {
+  border-color: #6366f1;
+  color: #6366f1;
+  background: #eef2ff;
+}
+
+.fontBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.fontSizeValue {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+  min-width: 2rem;
+  text-align: center;
+}
+
+.bgOptions {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.8rem;
+}
+
+.bgOption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  height: 72px;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.bgOption:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+}
+
+.bgOptionActive {
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.15) !important;
+}
+
+.bgOptionText {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.bgOptionLabel {
+  font-size: 0.72rem;
+  font-weight: 500;
+  opacity: 0.7;
+}

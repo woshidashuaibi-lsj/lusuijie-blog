@@ -618,6 +618,31 @@ export const photos: Photo[] = [
     height: 600,
     tags: ["趣味", "记录"],
   },
+  // 2026年2月 新增
+  {
+    id: "53",
+    src: "/media/waimai-dingdan.jpg",
+    alt: "粤菜馆外卖订单",
+    category: "人文·生活",
+    title: "粤菜馆外卖订单",
+    description: "招牌烧鸭饭 + 例汤 + 纸巾，共37元",
+    date: "2026-03-05",
+    width: 800,
+    height: 600,
+    tags: ["人文", "生活", "外卖"],
+  },
+  {
+    id: "52",
+    src: "/media/travel-parents-2026.jpg",
+    alt: "父母旅行合影",
+    category: "人文·生活",
+    title: "父母旅行合影",
+    description: "2026年2月 父母旅行照片",
+    date: "2026-02-27",
+    width: 782,
+    height: 1116,
+    tags: ["人文", "生活", "旅行"],
+  },
 ];
 
 // 获取按分类分组的照片
