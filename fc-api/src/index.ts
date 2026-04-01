@@ -6,6 +6,9 @@
  * FC 部署：通过 handler 导出
  */
 
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
@@ -22,6 +25,7 @@ const app = express();
 // CORS：允许你的博客域名跨域调用
 const allowedOrigins = [
   'https://lusuijie.com.cn',
+  'http://lusuijie.com.cn',
   'http://localhost:3000',
   // OSS 静态域名
   'https://lusuijie-blog-static.oss-cn-beijing.aliyuncs.com',
