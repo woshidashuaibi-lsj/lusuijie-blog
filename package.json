@@ -10,7 +10,8 @@
     "export": "next build",
     "deploy": "npm run export && node scripts/upload-oss.js",
     "upload:images": "node scripts/upload-images.js",
-    "upload:blog-assets": "node scripts/manage-images.js"
+    "upload:blog-assets": "node scripts/manage-images.js",
+    "format:book": "node scripts/format-book-content.js"
   },
   "dependencies": {
     "@giscus/react": "^3.1.0",

@@ -1,7 +1,8 @@
 const OSS = require('ali-oss')
 const fs = require('fs')
 const path = require('path')
-require('dotenv').config({ path: '.env.production' })
+// 本地开发时从 .env.production 加载；CI 环境变量已由 GitHub Actions 注入，override:false 不覆盖已有值
+require('dotenv').config({ path: '.env.production', override: false })
 
 console.log('🔧 OSS配置检查:')
 console.log('- Region:', process.env.OSS_REGION)
