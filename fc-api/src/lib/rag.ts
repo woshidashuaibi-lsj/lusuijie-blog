@@ -180,7 +180,8 @@ export async function buildVectorStore(
 
       for (let j = 0; j < batch.length; j++) {
         await pool.query(
-          `INSERT INTO rag_documents (id, collection, content, metadata, embedding) VALUES ($1, $2, $3, $4, $5)`,
+          `INSERT INTO rag_documents (id, collection, content, metadata, embedding) VALUES ($1, $2, $3, $4, $5)
+           ON CONFLICT (id) DO UPDATE SET collection = EXCLUDED.collection, content = EXCLUDED.content, metadata = EXCLUDED.metadata, embedding = EXCLUDED.embedding`,
           [`doc-${i + j}`, COLLECTION_NAME, batch[j].pageContent, JSON.stringify(batch[j].metadata), vectors[j]]
         );
       }
