@@ -1,0 +1,12 @@
+# FC 部署时忽略的文件（node_modules 由 FC 构建环境自动安装）
+.git
+.gitignore
+.env
+.env.local
+.s
+src
+tsconfig.json
+*.ts
+npm-debug.log*
+.DS_Store
+node_modules

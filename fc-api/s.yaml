@@ -1,0 +1,30 @@
+edition: 3.0.0
+name: my-blog-api
+access: default
+
+resources:
+  blog-rag-api:
+    component: fc3
+    props:
+      region: cn-beijing          # 和你 OSS 同地域，降低延迟
+      functionName: blog-rag-api
+      description: 博客 AI 问答 API（RAG）
+      runtime: nodejs18
+      memory: 512                 # 512MB，HuggingFace 模型需要一定内存
+      timeout: 60                 # 60s，向量构建耗时较长
+      code: ./
+      handler: fc-entry.handler
+      environmentVariables:
+        NODE_ENV: production
+        MINIMAX_API_KEY: "sk-cp-YSSWc1-Vl2RqERL_LM_PsI-zLntraEWXUJAZvAW2CzIapf6Er93_JlMhtOYHaOVyqJqROBNb59qL-0cASMIR9PZNRBaJncDis-uOoXj8ycPB3Y6Y7DbzW5s"
+        MINIMAX_GROUP_ID: "2026551757479354407"
+        SUPABASE_DB_URL: "postgresql://postgres.agbdozpahhxjcywtoorw:8KIIRNVvq9ueoNGy@aws-1-ap-south-1.pooler.supabase.com:6543/postgres"
+      triggers:
+        - triggerName: http-trigger
+          triggerType: http
+          triggerConfig:
+            authType: anonymous   # 公开访问，由 CORS 控制来源
+            methods:
+              - GET
+              - POST
+              - OPTIONS
