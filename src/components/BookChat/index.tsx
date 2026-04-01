@@ -20,7 +20,6 @@ interface BookChatProps {
   bookTitle: string;
 }
 
-// FC API 地址：本地开发时为空（走 Next.js 自身的 /api），生产环境指向 FC 函数
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || '';
 
 export default function BookChat({ bookSlug, bookTitle }: BookChatProps) {
@@ -34,6 +33,7 @@ export default function BookChat({ bookSlug, bookTitle }: BookChatProps) {
   const [buildStatus, setBuildStatus] = useState<'idle' | 'building' | 'success' | 'error'>('idle');
   const [buildMsg, setBuildMsg] = useState('');
   const [loading, setLoading] = useState(false);
+  const [streaming, setStreaming] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -66,39 +66,108 @@ export default function BookChat({ bookSlug, bookTitle }: BookChatProps) {
     setInput('');
     setMessages((prev) => [...prev, { role: 'user', content: question }]);
     setLoading(true);
+    setStreaming(false);
+    // 不预先插入空占位消息，等收到第一个 delta 时再插入，避免等待期出现两个气泡
 
     try {
-      const res = await fetch(`${API_BASE}/api/rag`, {
+      const res = await fetch(`${API_BASE}/api/rag/stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question }),
       });
 
-      if (!res.ok) {
-        const err = await res.json();
+      if (!res.ok || !res.body) {
+        const err = await res.json().catch(() => ({ message: '请求失败' }));
         throw new Error(err.message || '请求失败');
       }
 
-      const data = await res.json();
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: 'assistant',
-          content: data.answer,
-          sources: data.sources,
-        },
-      ]);
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buf = '';
+      let pendingSources: Source[] | undefined;
+      let assistantMsgAdded = false; // 是否已插入 assistant 消息占位
+      let serverError: string | null = null; // 收集服务端 error 事件内容
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buf += decoder.decode(value, { stream: true });
+        const lines = buf.split('\n');
+        buf = lines.pop() ?? '';
+
+        let eventName = '';
+        for (const line of lines) {
+          if (line.startsWith('event:')) {
+            eventName = line.slice(6).trim();
+          } else if (line.startsWith('data:')) {
+            const raw = line.slice(5).trim();
+            try {
+              const data = JSON.parse(raw);
+              if (eventName === 'sources') {
+                pendingSources = data as Source[];
+              } else if (eventName === 'delta') {
+                // 收到第一个 delta 时才插入 assistant 消息，消除双气泡
+                if (!assistantMsgAdded) {
+                  setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
+                  assistantMsgAdded = true;
+                }
+                setStreaming(true);
+                setMessages((prev) => {
+                  const next = [...prev];
+                  const last = next[next.length - 1];
+                  if (last.role === 'assistant') {
+                    next[next.length - 1] = {
+                      ...last,
+                      content: last.content + (data.text ?? ''),
+                    };
+                  }
+                  return next;
+                });
+              } else if (eventName === 'done') {
+                setStreaming(false);
+                if (pendingSources) {
+                  setMessages((prev) => {
+                    const next = [...prev];
+                    const last = next[next.length - 1];
+                    if (last.role === 'assistant') {
+                      next[next.length - 1] = { ...last, sources: pendingSources };
+                    }
+                    return next;
+                  });
+                }
+              } else if (eventName === 'error') {
+                // 用变量收集，不在此处 throw（会被内层 catch 吞掉）
+                serverError = data.message || '服务器错误';
+              }
+            } catch {
+              // 忽略 JSON 解析失败
+            }
+            eventName = '';
+          }
+        }
+      }
+
+      // 流结束后统一处理服务端错误
+      if (serverError) {
+        throw new Error(serverError);
+      }
     } catch (error) {
       const msg = error instanceof Error ? error.message : '未知错误';
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: 'assistant',
-          content: `抱歉，出现了错误：${msg}`,
-        },
-      ]);
+      setMessages((prev) => {
+        const next = [...prev];
+        const last = next[next.length - 1];
+        // 有空占位消息则替换，否则新增一条带警告图标的错误消息
+        if (last?.role === 'assistant' && last.content === '') {
+          next[next.length - 1] = { role: 'assistant', content: `⚠️ ${msg}` };
+        } else {
+          next.push({ role: 'assistant', content: `⚠️ ${msg}` });
+        }
+        return next;
+      });
     } finally {
       setLoading(false);
+      setStreaming(false);
     }
   };
 
@@ -140,7 +209,9 @@ export default function BookChat({ bookSlug, bookTitle }: BookChatProps) {
               <div className={styles.avatar}>✦</div>
             )}
             <div className={styles.bubble}>
-              <p className={styles.bubbleText}>{msg.content}</p>
+              <p className={`${styles.bubbleText} ${msg.role === 'assistant' && streaming && i === messages.length - 1 ? styles.streamingCursor : ''}`}>
+                {msg.content}
+              </p>
               {msg.sources && msg.sources.length > 0 && (
                 <div className={styles.sources}>
                   <p className={styles.sourcesLabel}>引用来源：</p>
@@ -156,7 +227,8 @@ export default function BookChat({ bookSlug, bookTitle }: BookChatProps) {
           </div>
         ))}
 
-        {loading && (
+        {/* loading 且尚未收到 delta（还没开始流输出）时，显示三点等待动画 */}
+        {loading && !streaming && messages[messages.length - 1]?.role !== 'assistant' && (
           <div className={`${styles.message} ${styles.assistantMessage}`}>
             <div className={styles.avatar}>✦</div>
             <div className={styles.bubble}>

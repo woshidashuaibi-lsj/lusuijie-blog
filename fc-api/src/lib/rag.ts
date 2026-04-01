@@ -4,7 +4,7 @@
 
 import { Pool } from 'pg';
 import { getEmbeddings } from './embeddings';
-import { callLLM } from './llm';
+import { callLLM, callLLMStream, LLMMessage } from './llm';
 
 const COLLECTION_NAME = 'wo-kanjian-de-shijie';
 const TOP_K = 5;
@@ -94,6 +94,71 @@ ${context}`,
     ]);
 
     return { answer, sources };
+  } finally {
+    await pool.end();
+  }
+}
+
+/**
+ * 流式问答：返回 sources + MiniMax 原始 SSE 流
+ * index.ts 负责解析流并推送 delta；若流中无内容，由 index.ts 兜底推送最终 message
+ */
+export async function queryStream(
+  question: string
+): Promise<{ sources: RagSource[]; stream: ReadableStream<Uint8Array> }> {
+  const pool = getPool();
+  const embeddings = getEmbeddings();
+
+  try {
+    const questionVector = await embeddings.embedQuery(question);
+
+    const result = await pool.query(
+      'SELECT id, content, metadata, embedding FROM rag_documents WHERE collection = $1',
+      [COLLECTION_NAME]
+    );
+
+    if (result.rows.length === 0) {
+      throw new Error('向量库为空，请先构建向量库。');
+    }
+
+    const scoredDocs = result.rows
+      .map((row: { id: string; content: string; metadata: { chapterTitle?: string; type?: string }; embedding: number[] }) => {
+        const rawScore = cosineSimilarity(questionVector, row.embedding);
+        const penalty = row.metadata?.type === 'appendix' ? 0.8 : 1.0;
+        return {
+          content: row.content,
+          chapterTitle: row.metadata?.chapterTitle || '未知章节',
+          score: rawScore * penalty,
+        };
+      })
+      .sort((a: { score: number }, b: { score: number }) => b.score - a.score)
+      .slice(0, TOP_K);
+
+    const sources: RagSource[] = scoredDocs.map((doc: { content: string; chapterTitle: string; score: number }) => ({
+      chapterTitle: doc.chapterTitle,
+      excerpt: doc.content.slice(0, 150) + (doc.content.length > 150 ? '...' : ''),
+      score: doc.score,
+    }));
+
+    const context = sources
+      .map((s, i) => `[来源 ${i + 1}] 章节：${s.chapterTitle}\n${s.excerpt}`)
+      .join('\n\n---\n\n');
+
+    const messages: LLMMessage[] = [
+      {
+        role: 'system',
+        content: `你是一位帮助读者理解《我看见的世界》（李飞飞自传）的 AI 助手。
+请根据以下书中的相关段落，用中文回答用户的问题。
+回答要准确、简洁，并基于书中内容。如果提供的段落不足以回答问题，请如实说明。
+
+相关段落：
+${context}`,
+      },
+      { role: 'user', content: question },
+    ];
+
+    const stream = await callLLMStream(messages);
+    return { sources, stream };
   } finally {
     await pool.end();
   }

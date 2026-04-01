@@ -231,6 +231,22 @@
   30% { transform: translateY(-6px); }
 }
 
+/* 流式输出光标闪烁 */
+.streamingCursor::after {
+  content: '▋';
+  display: inline-block;
+  color: #6366f1;
+  animation: blink 0.7s step-end infinite;
+  margin-left: 1px;
+  font-size: 0.9em;
+  vertical-align: baseline;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
 /* Suggestions */
 .suggestions {
   padding: 0 1.5rem 0.75rem;
