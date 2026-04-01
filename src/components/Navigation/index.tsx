@@ -9,6 +9,7 @@ const navItems = [
   { href: '/photo', label: '照片墙' },
   { href: '/guestbook', label: '留言板' },
   { href: '/book', label: '书单' },
+  { href: '/daily', label: '日报' },
   { href: '/about', label: '关于我' },
 ];
 

@@ -1,0 +1,218 @@
+.detailPage {
+  min-height: 100vh;
+  padding: 2rem 0;
+  position: relative;
+}
+
+/* 左侧浮动目录（复用 BlogPostPage 布局） */
+.toc {
+  position: fixed;
+  left: 2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 220px;
+  z-index: 10;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+@media (min-width: 1400px) {
+  .toc {
+    left: calc((100vw - 1200px) / 2 - 140px);
+  }
+}
+
+@media (max-width: 1399px) and (min-width: 1024px) {
+  .toc {
+    left: 1rem;
+    width: 200px;
+  }
+}
+
+@media (max-width: 1023px) {
+  .toc {
+    position: static;
+    transform: none;
+    width: 100%;
+    max-height: none;
+    margin-bottom: 1.5rem;
+  }
+}
+
+/* 正文容器 */
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.article {
+  width: 100%;
+}
+
+/* 返回链接 */
+.backLink {
+  display: inline-block;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  margin-bottom: 1.5rem;
+  transition: color 0.15s;
+}
+
+.backLink:hover {
+  color: var(--primary-color);
+}
+
+/* 文章头部 */
+.header {
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin: 0 0 0.75rem 0;
+  line-height: 1.3;
+}
+
+.summary {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin: 0;
+  padding: 0.75rem 1rem;
+  background: var(--hover-color);
+  border-radius: 8px;
+  border-left: 3px solid var(--secondary-color);
+}
+
+/* 正文样式（复用 BlogContent prose） */
+.prose {
+  max-width: none;
+  color: var(--text-color);
+  line-height: 1.8;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4 {
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--primary-color);
+  scroll-margin-top: 100px;
+}
+
+.prose h2 { font-size: 1.5rem; }
+.prose h3 { font-size: 1.25rem; }
+.prose h4 { font-size: 1.1rem; }
+
+.prose p {
+  margin-bottom: 1.25rem;
+}
+
+.prose ul,
+.prose ol {
+  margin: 1.25rem 0;
+  padding-left: 1.75rem;
+}
+
+.prose li {
+  margin-bottom: 0.4rem;
+}
+
+.prose blockquote {
+  border-left: 4px solid var(--secondary-color);
+  padding: 0.75rem 1.25rem;
+  margin: 1.5rem 0;
+  background: var(--hover-color);
+  border-radius: 0 8px 8px 0;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.9rem;
+}
+
+.prose th,
+.prose td {
+  border: 1px solid var(--border-color);
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+}
+
+.prose th {
+  background: var(--hover-color);
+  font-weight: 600;
+}
+
+.prose code {
+  background: var(--hover-color);
+  padding: 0.15rem 0.35rem;
+  border-radius: 4px;
+  font-size: 0.88rem;
+}
+
+.prose a {
+  color: var(--secondary-color);
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition: text-decoration-color 0.15s;
+}
+
+.prose a:hover {
+  text-decoration-color: var(--secondary-color);
+}
+
+/* 上下篇翻页 */
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.pageLink {
+  font-size: 0.9rem;
+  color: var(--secondary-color);
+  text-decoration: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.pageLink:hover {
+  background: var(--hover-color);
+  border-color: var(--secondary-color);
+}
+
+.pageLinkRight {
+  margin-left: auto;
+}
+
+@media (max-width: 768px) {
+  .detailPage {
+    padding: 1rem 0;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .container {
+    padding: 0 1rem;
+  }
+}

@@ -1,0 +1,199 @@
+.dailyPage {
+  display: flex;
+  min-height: 100vh;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+  gap: 2rem;
+}
+
+/* ── 左侧导航 ── */
+.sidebar {
+  flex-shrink: 0;
+  width: 200px;
+  position: sticky;
+  top: 5rem;
+  align-self: flex-start;
+  max-height: calc(100vh - 6rem);
+  overflow-y: auto;
+}
+
+.monthGroup {
+  margin-bottom: 0.25rem;
+}
+
+.monthToggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-color);
+  transition: background 0.15s;
+}
+
+.monthToggle:hover {
+  background: var(--hover-color);
+}
+
+.arrow {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  transition: transform 0.2s;
+  display: inline-block;
+}
+
+.arrowOpen {
+  transform: rotate(90deg);
+}
+
+.dayList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.dayItem {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.35rem 0.75rem 0.35rem 1.25rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dayItem:hover {
+  background: var(--hover-color);
+  color: var(--text-color);
+}
+
+.dayItemActive {
+  background: var(--hover-color);
+  color: var(--primary-color) !important;
+  font-weight: 600;
+}
+
+/* ── 右侧内容 ── */
+.content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 摘要速览卡片 */
+.summaryCard {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.summaryItem {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin: 0;
+  padding: 0.1rem 0;
+}
+
+/* 日期标题行 */
+.postHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.postTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin: 0;
+}
+
+.fullLink {
+  font-size: 0.85rem;
+  color: var(--secondary-color);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+}
+
+.fullLink:hover {
+  opacity: 0.75;
+}
+
+/* 正文预览 */
+.preview {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  white-space: pre-wrap;
+  margin-bottom: 1.5rem;
+}
+
+.readMore {
+  display: inline-block;
+  padding: 0.6rem 1.4rem;
+  background: var(--primary-color);
+  color: #fff;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+
+.readMore:hover {
+  opacity: 0.85;
+}
+
+/* 空状态 */
+.emptyState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+/* ── 响应式 ── */
+@media (max-width: 768px) {
+  .dailyPage {
+    flex-direction: column;
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .sidebar {
+    width: 100%;
+    position: static;
+    max-height: none;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1rem;
+  }
+
+  .monthToggle {
+    font-size: 0.95rem;
+  }
+
+  .postTitle {
+    font-size: 1.2rem;
+  }
+}
