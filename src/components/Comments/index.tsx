@@ -7,7 +7,7 @@ interface CommentsProps {
   post: BlogPost;
 }
 
-export default function Comments({ post }: CommentsProps) {
+export default function Comments({ post: _post }: CommentsProps) {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   // 监听主题变化（如果你有主题切换功能）
   useEffect(() => {

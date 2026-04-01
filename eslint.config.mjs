@@ -18,7 +18,14 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
+      "fc-api/**",
     ],
+  },
+  {
+    rules: {
+      // 书单页使用 <img> 是为了 onError 回退逻辑，允许使用
+      "@next/next/no-img-element": "warn",
+    },
   },
 ];
 
