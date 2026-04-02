@@ -14,7 +14,7 @@ import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
-import { query, queryStream, buildVectorStore } from './lib/rag';
+import { query, queryStream, buildVectorStore, extractPersona, getPersonaStatus } from './lib/rag';
 
 const app = express();
 
@@ -230,6 +230,42 @@ app.post('/api/rag/build', async (req: Request, res: Response) => {
     return res.status(200).json({ message: `[${bookSlug}] 向量库构建成功`, docCount });
   } catch (error) {
     console.error('向量库构建失败:', error);
+    const message = error instanceof Error ? error.message : '服务器内部错误';
+    return res.status(500).json({ message });
+  }
+});
+
+// POST /api/rag/extract-persona - 从书中自动提取角色人设
+// body: { bookSlug?: string; sampleCount?: number }
+app.post('/api/rag/extract-persona', async (req: Request, res: Response) => {
+  const { bookSlug = 'wo-kanjian-de-shijie', sampleCount = 30 } = req.body as {
+    bookSlug?: string;
+    sampleCount?: number;
+  };
+
+  try {
+    const booksData = loadBookData(bookSlug);
+    const { chapters } = booksData;
+    const persona = await extractPersona(bookSlug, chapters, sampleCount);
+    return res.status(200).json({
+      message: `[${bookSlug}] 人设提取成功`,
+      persona,
+      sampleChapters: Math.min(sampleCount, chapters.length),
+    });
+  } catch (error) {
+    console.error('人设提取失败:', error);
+    const message = error instanceof Error ? error.message : '服务器内部错误';
+    return res.status(500).json({ message });
+  }
+});
+
+// GET /api/rag/persona-status - 查询当前人设状态
+app.get('/api/rag/persona-status', (req: Request, res: Response) => {
+  const bookSlug = (req.query.bookSlug as string) || 'wo-kanjian-de-shijie';
+  try {
+    const status = getPersonaStatus(bookSlug);
+    return res.status(200).json({ bookSlug, ...status });
+  } catch (error) {
     const message = error instanceof Error ? error.message : '服务器内部错误';
     return res.status(500).json({ message });
   }
