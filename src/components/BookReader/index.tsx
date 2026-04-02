@@ -5,7 +5,10 @@ import ReaderSettings, { ReaderSettings as ReaderSettingsType, loadSettings } fr
 import styles from './index.module.css';
 
 // 支持 AI 问答的书籍 slug 列表
-const AI_CHAT_ENABLED_SLUGS = ['wo-kanjian-de-shijie'];
+const AI_CHAT_ENABLED_SLUGS = ['wo-kanjian-de-shijie', 'dao-gui-yi-xian'];
+
+// 圆点导航章节数上限，超过则改用进度条+输入框模式
+const DOTS_MAX_CHAPTERS = 60;
 
 export interface Book {
   slug: string;
@@ -115,16 +118,42 @@ export default function BookReader({ book }: BookReaderProps) {
           ← 上一章
         </button>
 
-        <div className={styles.chapterDots}>
-          {book.chapters.map((_, i) => (
-            <button
-              key={i}
-              className={`${styles.dot} ${i === currentChapterIdx ? styles.dotActive : ''}`}
-              onClick={() => goToChapter(i)}
-              aria-label={`第 ${i + 1} 章`}
+        {book.chapters.length <= DOTS_MAX_CHAPTERS ? (
+          /* 章节少：圆点导航 */
+          <div className={styles.chapterDots}>
+            {book.chapters.map((_, i) => (
+              <button
+                key={i}
+                className={`${styles.dot} ${i === currentChapterIdx ? styles.dotActive : ''}`}
+                onClick={() => goToChapter(i)}
+                aria-label={`第 ${i + 1} 章`}
+              />
+            ))}
+          </div>
+        ) : (
+          /* 章节多：进度文字 + 跳转输入框 */
+          <div className={styles.chapterJump}>
+            <span className={styles.chapterCount}>
+              {currentChapterIdx + 1} / {book.chapters.length}
+            </span>
+            <input
+              className={styles.jumpInput}
+              type="number"
+              min={1}
+              max={book.chapters.length}
+              placeholder="跳转"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  const val = parseInt((e.target as HTMLInputElement).value, 10);
+                  if (!isNaN(val)) {
+                    goToChapter(Math.max(0, Math.min(val - 1, book.chapters.length - 1)));
+                    (e.target as HTMLInputElement).value = '';
+                  }
+                }
+              }}
             />
-          ))}
-        </div>
+          </div>
+        )}
 
         <button
           className={styles.navBtn}

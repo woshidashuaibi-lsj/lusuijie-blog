@@ -122,6 +122,56 @@
   display: flex;
   gap: 0.4rem;
   align-items: center;
+  overflow-x: auto;
+  max-width: 60vw;
+  padding: 0.2rem 0;
+  scrollbar-width: none;
+}
+
+.chapterDots::-webkit-scrollbar {
+  display: none;
+}
+
+/* 章节数多时：进度文字 + 跳转输入框 */
+.chapterJump {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.chapterCount {
+  font-size: 0.85rem;
+  opacity: 0.7;
+  white-space: nowrap;
+  min-width: 6em;
+  text-align: center;
+}
+
+.jumpInput {
+  width: 4.5rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid rgba(128, 128, 128, 0.35);
+  background: transparent;
+  color: inherit;
+  font-size: 0.85rem;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.jumpInput:focus {
+  border-color: #6366f1;
+}
+
+/* 去掉数字输入框的上下箭头 */
+.jumpInput::-webkit-outer-spin-button,
+.jumpInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.jumpInput[type=number] {
+  -moz-appearance: textfield;
 }
 
 .dot {
