@@ -261,3 +261,98 @@ CREATE INDEX ON rag_documents USING ivfflat (embedding vector_cosine_ops);
 | `src/data/books.json` | 书单数据（阅读器 + 书单首页用） |
 | `scripts/extract_epub.py` | epub → JSON 提取脚本 |
 | `scripts/format-book-content.js` | 段落格式化脚本 |
+
+---
+
+## 十、踩坑记录
+
+### 坑 1：`fetch failed` —— 极具迷惑性的错误
+
+**时间**：2026-04-02
+
+**现象**：
+- 前端发请求，服务器返回 200，但 EventStream 里没有任何事件，直接显示 `⚠️ fetch failed`
+- 手动用 `curl` / Node `fetch` 调 MiniMax 接口完全正常
+- 日志只有一行 `RAG 流式查询第 1 次失败: fetch failed`，没有更多信息
+
+**误判过程**：
+1. 以为是 MiniMax 限流 → 查了不是
+2. 以为是网络问题 → curl 测试通，排除
+3. 以为是 pg 查询太慢导致 undici socket 被关 → 改成 pgvector SQL → 报 `type "vector" does not exist`（数据库没装 pgvector 扩展）
+
+**真正原因**：
+
+服务器上 `dist/lib/embeddings.js` 是**历史旧版本**，用的是：
+
+```js
+new HuggingFaceTransformersEmbeddings({ model: 'Xenova/bge-small-zh-v1.5' })
+```
+
+这个模型需要在**首次调用时从 HuggingFace 下载**，而国内阿里云服务器访问 HuggingFace 被墙，于是 `fetch` 连接超时，Node 把它包装成 `TypeError: fetch failed`（`cause: UND_ERR_CONNECT_TIMEOUT`）。
+
+`fetch failed` 这个消息本身出现在 **embedding 阶段**，但错误被冒泡到上层后，表现得像是调 MiniMax 失败，极具迷惑性。
+
+**如何发现**：
+
+```bash
+node -e "require('./dist/lib/rag').queryStream('test','dao-gui-yi-xian').catch(e=>console.log(e.stack))"
+```
+
+查看完整堆栈，发现错误来自 `@huggingface/transformers`，而不是 MiniMax 的 `fetch`。
+
+**修复**：
+将本地已更新的 `src/lib/embeddings.ts`（DashScope 版）上传服务器并重新编译：
+
+```bash
+scp fc-api/src/lib/embeddings.ts root@server:/root/fc-api/src/lib/embeddings.ts
+ssh root@server 'cd /root/fc-api && npm run build && pm2 restart blog-api'
+```
+
+**教训**：
+- 每次部署只用 `scp` 传单个文件，容易漏传，导致 `dist/` 是新旧文件混搭
+- 应当建立完整的同步脚本，一次性同步所有 `src/` 文件再编译
+- 遇到 `fetch failed` 不要只看错误消息，要打印 `e.stack` 看完整调用链
+
+---
+
+### 坑 2：pgvector `<=>` 操作符不可用
+
+**时间**：2026-04-02（排查坑 1 时产生的副作用）
+
+**现象**：将 `retrieveTopK` 改为 pgvector SQL 后报错 `type "vector" does not exist`
+
+**原因**：Supabase 建表时 `embedding` 字段是 `REAL[]`（普通数组），没有安装 `pgvector` 扩展，不支持 `vector` 类型和 `<=>` 运算符
+
+**修复**：回退 `retrieveTopK` 为 Node.js 内存余弦计算，不需要 pgvector
+
+**备注**：如果未来数据量继续增长（当前 6108 条），全表拉取计算会越来越慢（目前约 8-9 秒），届时可以考虑在 Supabase 开启 pgvector 并迁移字段类型
+
+---
+
+### 坑 3：思考过程与正式回答混在一起展示
+
+**时间**：2026-04-02
+
+**现象**：AI 的分析推理内容（`reasoning_content`）和最终角色扮演回答（`content`）被拼在同一个气泡里展示，用户看到的是大段"用户问……根据背景信息……我应该……"
+
+**原因**：MiniMax M2.7 是推理模型，SSE 流里会同时返回两个字段：
+- `delta.reasoning_content`：模型的思考过程
+- `delta.content`：最终输出内容
+
+之前后端把两者用 `||` 合并成一个 `text` 字段推给前端：
+
+```ts
+// 旧代码：两者合并，前端无法区分
+const delta = choice?.delta?.content || choice?.delta?.reasoning_content || '';
+send('delta', { text: delta });
+```
+
+**修复**：
+- 后端：`delta` 事件加 `type` 字段（`"thinking"` / `"answer"`）分别推送
+- 前端：`Message` 类型新增 `thinking` 字段单独存储，渲染时显示为可折叠的 💭 胶囊
+
+```ts
+// 新代码：分开推送
+if (thinkingDelta) send('delta', { text: thinkingDelta, type: 'thinking' });
+if (answerDelta)   send('delta', { text: answerDelta,   type: 'answer'   });
+```

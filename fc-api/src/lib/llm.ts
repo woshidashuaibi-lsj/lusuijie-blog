@@ -58,20 +58,30 @@ export async function callLLM(messages: LLMMessage[]): Promise<string> {
 export async function callLLMStream(messages: LLMMessage[]): Promise<ReadableStream<Uint8Array>> {
   const { apiKey } = getKeys();
 
-  const res = await fetch(MINIMAX_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: 'MiniMax-M2.7',
-      messages,
-      temperature: 0.3,
-      max_tokens: 1024,
-      stream: true,
-    }),
-  });
+  // 30 秒超时，防止 fetch 无限挂起导致 "fetch failed"
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 30_000);
+
+  let res: Response;
+  try {
+    res = await fetch(MINIMAX_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'MiniMax-M2.7',
+        messages,
+        temperature: 0.3,
+        max_tokens: 1024,
+        stream: true,
+      }),
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timer);
+  }
 
   if (!res.ok) {
     const err = await res.text();
