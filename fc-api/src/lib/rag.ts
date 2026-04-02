@@ -8,14 +8,47 @@ import { getEmbeddings } from './embeddings';
 import { callLLM, callLLMStream, LLMMessage } from './llm';
 
 // 书籍信息配置
-const BOOK_CONFIGS: Record<string, { title: string; description: string }> = {
+interface BookConfig {
+  title: string;
+  description: string;
+  /** 角色扮演模式：AI 以书中角色身份回答 */
+  roleplay?: {
+    enabled: boolean;
+    characterName: string;
+    /** 注入到 system prompt 里的角色设定 */
+    persona: string;
+  };
+}
+
+const BOOK_CONFIGS: Record<string, BookConfig> = {
   'wo-kanjian-de-shijie': {
     title: '《我看见的世界》（李飞飞自传）',
     description: '李飞飞的 AI 人生传记',
+    // 传记/自传类：用作者视角更合适，但不强制角色扮演
+    roleplay: {
+      enabled: false,
+      characterName: '李飞飞',
+      persona: '',
+    },
   },
   'dao-gui-yi-xian': {
     title: '《道诡异仙》',
     description: '狐尾的笔所著东方玄幻小说',
+    roleplay: {
+      enabled: true,
+      characterName: '李火旺',
+      persona: `你现在是《道诡异仙》中的主角李火旺。
+李火旺的人物特征：
+- 表面上是一个现代精神病院里的病人，内心却极为通透冷静
+- 习惯用"幻觉"来理解修仙世界里的一切，说话带着一种"在旁观自己"的疏离感
+- 聪明、务实、有点玩世不恭，但骨子里重情义
+- 常常用现代视角（医学、心理）来解释修仙界的奇异现象，语言接地气
+- 偶尔会说"我的幻觉里..."或"按我师傅丹阳子的说法..."
+
+回答时请用第一人称，以李火旺的口吻和语气来回应读者的问题。
+如果问题涉及书中尚未发生的情节（你"尚未经历"的），可以说"这个我还不清楚，幻觉里还没到那一段"。
+如果书中提供的段落不够回答问题，诚实地说"这个我也不太清楚，幻觉有时候不太完整"。`,
+    },
   },
 };
 
@@ -40,6 +73,28 @@ function cosineSimilarity(a: number[], b: number[]): number {
     normB += b[i] * b[i];
   }
   return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+}
+
+/** 根据书籍配置生成 System Prompt（普通助手 or 角色扮演）*/
+function buildSystemPrompt(bookConfig: BookConfig, context: string): string {
+  const rp = bookConfig.roleplay;
+  if (rp?.enabled && rp.persona) {
+    // 角色扮演模式：AI 以书中角色身份回答
+    return `${rp.persona}
+
+以下是你（${rp.characterName}）在书中相关经历的片段，用来帮助你回答读者的问题：
+
+${context}
+
+请以${rp.characterName}的口吻和语气，用第一人称回答读者的问题。`;
+  }
+  // 普通助手模式
+  return `你是一位帮助读者理解${bookConfig.title}的 AI 助手。
+请根据以下书中的相关段落，用中文回答用户的问题。
+回答要准确、简洁，并基于书中内容。如果提供的段落不足以回答问题，请如实说明。
+
+相关段落：
+${context}`;
 }
 
 export interface RagSource {
@@ -94,15 +149,7 @@ export async function query(question: string, bookSlug = 'wo-kanjian-de-shijie')
       .join('\n\n---\n\n');
 
     const answer = await callLLM([
-      {
-        role: 'system',
-        content: `你是一位帮助读者理解${bookConfig.title}的 AI 助手。
-请根据以下书中的相关段落，用中文回答用户的问题。
-回答要准确、简洁，并基于书中内容。如果提供的段落不足以回答问题，请如实说明。
-
-相关段落：
-${context}`,
-      },
+      { role: 'system', content: buildSystemPrompt(bookConfig, context) },
       { role: 'user', content: question },
     ]);
 
@@ -160,15 +207,7 @@ export async function queryStream(
       .join('\n\n---\n\n');
 
     const messages: LLMMessage[] = [
-      {
-        role: 'system',
-        content: `你是一位帮助读者理解${bookConfig.title}的 AI 助手。
-请根据以下书中的相关段落，用中文回答用户的问题。
-回答要准确、简洁，并基于书中内容。如果提供的段落不足以回答问题，请如实说明。
-
-相关段落：
-${context}`,
-      },
+      { role: 'system', content: buildSystemPrompt(bookConfig, context) },
       { role: 'user', content: question },
     ];
 

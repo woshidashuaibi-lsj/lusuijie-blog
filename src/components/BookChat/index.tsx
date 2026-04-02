@@ -22,11 +22,27 @@ interface BookChatProps {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || '';
 
+// 每本书的角色扮演配置
+const BOOK_ROLEPLAY: Record<string, { enabled: boolean; characterName: string; avatar: string; greeting: string; placeholder: string }> = {
+  'dao-gui-yi-xian': {
+    enabled: true,
+    characterName: '李火旺',
+    avatar: '火',
+    greeting: '就知道你们这些局外人会有一堆奇怪问题问我。说吧，什么事？我的幻觉里什么都见过。',
+    placeholder: '问杯山下的李火旺任何问题…',
+  },
+};
+
 export default function BookChat({ bookSlug, bookTitle }: BookChatProps) {
+  const roleplay = BOOK_ROLEPLAY[bookSlug];
+  const isRoleplay = !!roleplay?.enabled;
+
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: `你好！我是《${bookTitle}》的 AI 助手。你可以问我关于这本书的任何问题，我会基于书中内容为你解答。`,
+      content: isRoleplay
+        ? roleplay.greeting
+        : `你好！我是《${bookTitle}》的 AI 助手。你可以问我关于这本书的任何问题，我会基于书中内容为你解答。`,
     },
   ]);
   const [input, setInput] = useState('');
@@ -183,10 +199,10 @@ export default function BookChat({ bookSlug, bookTitle }: BookChatProps) {
       '书中最令你印象深刻的观点是什么？',
     ],
     'dao-gui-yi-xian': [
-      '李火旺是谁？他有什么特别的能力？',
-      '现实世界和幻觉世界有什么关系？',
-      '丹阳子是什么人？',
-      '书中的修仙体系是怎样的？',
+      '你为什么会同时活在两个世界里？',
+      '丹阳子师傅是个什么样的人？',
+      '你从幻觉里带回来过什么东西？',
+      '你觉得自己到底是病人还是修仙者？',
     ],
   };
   const suggestions = BOOK_SUGGESTIONS[bookSlug] || BOOK_SUGGESTIONS['wo-kanjian-de-shijie'];
@@ -199,8 +215,8 @@ export default function BookChat({ bookSlug, bookTitle }: BookChatProps) {
           ← 返回阅读
         </Link>
         <div className={styles.headerTitle}>
-          <span className={styles.aiIcon}>✦</span>
-          <span>与《{bookTitle}》对话</span>
+          <span className={styles.aiIcon}>{isRoleplay ? roleplay.avatar : '✦'}</span>
+          <span>{isRoleplay ? `与${roleplay.characterName}对话` : `与《${bookTitle}》对话`}</span>
         </div>
         <div className={styles.headerRight}>
           <button
@@ -219,7 +235,9 @@ export default function BookChat({ bookSlug, bookTitle }: BookChatProps) {
         {messages.map((msg, i) => (
           <div key={i} className={`${styles.message} ${msg.role === 'user' ? styles.userMessage : styles.assistantMessage}`}>
             {msg.role === 'assistant' && (
-              <div className={styles.avatar}>✦</div>
+              <div className={styles.avatar} title={isRoleplay ? roleplay.characterName : 'AI'}>
+                {isRoleplay ? roleplay.avatar : '✦'}
+              </div>
             )}
             <div className={styles.bubble}>
               <p className={`${styles.bubbleText} ${msg.role === 'assistant' && streaming && i === messages.length - 1 ? styles.streamingCursor : ''}`}>
@@ -243,7 +261,7 @@ export default function BookChat({ bookSlug, bookTitle }: BookChatProps) {
         {/* loading 且尚未收到 delta（还没开始流输出）时，显示三点等待动画 */}
         {loading && !streaming && messages[messages.length - 1]?.role !== 'assistant' && (
           <div className={`${styles.message} ${styles.assistantMessage}`}>
-            <div className={styles.avatar}>✦</div>
+            <div className={styles.avatar}>{isRoleplay ? roleplay.avatar : '✦'}</div>
             <div className={styles.bubble}>
               <div className={styles.typing}>
                 <span /><span /><span />
@@ -277,7 +295,7 @@ export default function BookChat({ bookSlug, bookTitle }: BookChatProps) {
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="向 AI 提问关于这本书的内容..."
+          placeholder={isRoleplay ? roleplay.placeholder : '向 AI 提问关于这本书的内容…'}
           disabled={loading}
           maxLength={500}
         />
