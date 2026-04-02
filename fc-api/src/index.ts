@@ -152,18 +152,29 @@ app.post('/api/rag/stream', async (req: Request, res: Response) => {
             const choice = json.choices?.[0];
             if (!choice) continue;
 
-            // 流式 delta：取 content 或 reasoning_content
-            const delta = choice?.delta?.content || choice?.delta?.reasoning_content || '';
-            if (delta) {
-              send('delta', { text: delta });
+            // 流式 delta：content 和 reasoning_content 分开推送，前端可区分展示
+            const answerDelta = choice?.delta?.content || '';
+            const thinkingDelta = choice?.delta?.reasoning_content || '';
+
+            if (thinkingDelta) {
+              send('delta', { text: thinkingDelta, type: 'thinking' });
+              deltaCount++;
+            }
+            if (answerDelta) {
+              send('delta', { text: answerDelta, type: 'answer' });
               deltaCount++;
             }
 
             // 兜底：finish 时如果有完整 message 且之前没有 delta，一次性推送
             if (choice?.finish_reason && choice?.message && deltaCount === 0) {
-              const msgContent = choice.message.content || choice.message.reasoning_content || '';
+              const msgContent = choice.message.content || '';
+              const msgThinking = choice.message.reasoning_content || '';
+              if (msgThinking) {
+                send('delta', { text: msgThinking, type: 'thinking' });
+                deltaCount++;
+              }
               if (msgContent) {
-                send('delta', { text: msgContent });
+                send('delta', { text: msgContent, type: 'answer' });
                 deltaCount++;
               }
             }

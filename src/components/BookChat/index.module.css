@@ -161,6 +161,60 @@
   box-shadow: 0 1px 3px rgba(0,0,0,0.08);
 }
 
+/* Thinking block */
+.thinkingBlock {
+  margin-bottom: 0.4rem;
+}
+
+.thinkingToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.7rem;
+  background: #f3f0ff;
+  border: 1px solid #ddd6fe;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  color: #7c3aed;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  font-family: inherit;
+}
+
+.thinkingToggle:hover {
+  background: #ede9fe;
+  border-color: #a78bfa;
+}
+
+.thinkingIcon {
+  font-size: 0.85rem;
+}
+
+.thinkingArrow {
+  display: inline-block;
+  transition: transform 0.2s;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.thinkingArrowOpen {
+  transform: rotate(180deg);
+}
+
+.thinkingContent {
+  margin-top: 0.4rem;
+  padding: 0.7rem 0.9rem;
+  background: #faf5ff;
+  border: 1px solid #e9d5ff;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  color: #6b21a8;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
+  opacity: 0.85;
+}
+
 /* Sources */
 .sources {
   margin-top: 0.6rem;

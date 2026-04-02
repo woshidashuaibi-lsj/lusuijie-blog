@@ -12,6 +12,8 @@ interface Source {
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+  /** AI 思考过程，与正式回答分开存储 */
+  thinking?: string;
   sources?: Source[];
 }
 
@@ -32,6 +34,30 @@ const BOOK_ROLEPLAY: Record<string, { enabled: boolean; characterName: string; a
     placeholder: '问杯山下的李火旺任何问题…',
   },
 };
+
+/** 思考块：可折叠展示 */
+function ThinkingBlock({ thinking, isStreaming }: { thinking: string; isStreaming: boolean }) {
+  const [expanded, setExpanded] = useState(false);
+  if (!thinking) return null;
+  return (
+    <div className={styles.thinkingBlock}>
+      <button
+        className={styles.thinkingToggle}
+        onClick={() => setExpanded(v => !v)}
+        type="button"
+      >
+        <span className={styles.thinkingIcon}>💭</span>
+        <span>{isStreaming ? '思考中…' : '查看思考过程'}</span>
+        <span className={`${styles.thinkingArrow} ${expanded ? styles.thinkingArrowOpen : ''}`}>▾</span>
+      </button>
+      {expanded && (
+        <div className={styles.thinkingContent}>
+          {thinking}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function BookChat({ bookSlug, bookTitle }: BookChatProps) {
   const roleplay = BOOK_ROLEPLAY[bookSlug];
@@ -87,7 +113,6 @@ export default function BookChat({ bookSlug, bookTitle }: BookChatProps) {
     setMessages((prev) => [...prev, { role: 'user', content: question }]);
     setLoading(true);
     setStreaming(false);
-    // 不预先插入空占位消息，等收到第一个 delta 时再插入，避免等待期出现两个气泡
 
     try {
       const res = await fetch(`${API_BASE}/api/rag/stream`, {
@@ -105,8 +130,8 @@ export default function BookChat({ bookSlug, bookTitle }: BookChatProps) {
       const decoder = new TextDecoder();
       let buf = '';
       let pendingSources: Source[] | undefined;
-      let assistantMsgAdded = false; // 是否已插入 assistant 消息占位
-      let serverError: string | null = null; // 收集服务端 error 事件内容
+      let assistantMsgAdded = false;
+      let serverError: string | null = null;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -123,24 +148,35 @@ export default function BookChat({ bookSlug, bookTitle }: BookChatProps) {
           } else if (line.startsWith('data:')) {
             const raw = line.slice(5).trim();
             try {
-              const data = JSON.parse(raw);
+              const data = JSON.parse(raw) as { text?: string; type?: 'thinking' | 'answer' };
               if (eventName === 'sources') {
-                pendingSources = data as Source[];
+                pendingSources = data as unknown as Source[];
               } else if (eventName === 'delta') {
-                // 收到第一个 delta 时才插入 assistant 消息，消除双气泡
+                // 收到第一个 delta 时插入 assistant 占位消息
                 if (!assistantMsgAdded) {
-                  setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
+                  setMessages((prev) => [...prev, { role: 'assistant', content: '', thinking: '' }]);
                   assistantMsgAdded = true;
                 }
                 setStreaming(true);
+
+                const deltaType = data.type ?? 'answer'; // 兼容旧协议（无 type 字段时当 answer）
+                const deltaText = data.text ?? '';
+
                 setMessages((prev) => {
                   const next = [...prev];
                   const last = next[next.length - 1];
                   if (last.role === 'assistant') {
-                    next[next.length - 1] = {
-                      ...last,
-                      content: last.content + (data.text ?? ''),
-                    };
+                    if (deltaType === 'thinking') {
+                      next[next.length - 1] = {
+                        ...last,
+                        thinking: (last.thinking ?? '') + deltaText,
+                      };
+                    } else {
+                      next[next.length - 1] = {
+                        ...last,
+                        content: last.content + deltaText,
+                      };
+                    }
                   }
                   return next;
                 });
@@ -157,8 +193,7 @@ export default function BookChat({ bookSlug, bookTitle }: BookChatProps) {
                   });
                 }
               } else if (eventName === 'error') {
-                // 用变量收集，不在此处 throw（会被内层 catch 吞掉）
-                serverError = data.message || '服务器错误';
+                serverError = (data as unknown as { message?: string }).message || '服务器错误';
               }
             } catch {
               // 忽略 JSON 解析失败
@@ -168,7 +203,6 @@ export default function BookChat({ bookSlug, bookTitle }: BookChatProps) {
         }
       }
 
-      // 流结束后统一处理服务端错误
       if (serverError) {
         throw new Error(serverError);
       }
@@ -177,7 +211,6 @@ export default function BookChat({ bookSlug, bookTitle }: BookChatProps) {
       setMessages((prev) => {
         const next = [...prev];
         const last = next[next.length - 1];
-        // 有空占位消息则替换，否则新增一条带警告图标的错误消息
         if (last?.role === 'assistant' && last.content === '') {
           next[next.length - 1] = { role: 'assistant', content: `⚠️ ${msg}` };
         } else {
@@ -206,6 +239,9 @@ export default function BookChat({ bookSlug, bookTitle }: BookChatProps) {
     ],
   };
   const suggestions = BOOK_SUGGESTIONS[bookSlug] || BOOK_SUGGESTIONS['wo-kanjian-de-shijie'];
+
+  // 当前最后一条消息是否在流式输出中
+  const lastMsgIdx = messages.length - 1;
 
   return (
     <div className={styles.container}>
@@ -240,9 +276,20 @@ export default function BookChat({ bookSlug, bookTitle }: BookChatProps) {
               </div>
             )}
             <div className={styles.bubble}>
-              <p className={`${styles.bubbleText} ${msg.role === 'assistant' && streaming && i === messages.length - 1 ? styles.streamingCursor : ''}`}>
-                {msg.content}
-              </p>
+              {/* 思考过程块（仅 assistant 且有 thinking 内容时展示）*/}
+              {msg.role === 'assistant' && msg.thinking && (
+                <ThinkingBlock
+                  thinking={msg.thinking}
+                  isStreaming={streaming && i === lastMsgIdx && msg.content === ''}
+                />
+              )}
+              {/* 正式回答 */}
+              {(msg.content || msg.role === 'user') && (
+                <p className={`${styles.bubbleText} ${msg.role === 'assistant' && streaming && i === lastMsgIdx ? styles.streamingCursor : ''}`}>
+                  {msg.content}
+                </p>
+              )}
+              {/* 引用来源 */}
               {msg.sources && msg.sources.length > 0 && (
                 <div className={styles.sources}>
                   <p className={styles.sourcesLabel}>引用来源：</p>
@@ -258,7 +305,7 @@ export default function BookChat({ bookSlug, bookTitle }: BookChatProps) {
           </div>
         ))}
 
-        {/* loading 且尚未收到 delta（还没开始流输出）时，显示三点等待动画 */}
+        {/* loading 且尚未收到 delta 时，显示三点等待动画 */}
         {loading && !streaming && messages[messages.length - 1]?.role !== 'assistant' && (
           <div className={`${styles.message} ${styles.assistantMessage}`}>
             <div className={styles.avatar}>{isRoleplay ? roleplay.avatar : '✦'}</div>
