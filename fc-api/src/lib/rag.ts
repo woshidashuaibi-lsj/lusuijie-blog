@@ -1,12 +1,24 @@
 /**
  * RAG 核心逻辑 - Supabase PostgreSQL 版本
+ * 支持多本书，通过 collectionName 区分
  */
 
 import { Pool } from 'pg';
 import { getEmbeddings } from './embeddings';
 import { callLLM, callLLMStream, LLMMessage } from './llm';
 
-const COLLECTION_NAME = 'wo-kanjian-de-shijie';
+// 书籍信息配置
+const BOOK_CONFIGS: Record<string, { title: string; description: string }> = {
+  'wo-kanjian-de-shijie': {
+    title: '《我看见的世界》（李飞飞自传）',
+    description: '李飞飞的 AI 人生传记',
+  },
+  'dao-gui-yi-xian': {
+    title: '《道诡异仙》',
+    description: '狐尾的笔所著东方玄幻小说',
+  },
+};
+
 const TOP_K = 5;
 
 function getPool(): Pool {
@@ -41,16 +53,17 @@ export interface RagResult {
   sources: RagSource[];
 }
 
-export async function query(question: string): Promise<RagResult> {
+export async function query(question: string, bookSlug = 'wo-kanjian-de-shijie'): Promise<RagResult> {
   const pool = getPool();
   const embeddings = getEmbeddings();
+  const bookConfig = BOOK_CONFIGS[bookSlug] || BOOK_CONFIGS['wo-kanjian-de-shijie'];
 
   try {
     const questionVector = await embeddings.embedQuery(question);
 
     const result = await pool.query(
       'SELECT id, content, metadata, embedding FROM rag_documents WHERE collection = $1',
-      [COLLECTION_NAME]
+      [bookSlug]
     );
 
     if (result.rows.length === 0) {
@@ -83,7 +96,7 @@ export async function query(question: string): Promise<RagResult> {
     const answer = await callLLM([
       {
         role: 'system',
-        content: `你是一位帮助读者理解《我看见的世界》（李飞飞自传）的 AI 助手。
+        content: `你是一位帮助读者理解${bookConfig.title}的 AI 助手。
 请根据以下书中的相关段落，用中文回答用户的问题。
 回答要准确、简洁，并基于书中内容。如果提供的段落不足以回答问题，请如实说明。
 
@@ -104,17 +117,19 @@ ${context}`,
  * index.ts 负责解析流并推送 delta；若流中无内容，由 index.ts 兜底推送最终 message
  */
 export async function queryStream(
-  question: string
+  question: string,
+  bookSlug = 'wo-kanjian-de-shijie'
 ): Promise<{ sources: RagSource[]; stream: ReadableStream<Uint8Array> }> {
   const pool = getPool();
   const embeddings = getEmbeddings();
+  const bookConfig = BOOK_CONFIGS[bookSlug] || BOOK_CONFIGS['wo-kanjian-de-shijie'];
 
   try {
     const questionVector = await embeddings.embedQuery(question);
 
     const result = await pool.query(
       'SELECT id, content, metadata, embedding FROM rag_documents WHERE collection = $1',
-      [COLLECTION_NAME]
+      [bookSlug]
     );
 
     if (result.rows.length === 0) {
@@ -147,7 +162,7 @@ export async function queryStream(
     const messages: LLMMessage[] = [
       {
         role: 'system',
-        content: `你是一位帮助读者理解《我看见的世界》（李飞飞自传）的 AI 助手。
+        content: `你是一位帮助读者理解${bookConfig.title}的 AI 助手。
 请根据以下书中的相关段落，用中文回答用户的问题。
 回答要准确、简洁，并基于书中内容。如果提供的段落不足以回答问题，请如实说明。
 
@@ -165,13 +180,14 @@ ${context}`,
 }
 
 export async function buildVectorStore(
-  docs: { pageContent: string; metadata: Record<string, unknown> }[]
+  docs: { pageContent: string; metadata: Record<string, unknown> }[],
+  bookSlug = 'wo-kanjian-de-shijie'
 ): Promise<number> {
   const pool = getPool();
   const embeddings = getEmbeddings();
 
   try {
-    await pool.query('DELETE FROM rag_documents WHERE collection = $1', [COLLECTION_NAME]);
+    await pool.query('DELETE FROM rag_documents WHERE collection = $1', [bookSlug]);
 
     const batchSize = 5;
     for (let i = 0; i < docs.length; i += batchSize) {
@@ -182,10 +198,10 @@ export async function buildVectorStore(
         await pool.query(
           `INSERT INTO rag_documents (id, collection, content, metadata, embedding) VALUES ($1, $2, $3, $4, $5)
            ON CONFLICT (id) DO UPDATE SET collection = EXCLUDED.collection, content = EXCLUDED.content, metadata = EXCLUDED.metadata, embedding = EXCLUDED.embedding`,
-          [`doc-${i + j}`, COLLECTION_NAME, batch[j].pageContent, JSON.stringify(batch[j].metadata), vectors[j]]
+          [`${bookSlug}-doc-${i + j}`, bookSlug, batch[j].pageContent, JSON.stringify(batch[j].metadata), vectors[j]]
         );
       }
-      console.log(`构建进度: ${Math.min(i + batchSize, docs.length)}/${docs.length}`);
+      console.log(`[${bookSlug}] 构建进度: ${Math.min(i + batchSize, docs.length)}/${docs.length}`);
     }
 
     return docs.length;

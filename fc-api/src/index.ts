@@ -1,9 +1,9 @@
 /**
  * FC API 服务入口
  * 包含：/api/rag（问答）、/api/rag/stream（流式问答）、/api/rag/build（构建向量库）
+ * 支持多本书，通过 bookSlug 参数区分
  *
  * 本地开发：ts-node src/index.ts
- * FC 部署：通过 handler 导出
  */
 
 import dotenv from 'dotenv';
@@ -11,14 +11,10 @@ dotenv.config();
 
 import express, { Request, Response } from 'express';
 import cors from 'cors';
+import fs from 'fs';
+import path from 'path';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 import { query, queryStream, buildVectorStore } from './lib/rag';
-
-// 读取书籍数据（打包时会把 JSON 文件一起带上）
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const booksData = require('../data/wo-kanjian-de-shijie.json') as {
-  chapters: { title: string; content: string; type?: string }[];
-};
 
 const app = express();
 
@@ -50,9 +46,20 @@ app.get('/health', (_req: Request, res: Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// 读取书籍章节数据
+function loadBookData(bookSlug: string): { chapters: { id?: number; title: string; content: string; type?: string }[] } {
+  const dataDir = path.join(__dirname, '..', 'data');
+  const filePath = path.join(dataDir, `${bookSlug}.json`);
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`书籍数据文件不存在: ${bookSlug}.json`);
+  }
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  return require(filePath) as { chapters: { id?: number; title: string; content: string; type?: string }[] };
+}
+
 // POST /api/rag - 普通问答接口
 app.post('/api/rag', async (req: Request, res: Response) => {
-  const { question } = req.body as { question?: string };
+  const { question, bookSlug = 'wo-kanjian-de-shijie' } = req.body as { question?: string; bookSlug?: string };
 
   if (!question || typeof question !== 'string' || question.trim().length === 0) {
     return res.status(400).json({ message: '问题不能为空' });
@@ -62,7 +69,7 @@ app.post('/api/rag', async (req: Request, res: Response) => {
   }
 
   try {
-    const result = await query(question.trim());
+    const result = await query(question.trim(), bookSlug);
     return res.status(200).json(result);
   } catch (error) {
     console.error('RAG 查询失败:', error);
@@ -73,7 +80,7 @@ app.post('/api/rag', async (req: Request, res: Response) => {
 
 // POST /api/rag/stream - 流式问答接口（SSE）
 app.post('/api/rag/stream', async (req: Request, res: Response) => {
-  const { question } = req.body as { question?: string };
+  const { question, bookSlug = 'wo-kanjian-de-shijie' } = req.body as { question?: string; bookSlug?: string };
 
   if (!question || typeof question !== 'string' || question.trim().length === 0) {
     return res.status(400).json({ message: '问题不能为空' });
@@ -103,7 +110,7 @@ app.post('/api/rag/stream', async (req: Request, res: Response) => {
     }
 
     try {
-      const { sources, stream } = await queryStream(question.trim());
+      const { sources, stream } = await queryStream(question.trim(), bookSlug);
 
       // 先把 sources 发给前端（每次都发，前端会覆盖）
       send('sources', sources);
@@ -191,8 +198,12 @@ app.post('/api/rag/stream', async (req: Request, res: Response) => {
 });
 
 // POST /api/rag/build - 构建向量库接口
-app.post('/api/rag/build', async (_req: Request, res: Response) => {
+// body: { bookSlug?: string }  默认构建 wo-kanjian-de-shijie
+app.post('/api/rag/build', async (req: Request, res: Response) => {
+  const { bookSlug = 'wo-kanjian-de-shijie' } = req.body as { bookSlug?: string };
+
   try {
+    const booksData = loadBookData(bookSlug);
     const { chapters } = booksData;
 
     const splitter = new RecursiveCharacterTextSplitter({
@@ -215,8 +226,8 @@ app.post('/api/rag/build', async (_req: Request, res: Response) => {
       }
     }
 
-    const docCount = await buildVectorStore(docs);
-    return res.status(200).json({ message: '向量库构建成功', docCount });
+    const docCount = await buildVectorStore(docs, bookSlug);
+    return res.status(200).json({ message: `[${bookSlug}] 向量库构建成功`, docCount });
   } catch (error) {
     console.error('向量库构建失败:', error);
     const message = error instanceof Error ? error.message : '服务器内部错误';

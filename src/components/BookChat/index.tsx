@@ -45,7 +45,11 @@ export default function BookChat({ bookSlug, bookTitle }: BookChatProps) {
     setBuildStatus('building');
     setBuildMsg('');
     try {
-      const res = await fetch(`${API_BASE}/api/rag/build`, { method: 'POST' });
+      const res = await fetch(`${API_BASE}/api/rag/build`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bookSlug }),
+      });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || '构建失败');
       setBuildStatus('success');
@@ -73,7 +77,7 @@ export default function BookChat({ bookSlug, bookTitle }: BookChatProps) {
       const res = await fetch(`${API_BASE}/api/rag/stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question }),
+        body: JSON.stringify({ question, bookSlug }),
       });
 
       if (!res.ok || !res.body) {
@@ -171,12 +175,21 @@ export default function BookChat({ bookSlug, bookTitle }: BookChatProps) {
     }
   };
 
-  const suggestions = [
-    '李飞飞的童年经历是怎样的？',
-    '她是如何走上 AI 研究之路的？',
-    'ImageNet 项目是怎么诞生的？',
-    '书中最令你印象深刻的观点是什么？',
-  ];
+  const BOOK_SUGGESTIONS: Record<string, string[]> = {
+    'wo-kanjian-de-shijie': [
+      '李飞飞的童年经历是怎样的？',
+      '她是如何走上 AI 研究之路的？',
+      'ImageNet 项目是怎么诞生的？',
+      '书中最令你印象深刻的观点是什么？',
+    ],
+    'dao-gui-yi-xian': [
+      '李火旺是谁？他有什么特别的能力？',
+      '现实世界和幻觉世界有什么关系？',
+      '丹阳子是什么人？',
+      '书中的修仙体系是怎样的？',
+    ],
+  };
+  const suggestions = BOOK_SUGGESTIONS[bookSlug] || BOOK_SUGGESTIONS['wo-kanjian-de-shijie'];
 
   return (
     <div className={styles.container}>
