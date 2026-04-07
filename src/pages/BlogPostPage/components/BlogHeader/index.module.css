@@ -97,20 +97,56 @@
 
 /* 响应式设计 */
 @media (max-width: 768px) {
+  .blogHeader {
+    margin-bottom: 2rem;
+  }
+
+  .coverImage {
+    margin-bottom: 1.5rem;
+    border-radius: 8px;
+  }
+
   .coverImg {
-    height: 250px;
+    height: 220px;
   }
   
   .title {
-    font-size: 2rem;
+    font-size: 1.75rem;
+    line-height: 1.3;
   }
   
   .description {
-    font-size: 1.1rem;
+    font-size: 1rem;
   }
   
   .meta {
-    flex-direction: column;
-    gap: 0.25rem;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    justify-content: flex-start;
+  }
+
+  .tags {
+    justify-content: flex-start;
+    gap: 0.5rem;
+  }
+
+  .tag {
+    padding: 0.35rem 0.75rem;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .coverImg {
+    height: 180px;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .description {
+    font-size: 0.95rem;
   }
 }

@@ -1,4 +1,6 @@
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import ThemeToggle from '@/components/ThemeToggle';
 import styles from './index.module.css';
 
@@ -24,33 +26,54 @@ const externalLinks = [
       </svg>
     )
   },
-  // 未来可以在这里添加更多外链
-  // {
-  //   href: 'https://twitter.com',
-  //   label: 'Twitter',
-  //   icon: <TwitterIcon />
-  // },
 ];
 
 export default function Navigation() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const router = useRouter();
+
+  // 路由切换时关闭菜单
+  useEffect(() => {
+    const handleRouteChange = () => setMenuOpen(false);
+    router.events.on('routeChangeStart', handleRouteChange);
+    return () => router.events.off('routeChangeStart', handleRouteChange);
+  }, [router.events]);
+
+  // 菜单打开时禁止 body 滚动
+  useEffect(() => {
+    if (menuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [menuOpen]);
+
   return (
     <nav className={styles.nav}>
       <div className="container">
         <div className={styles.navContent}>
-          {/* 主导航 */}
+          {/* Logo / 站点名 */}
+          <Link href="/" className={styles.logo}>
+            LUSUIJIE
+          </Link>
+
+          {/* 桌面端导航链接 */}
           <ul className={styles.navLinks}>
             {navItems.map((item) => (
               <li key={item.href}>
-                <Link href={item.href} className={styles.navLink}>
+                <Link
+                  href={item.href}
+                  className={`${styles.navLink} ${router.pathname === item.href ? styles.navLinkActive : ''}`}
+                >
                   {item.label}
                 </Link>
               </li>
             ))}
           </ul>
 
-          {/* 右侧按钮组 */}
+          {/* 右侧按钮组（桌面端） */}
           <div className={styles.rightActions}>
-            {/* 外链按钮 */}
             {externalLinks.map((link) => (
               <Link
                 key={link.href}
@@ -64,10 +87,55 @@ export default function Navigation() {
                 {link.icon}
               </Link>
             ))}
-            
-            {/* 主题切换按钮 */}
             <ThemeToggle />
+
+            {/* 汉堡菜单按钮（仅移动端显示） */}
+            <button
+              className={`${styles.hamburger} ${menuOpen ? styles.hamburgerOpen : ''}`}
+              onClick={() => setMenuOpen(!menuOpen)}
+              aria-label={menuOpen ? '关闭菜单' : '打开菜单'}
+              aria-expanded={menuOpen}
+            >
+              <span className={styles.hamburgerLine} />
+              <span className={styles.hamburgerLine} />
+              <span className={styles.hamburgerLine} />
+            </button>
           </div>
+        </div>
+      </div>
+
+      {/* 移动端抽屉菜单 */}
+      {menuOpen && (
+        <div className={styles.overlay} onClick={() => setMenuOpen(false)} />
+      )}
+      <div className={`${styles.drawer} ${menuOpen ? styles.drawerOpen : ''}`}>
+        <ul className={styles.drawerLinks}>
+          {navItems.map((item) => (
+            <li key={item.href}>
+              <Link
+                href={item.href}
+                className={`${styles.drawerLink} ${router.pathname === item.href ? styles.drawerLinkActive : ''}`}
+                onClick={() => setMenuOpen(false)}
+              >
+                {item.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+        <div className={styles.drawerExternal}>
+          {externalLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={styles.externalLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={link.label}
+              aria-label={link.label}
+            >
+              {link.icon}
+            </Link>
+          ))}
         </div>
       </div>
     </nav>

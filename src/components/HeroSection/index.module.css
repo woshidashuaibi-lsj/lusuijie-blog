@@ -55,28 +55,53 @@
 }
 
 @media (max-width: 768px) {
+  .heroSection {
+    padding: 2.5rem 0;
+  }
+
   .heroContent {
-    flex-direction: column;
+    flex-direction: column-reverse; /* 头像在上，文字在下 */
     text-align: center;
-    gap: 2rem;
+    gap: 1.5rem;
   }
   
   .heroTitle {
-    font-size: 2.5rem;
+    font-size: 2.2rem;
+  }
+
+  .heroSubtitle {
+    font-size: 1.05rem;
+  }
+
+  .heroDescription {
+    font-size: 1rem;
   }
   
   .avatarImage {
-    width: 120px;
-    height: 120px;
+    width: 110px;
+    height: 110px;
   }
 }
 
 @media (max-width: 480px) {
+  .heroSection {
+    padding: 2rem 0;
+  }
+
   .heroTitle {
-    font-size: 2rem;
+    font-size: 1.8rem;
   }
   
   .heroSubtitle {
     font-size: 1rem;
+  }
+
+  .heroDescription {
+    font-size: 0.95rem;
+  }
+
+  .avatarImage {
+    width: 90px;
+    height: 90px;
   }
 }

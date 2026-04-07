@@ -1,4 +1,4 @@
-import Image from 'next/image';
+import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Navigation from '@/components/Navigation';
 import styles from './index.module.css';
@@ -24,22 +24,57 @@ const interests = [
 ];
 
 export default function AboutPage() {
+  const heroBgRef = useRef<HTMLImageElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const bgEl = heroBgRef.current;
+    const sectionEl = sectionRef.current;
+    if (!bgEl || !sectionEl) return;
+
+    // 只在移动端（触摸设备或小屏幕）启用 JS 视差
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+    if (!isMobile) return;
+
+    let rafId: number;
+
+    const onScroll = () => {
+      rafId = requestAnimationFrame(() => {
+        const rect = sectionEl.getBoundingClientRect();
+        // 计算视差偏移：section 在视口中的位置 × 视差系数（0.35 = 慢 35% 滚动速度）
+        const parallaxY = -rect.top * 0.35;
+        bgEl.style.transform = `translateY(${parallaxY}px)`;
+      });
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    // 初始执行一次
+    onScroll();
+
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      cancelAnimationFrame(rafId);
+    };
+  }, []);
+
   return (
     <>
       <Navigation />
       <div className="container">
         <div className={styles.aboutPage}>
           {/* 个人简介区域 */}
-          <section className={styles.heroSection}>
+          <section className={styles.heroSection} ref={sectionRef}>
+            {/* 移动端视差背景图（JS 控制 transform） */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              ref={heroBgRef}
+              src="/images/hero-bg.jpg"
+              alt=""
+              aria-hidden="true"
+              className={styles.heroBg}
+            />
+
             <div className={styles.avatarContainer}>
-              <Image
-                src="http://lusuijie.com.cn/images/avater.jpg" // 你需要在 public 目录下添加你的头像图片
-                alt="卢穗杰"
-                width={200}
-                height={270}
-                className={styles.avatar}
-                priority
-              />
             </div>
             <div className={styles.introText}>
               <h1 className={styles.name}>你好，我是卢穗杰 👋</h1>
@@ -68,29 +103,6 @@ export default function AboutPage() {
           {/* 关于我区域 */}
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>👨‍💻 关于我</h2>
-            {/* <div className={styles.aboutContent}>
-              <div className={styles.aboutItem}>
-                <h3>🎓 学习经历</h3>
-                <p>
-                  我在学习过程中专注于前端开发领域，热衷于学习最新的前端技术栈，
-                  包括 React、Next.js、TypeScript 等现代前端技术。
-                </p>
-              </div>
-              <div className={styles.aboutItem}>
-                <h3>💼 项目经验</h3>
-                <p>
-                  参与过多个前端项目的开发，包括企业官网、管理后台、
-                  个人博客等，具有丰富的实战经验。
-                </p>
-              </div>
-              <div className={styles.aboutItem}>
-                <h3>📝 技术分享</h3>
-                <p>
-                  喜欢通过博客分享技术学习心得，记录开发过程中遇到的问题和解决方案，
-                  希望能够帮助到其他开发者。
-                </p>
-              </div>
-            </div> */}
             <div>让我想想该怎么介绍自己</div>
           </section>
 

@@ -87,6 +87,18 @@ body {
   padding: 0 20px;
 }
 
+@media (max-width: 768px) {
+  .container {
+    padding: 0 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 12px;
+  }
+}
+
 /* Basic link styles */
 a {
   color: var(--secondary-color);
@@ -112,4 +124,50 @@ p, article, section {
 /* 代码字体保持等宽 */
 code, pre, kbd, samp {
   font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", "SF Mono", Monaco, "Inconsolata", "Liberation Mono", "Menlo", Consolas, monospace;
+}
+
+/* ===== 移动端全局优化 ===== */
+
+/* 防止 iOS 字体自动缩放 */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* 优化触摸点击体验：增大可点击区域，去除点击高亮 */
+a, button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 移动端图片响应式兜底 */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* 防止长单词/代码溢出容器 */
+p, li, td, th {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* 代码块横向滚动 */
+pre {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 表格横向滚动包装器（在 prose 里手动处理） */
+.table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 2rem 0;
+  border-radius: 8px;
+}
+
+/* 移动端底部安全区域（刘海屏/底部手势条） */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
 }
