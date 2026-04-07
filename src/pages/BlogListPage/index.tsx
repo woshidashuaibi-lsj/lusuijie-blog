@@ -1,5 +1,3 @@
-'use client';
-
 import { useState, useMemo } from 'react';
 import { BlogPost, BlogCategory } from '@/types/blog';
 import Navigation from '@/components/Navigation';
