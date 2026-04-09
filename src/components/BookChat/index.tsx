@@ -148,7 +148,7 @@ export default function BookChat({ bookSlug, bookTitle }: BookChatProps) {
           } else if (line.startsWith('data:')) {
             const raw = line.slice(5).trim();
             try {
-              const data = JSON.parse(raw) as { text?: string; type?: 'thinking' | 'answer' };
+              const data = JSON.parse(raw) as { text?: string; type?: 'thinking' | 'answer'; code?: string; message?: string };
               if (eventName === 'sources') {
                 pendingSources = data as unknown as Source[];
               } else if (eventName === 'delta') {
@@ -193,7 +193,27 @@ export default function BookChat({ bookSlug, bookTitle }: BookChatProps) {
                   });
                 }
               } else if (eventName === 'error') {
-                serverError = (data as unknown as { message?: string }).message || '服务器错误';
+                if (data.code === 'content_filter') {
+                  // 内容安全策略触发，直接设置友好提示，不走通用错误流程
+                  setMessages((prev) => {
+                    const next = [...prev];
+                    const last = next[next.length - 1];
+                    if (last?.role === 'assistant' && last.content === '') {
+                      next[next.length - 1] = {
+                        role: 'assistant',
+                        content: '🔒 这个问题触发了安全策略，没办法回答。换个方式问试试？',
+                      };
+                    } else {
+                      next.push({
+                        role: 'assistant',
+                        content: '🔒 这个问题触发了安全策略，没办法回答。换个方式问试试？',
+                      });
+                    }
+                    return next;
+                  });
+                } else {
+                  serverError = data.message || '服务器错误';
+                }
               }
             } catch {
               // 忽略 JSON 解析失败

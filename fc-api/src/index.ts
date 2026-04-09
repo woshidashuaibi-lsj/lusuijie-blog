@@ -139,14 +139,34 @@ app.post('/api/rag/stream', async (req: Request, res: Response) => {
                 delta?: { content?: string; reasoning_content?: string };
                 message?: { content?: string; reasoning_content?: string };
                 finish_reason?: string;
-              }>;
+              }> | null;
               base_resp?: { status_code?: number; status_msg?: string };
+              input_sensitive?: boolean;
+              output_sensitive?: boolean;
+              output_sensitive_type?: number;
             };
 
             // 检测 MiniMax 限流错误（2064 等非 0 status_code），抛出后触发重试
             const statusCode = json.base_resp?.status_code;
             if (statusCode !== undefined && statusCode !== 0) {
               throw new Error(`MiniMax 限流: ${statusCode} ${json.base_resp?.status_msg || ''}`);
+            }
+
+            // 安全策略触发：input_sensitive 或 output_sensitive 为 true
+            if (json.input_sensitive || json.output_sensitive) {
+              console.warn('[stream] MiniMax 安全策略触发, output_sensitive_type:', json.output_sensitive_type);
+              send('error', { code: 'content_filter', message: '该问题触发了内容安全策略，请换个方式提问。' });
+              res.end();
+              return;
+            }
+
+            // choices 为 null/空 且 token 为 0 = MiniMax 限流（2064）返回的空响应
+            if (json.choices === null || json.choices?.length === 0) {
+              const usageTokens = (json as { usage?: { total_tokens?: number } }).usage?.total_tokens;
+              if (usageTokens === 0) {
+                throw new Error('MiniMax 限流: choices=null total_tokens=0');
+              }
+              continue;
             }
 
             const choice = json.choices?.[0];
@@ -165,18 +185,28 @@ app.post('/api/rag/stream', async (req: Request, res: Response) => {
               deltaCount++;
             }
 
-            // 兜底：finish 时如果有完整 message 且之前没有 delta，一次性推送
-            if (choice?.finish_reason && choice?.message && deltaCount === 0) {
+            // 兜底：finish 时如果有完整 message（非流式兜底 / delta 内容为空的情况）
+            // 注意：不能只在 deltaCount===0 时推，MiniMax 有时在 finish 帧才附上完整 content
+            if (choice?.finish_reason && choice?.message) {
               const msgContent = choice.message.content || '';
               const msgThinking = choice.message.reasoning_content || '';
-              if (msgThinking) {
+              // 只有当 delta 阶段没推过对应类型的内容时才补推，避免重复
+              if (msgThinking && deltaCount === 0) {
+                console.log(`[stream] 兜底推送 thinking，长度: ${msgThinking.length}`);
                 send('delta', { text: msgThinking, type: 'thinking' });
                 deltaCount++;
               }
-              if (msgContent) {
+              if (msgContent && answerDelta === '') {
+                // answerDelta 为空说明本帧流式内容没有 answer，从 message 补推
+                console.log(`[stream] 兜底推送 answer，长度: ${msgContent.length}`);
                 send('delta', { text: msgContent, type: 'answer' });
                 deltaCount++;
               }
+            }
+
+            if (deltaCount === 0 && choice?.finish_reason) {
+              // 流结束但始终没有任何内容，打日志方便排查
+              console.warn('[stream] finish 但 deltaCount=0，完整 choice:', JSON.stringify(choice));
             }
           } catch (parseErr) {
             // 如果是限流错误，重新抛出触发重试
