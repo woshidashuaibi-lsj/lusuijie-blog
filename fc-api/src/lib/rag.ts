@@ -123,7 +123,7 @@ export async function extractPersona(
 
   console.log(`[${bookSlug}] 开始提取人设，样本章节: ${Math.min(sampleCount, chapters.length)} 章`);
 
-  const persona = await callLLM([
+  const messages: Parameters<typeof callLLM>[0] = [
     {
       role: 'system',
       content: `你是一位专业的文学分析师，擅长从小说原文中提炼角色的性格特征，并将其转化为可以用于角色扮演的人设描述。`,
@@ -142,7 +142,25 @@ ${sample}
 5. 整个描述控制在 400 字以内，简洁有力
 6. 只输出人设描述文本，不要加任何解释或前言`,
     },
-  ]);
+  ];
+
+  // 限流时自动重试（最多 3 次，间隔 3s）
+  let persona = '';
+  const MAX_RETRY = 3;
+  for (let attempt = 1; attempt <= MAX_RETRY; attempt++) {
+    try {
+      persona = await callLLM(messages);
+      break;
+    } catch (e) {
+      const msg = (e as Error).message;
+      if (attempt < MAX_RETRY && msg.includes('限流')) {
+        console.warn(`[${bookSlug}] 人设提取限流，第 ${attempt} 次重试，等待 3s...`);
+        await new Promise(r => setTimeout(r, 3000));
+        continue;
+      }
+      throw e;
+    }
+  }
 
   console.log(`[${bookSlug}] 人设提取完成，长度: ${persona.length} 字`);
   savePersona(bookSlug, persona);

@@ -43,10 +43,44 @@ export async function callLLM(messages: LLMMessage[]): Promise<string> {
     throw new Error(`MiniMax API 错误: ${res.status} ${err}`);
   }
 
-  const data = await res.json() as {
+  const rawText = await res.text();
+
+  // MiniMax 有时会返回多行 JSON（限流错误行 + 实际响应行拼在一起）
+  // 逐行尝试解析，找到包含 choices 的那行
+  type MiniMaxResp = {
     choices?: Array<{ message?: { content?: string; reasoning_content?: string } }>;
+    type?: string;
+    error?: { message?: string };
+    base_resp?: { status_code?: number; status_msg?: string };
   };
-  const msg = data?.choices?.[0]?.message;
+
+  let data: MiniMaxResp | null = null;
+  const lines = rawText.split('\n').filter(l => l.trim());
+  for (const line of lines) {
+    try {
+      const parsed = JSON.parse(line) as MiniMaxResp;
+      // 优先找有 choices 的行
+      if (parsed.choices) {
+        data = parsed;
+        break;
+      }
+      // 检测限流错误
+      if (parsed.type === 'error' || (parsed.base_resp && parsed.base_resp.status_code !== 0)) {
+        const errMsg = parsed.error?.message || parsed.base_resp?.status_msg || '限流';
+        throw new Error(`MiniMax 限流: ${errMsg}`);
+      }
+    } catch (e) {
+      if ((e as Error).message.startsWith('MiniMax 限流')) throw e;
+      // 解析失败忽略这行，继续下一行
+    }
+  }
+
+  if (!data) {
+    console.error('[callLLM] 无法解析响应, raw (first 500):', rawText.slice(0, 500));
+    throw new Error('MiniMax API 响应解析失败：未找到有效的 choices 数据');
+  }
+
+  const msg = data.choices?.[0]?.message;
   const content = msg?.content || msg?.reasoning_content;
   if (!content) {
     throw new Error(`MiniMax API 返回格式异常: ${JSON.stringify(data)}`);
