@@ -185,28 +185,22 @@ app.post('/api/rag/stream', async (req: Request, res: Response) => {
               deltaCount++;
             }
 
-            // 兜底：finish 时如果有完整 message（非流式兜底 / delta 内容为空的情况）
-            // 注意：不能只在 deltaCount===0 时推，MiniMax 有时在 finish 帧才附上完整 content
-            if (choice?.finish_reason && choice?.message) {
+            // 兜底：整个流结束后如果 deltaCount===0（一个 delta 都没推过），
+            // 说明 MiniMax 以非流式方式返回了内容（只有 finish 帧的 message），从 message 补推
+            if (choice?.finish_reason && choice?.message && deltaCount === 0) {
               const msgContent = choice.message.content || '';
               const msgThinking = choice.message.reasoning_content || '';
-              // 只有当 delta 阶段没推过对应类型的内容时才补推，避免重复
-              if (msgThinking && deltaCount === 0) {
-                console.log(`[stream] 兜底推送 thinking，长度: ${msgThinking.length}`);
+              if (msgThinking) {
                 send('delta', { text: msgThinking, type: 'thinking' });
                 deltaCount++;
               }
-              if (msgContent && answerDelta === '') {
-                // answerDelta 为空说明本帧流式内容没有 answer，从 message 补推
-                console.log(`[stream] 兜底推送 answer，长度: ${msgContent.length}`);
+              if (msgContent) {
                 send('delta', { text: msgContent, type: 'answer' });
                 deltaCount++;
               }
-            }
-
-            if (deltaCount === 0 && choice?.finish_reason) {
-              // 流结束但始终没有任何内容，打日志方便排查
-              console.warn('[stream] finish 但 deltaCount=0，完整 choice:', JSON.stringify(choice));
+              if (deltaCount === 0) {
+                console.warn('[stream] finish 但 message 也为空，完整 choice:', JSON.stringify(choice));
+              }
             }
           } catch (parseErr) {
             // 如果是限流错误，重新抛出触发重试

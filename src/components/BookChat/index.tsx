@@ -132,6 +132,7 @@ export default function BookChat({ bookSlug, bookTitle }: BookChatProps) {
       let pendingSources: Source[] | undefined;
       let assistantMsgAdded = false;
       let serverError: string | null = null;
+      let shouldClose = false; // 标志位：收到 done/content_filter 后退出外层 while
 
       while (true) {
         const { done, value } = await reader.read();
@@ -192,13 +193,14 @@ export default function BookChat({ bookSlug, bookTitle }: BookChatProps) {
                     return next;
                   });
                 }
+                shouldClose = true; // 标记退出，for 循环结束后 while 检测到此标志退出
               } else if (eventName === 'error') {
                 if (data.code === 'content_filter') {
-                  // 内容安全策略触发，直接设置友好提示，不走通用错误流程
+                  // 内容安全策略触发：替换气泡内容，标记退出
                   setMessages((prev) => {
                     const next = [...prev];
                     const last = next[next.length - 1];
-                    if (last?.role === 'assistant' && last.content === '') {
+                    if (last?.role === 'assistant') {
                       next[next.length - 1] = {
                         role: 'assistant',
                         content: '🔒 这个问题触发了安全策略，没办法回答。换个方式问试试？',
@@ -211,6 +213,7 @@ export default function BookChat({ bookSlug, bookTitle }: BookChatProps) {
                     }
                     return next;
                   });
+                  shouldClose = true;
                 } else {
                   serverError = data.message || '服务器错误';
                 }
@@ -220,6 +223,12 @@ export default function BookChat({ bookSlug, bookTitle }: BookChatProps) {
             }
             eventName = '';
           }
+        }
+
+        // for 循环处理完当前 chunk 后，检查是否需要退出
+        if (shouldClose) {
+          reader.cancel();
+          break;
         }
       }
 
