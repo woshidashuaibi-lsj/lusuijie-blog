@@ -1338,17 +1338,56 @@ function copyResult() {
   const slogan = document.getElementById('r-slogan').textContent;
   const text   = `我在「赛博人物志」测出来是：${name} · ${badge} ${emoji}\n${slogan}\n你是哪位互联网传奇？→ ${location.href}`;
 
-  navigator.clipboard.writeText(text).then(() => {
-    const btn = document.getElementById('copy-btn');
+  const btn = document.getElementById('copy-btn');
+
+  function onCopied() {
     btn.textContent = '✓ 已复制到剪贴板';
     btn.classList.add('copied');
     setTimeout(() => {
       btn.textContent = '复制结果分享';
       btn.classList.remove('copied');
     }, 2500);
-  }).catch(() => {
-    alert('复制失败，请手动复制链接分享。');
-  });
+  }
+
+  // 方案1：现代 Clipboard API（Chrome/Firefox/新版Safari）
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(onCopied).catch(() => fallbackCopy(text, onCopied));
+  } else {
+    fallbackCopy(text, onCopied);
+  }
+}
+
+function fallbackCopy(text, onSuccess) {
+  // 方案2：创建 textarea + execCommand（兼容旧浏览器和 iOS）
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.setAttribute('readonly', '');
+  ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none;';
+  document.body.appendChild(ta);
+
+  // iOS 需要先 focus 再 setSelectionRange
+  ta.focus();
+  if (navigator.userAgent.match(/iphone|ipad|ipod/i)) {
+    const range = document.createRange();
+    range.selectNodeContents(ta);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    ta.setSelectionRange(0, 999999);
+  } else {
+    ta.select();
+  }
+
+  let ok = false;
+  try { ok = document.execCommand('copy'); } catch (e) {}
+  document.body.removeChild(ta);
+
+  if (ok) {
+    onSuccess();
+  } else {
+    // 方案3：降级到 prompt 让用户手动复制
+    window.prompt('长按全选后复制：', text);
+  }
 }
 </script>
 </body>
