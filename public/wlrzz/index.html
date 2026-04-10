@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>赛博人物志 —— 你是哪位互联网传奇？</title>
+  <meta name="description" content="30道题，测出你最像哪位赛博人物。峰哥？大师兄？窃格瓦拉？马老师？蔡徐坤？丁真？常熟阿诺？还有更多互联网传奇等你来发现！" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.7.0/style.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f5f4f0;
+      --card: #ffffff;
+      --border: #e8e8e5;
+      --text: #111111;
+      --muted: #888888;
+      --btn: #1a1a1a;
+      --progress-bg: #e0deda;
+      --opt-bg: #f9f9f7;
+      --opt-hover: #f0efeb;
+    }
+
+    html, body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "LXGW WenKai Lite", "LXGW WenKai", -apple-system, BlinkMacSystemFont,
+        "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.6;
+    }
+
+    .wrap { max-width: 720px; margin: 0 auto; padding: 0 1.25rem 5rem; }
+
+    /* ══════ LANDING ══════ */
+    #page-landing { display: block; }
+    #page-quiz    { display: none; }
+    #page-result  { display: none; }
+
+    .hero { text-align: center; padding: 4rem 0 3rem; }
+    .eyebrow { font-size: 0.88rem; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 1.25rem; text-transform: uppercase; }
+    .hero-title {
+      font-size: clamp(2rem, 6vw, 3.4rem);
+      font-weight: 900; line-height: 1.2; letter-spacing: -0.02em;
+      color: var(--text); margin-bottom: 1.25rem;
+    }
+    .hero-sub { font-size: 1rem; color: #555; line-height: 1.75; margin-bottom: 2.5rem; }
+    .start-btn {
+      display: inline-block; background: var(--btn); color: #fff;
+      font-size: 1.05rem; font-weight: 600; padding: 0.9rem 3rem;
+      border-radius: 999px; border: none; cursor: pointer;
+      transition: background 0.18s, transform 0.15s;
+      letter-spacing: 0.03em; font-family: inherit;
+    }
+    .start-btn:hover { background: #000; transform: translateY(-2px); }
+    .start-btn:active { transform: translateY(0); }
+    .disclaimer { margin-top: 1.5rem; font-size: 0.78rem; color: #aaa; line-height: 1.65; max-width: 460px; margin-left: auto; margin-right: auto; }
+
+    .char-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 1.5rem; }
+    .char-card {
+      display: flex; align-items: center; gap: 1rem; padding: 1.25rem;
+      background: var(--card); border-radius: 14px; border: 1px solid var(--border);
+      transition: box-shadow 0.18s, transform 0.18s;
+    }
+    .char-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,.08); transform: translateY(-2px); }
+    .char-emoji {
+      width: 52px; height: 52px; font-size: 2rem;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--bg); border-radius: 10px; flex-shrink: 0;
+      overflow: hidden; position: relative;
+    }
+    .char-photo {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; object-position: center top;
+      border-radius: 10px;
+    }
+    .char-info { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+    .char-id { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .char-name { font-size: 1.05rem; font-weight: 700; color: var(--text); }
+    .char-type { font-size: 0.78rem; color: var(--muted); }
+
+    /* ══════ QUIZ ══════ */
+    .quiz-wrap { padding: 2.5rem 1.25rem 5rem; max-width: 720px; margin: 0 auto; }
+    .progress-area { margin-bottom: 1.75rem; }
+    .progress-label { font-size: 0.85rem; color: var(--muted); margin-bottom: 0.5rem; letter-spacing: 0.04em; }
+    .progress-count { display: flex; align-items: baseline; gap: 0.15rem; margin-bottom: 0.9rem; }
+    .p-num { font-size: 2rem; font-weight: 900; color: var(--text); font-variant-numeric: tabular-nums; }
+    .p-sep { font-size: 1.4rem; font-weight: 500; color: #bbb; padding: 0 0.2rem; }
+    .p-total { font-size: 2rem; font-weight: 900; color: #333; font-variant-numeric: tabular-nums; }
+    .progress-track { height: 4px; background: var(--progress-bg); border-radius: 999px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--btn); border-radius: 999px; transition: width 0.35s cubic-bezier(.4,0,.2,1); }
+
+    .q-card { background: var(--card); border-radius: 18px; padding: 2rem 2rem 1.5rem; border: 1px solid var(--border); }
+    .q-meta { font-size: 0.85rem; color: #999; margin-bottom: 0.8rem; letter-spacing: 0.06em; }
+    .q-meta b { font-weight: 700; color: #555; }
+    .q-text { font-size: clamp(1.4rem, 4vw, 1.95rem); font-weight: 900; line-height: 1.35; letter-spacing: -0.01em; color: var(--text); margin-bottom: 1.75rem; }
+
+    .options { display: flex; flex-direction: column; gap: 0.85rem; margin-bottom: 1.5rem; }
+    .opt {
+      width: 100%; text-align: left; padding: 1.1rem 1.25rem;
+      background: var(--opt-bg); border: 1.5px solid var(--border);
+      border-radius: 12px; cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, transform 0.12s, opacity 0.2s;
+      font-family: inherit; display: flex; flex-direction: column; gap: 0.3rem;
+    }
+    .opt:hover:not(.locked) { background: var(--opt-hover); border-color: #d0cfc9; transform: translateY(-1px); }
+    .opt.selected { background: var(--btn) !important; border-color: var(--btn) !important; transform: translateY(0) !important; }
+    .opt.selected .opt-main { color: #fff !important; }
+    .opt.selected .opt-sub  { color: rgba(255,255,255,.65) !important; }
+    .opt.dimmed { opacity: 0.35; }
+    .opt.locked { cursor: default; }
+    .opt-main { font-size: 1rem; font-weight: 700; color: var(--text); line-height: 1.4; }
+    .opt-sub  { font-size: 0.82rem; color: var(--muted); line-height: 1.4; }
+
+    .q-actions { display: flex; }
+    .prev-btn {
+      padding: 0.55rem 1.25rem; border-radius: 999px;
+      border: 1.5px solid #ddd; background: transparent; color: #555;
+      font-size: 0.88rem; font-weight: 500; cursor: pointer; font-family: inherit;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+    .prev-btn:hover:not(:disabled) { background: var(--opt-hover); border-color: #ccc; color: var(--text); }
+    .prev-btn:disabled { opacity: 0.3; cursor: default; }
+
+    /* ══════ RESULT ══════ */
+    .result-wrap {
+      max-width: 720px; margin: 0 auto; padding: 3rem 1.25rem 5rem;
+      animation: slideUp 0.45s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    @keyframes slideUp { from { opacity:0; transform:translateY(40px); } to { opacity:1; transform:translateY(0); } }
+
+    .r-card { background: var(--card); border-radius: 20px; border: 1.5px solid var(--border); overflow: hidden; }
+    .r-header { display: flex; align-items: center; gap: 1.5rem; padding: 2rem; border-bottom: 1.5px solid var(--border); }
+    .r-emoji-wrap { width: 88px; height: 88px; background: #fff; border-radius: 18px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 2px 10px rgba(0,0,0,.08); overflow: hidden; position: relative; }
+    .r-emoji { font-size: 2.5rem; line-height: 1; }
+    .r-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top; border-radius: 18px; display: none; }
+    .r-photo.has-photo { display: block; }
+    .r-photo.has-photo ~ .r-emoji { display: none; }
+    .r-header-text { display: flex; flex-direction: column; gap: 0.3rem; }
+    .r-you-are { font-size: 0.82rem; color: var(--muted); letter-spacing: 0.06em; }
+    .r-name { font-size: 2.2rem; font-weight: 900; color: var(--text); line-height: 1.15; letter-spacing: -0.02em; }
+    .r-badge { display: inline-block; color: #fff; font-size: 0.78rem; font-weight: 600; padding: 0.25rem 0.75rem; border-radius: 999px; width: fit-content; letter-spacing: 0.04em; }
+
+    .r-section { padding: 1.5rem 2rem; border-bottom: 1px solid #f0efeb; }
+    .r-section:last-child { border-bottom: none; }
+    .r-slogan { font-size: 1.15rem; font-weight: 700; font-style: italic; color: #222; line-height: 1.5; }
+    .r-desc { font-size: 0.95rem; line-height: 1.85; color: #444; }
+
+    .attrs { display: flex; flex-direction: column; gap: 1rem; }
+    .attr-row { display: flex; flex-direction: column; gap: 0.4rem; }
+    .attr-top { display: flex; justify-content: space-between; align-items: baseline; }
+    .attr-label { font-size: 0.85rem; font-weight: 600; color: #333; }
+    .attr-val   { font-size: 0.82rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .attr-track { height: 6px; background: #f0efeb; border-radius: 999px; overflow: hidden; }
+    .attr-fill  { height: 100%; border-radius: 999px; animation: barGrow 0.8s cubic-bezier(.4,0,.2,1) both; animation-delay: 0.3s; }
+    @keyframes barGrow { from { width: 0 !important; } }
+
+    .phrase-title { font-size: 0.82rem; color: var(--muted); margin-bottom: 0.75rem; }
+    .phrase-list  { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+    .phrase-tag { background: #f5f4f0; border: 1px solid var(--border); color: #333; font-size: 0.85rem; font-weight: 500; padding: 0.35rem 0.85rem; border-radius: 999px; }
+
+    .r-actions { display: flex; gap: 0.85rem; flex-wrap: wrap; }
+    .copy-btn { flex: 1; min-width: 140px; padding: 0.85rem 1.5rem; background: var(--btn); color: #fff; border: none; border-radius: 999px; font-size: 0.92rem; font-weight: 600; cursor: pointer; font-family: inherit; transition: background 0.15s, transform 0.12s; white-space: nowrap; }
+    .copy-btn:hover { background: #000; transform: translateY(-1px); }
+    .copy-btn.copied { background: #16a34a; }
+    .restart-btn { padding: 0.85rem 1.5rem; background: transparent; color: #555; border: 1.5px solid #ddd; border-radius: 999px; font-size: 0.92rem; font-weight: 500; cursor: pointer; font-family: inherit; transition: background 0.15s, border-color 0.15s, color 0.15s; white-space: nowrap; }
+    .restart-btn:hover { background: var(--opt-hover); border-color: #ccc; color: var(--text); }
+    .page-footer { text-align: center; margin-top: 2rem; font-size: 0.78rem; color: #bbb; letter-spacing: 0.05em; }
+
+    /* ── 响应式 ── */
+    @media (max-width: 600px) {
+      .hero { padding: 2.5rem 0 2rem; }
+      .start-btn { width: 100%; max-width: 320px; }
+      .char-grid { grid-template-columns: 1fr; gap: 0.75rem; }
+      .char-card { padding: 1rem; }
+      .char-emoji { width: 44px; height: 44px; font-size: 1.75rem; }
+      .char-photo { border-radius: 8px; }
+      .quiz-wrap { padding: 1.5rem 1rem 4rem; }
+      .q-card { padding: 1.5rem 1.25rem 1.25rem; border-radius: 14px; }
+      .p-num, .p-total { font-size: 1.6rem; }
+      .p-sep { font-size: 1.2rem; }
+      .opt { padding: 1rem; border-radius: 10px; }
+      .result-wrap { padding: 1.5rem 1rem 4rem; }
+      .r-header { padding: 1.5rem 1.25rem; gap: 1rem; }
+      .r-emoji-wrap { width: 64px; height: 64px; border-radius: 14px; }
+      .r-photo { border-radius: 14px; }
+      .r-emoji { font-size: 2rem; }
+      .r-name { font-size: 1.8rem; }
+      .r-section { padding: 1.25rem; }
+      .r-actions { flex-direction: column; }
+      .copy-btn, .restart-btn { width: 100%; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════ LANDING ══════ -->
+<div id="page-landing">
+  <div class="wrap">
+    <header class="hero">
+      <p class="eyebrow">赛博人物志</p>
+      <h1 class="hero-title">MBTI 已经过时，<br>赛博人物志来了。</h1>
+      <p class="hero-sub">30 道题，测出你是哪位互联网传奇。<br>32 位赛博人物等你来发现，你是哪一位？</p>
+      <button class="start-btn" onclick="startQuiz()">开始查看</button>
+      <p class="disclaimer">本页面纯属娱乐整活，请勿用于相亲审查、法庭自证、证明自己比窃格瓦拉更有文化。</p>
+    </header>
+    <div class="char-grid" id="char-grid"></div>
+  </div>
+</div>
+
+<!-- ══════ QUIZ ══════ -->
+<div id="page-quiz">
+  <div class="quiz-wrap">
+    <div class="progress-area">
+      <p class="progress-label">答题进度</p>
+      <div class="progress-count">
+        <span class="p-num" id="p-current">0</span>
+        <span class="p-sep"> / </span>
+        <span class="p-total" id="p-total">15</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+    </div>
+    <div class="q-card">
+      <p class="q-meta">第 <b id="q-num">1</b> 题 / <span id="q-total">15</span></p>
+      <h2 class="q-text" id="q-text"></h2>
+      <div class="options" id="options"></div>
+      <div class="q-actions">
+        <button class="prev-btn" id="prev-btn" onclick="prevQuestion()" disabled>上一题</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ RESULT ══════ -->
+<div id="page-result">
+  <div class="result-wrap">
+    <div class="r-card">
+      <div class="r-header" id="r-header">
+        <div class="r-emoji-wrap"><img class="r-photo" id="r-photo" src="" alt="" /><span class="r-emoji" id="r-emoji"></span></div>
+        <div class="r-header-text">
+          <p class="r-you-are">你是</p>
+          <h1 class="r-name" id="r-name"></h1>
+          <span class="r-badge" id="r-badge"></span>
+        </div>
+      </div>
+      <div class="r-section"><p class="r-slogan" id="r-slogan"></p></div>
+      <div class="r-section"><p class="r-desc" id="r-desc"></p></div>
+      <div class="r-section"><div class="attrs" id="r-attrs"></div></div>
+      <div class="r-section">
+        <p class="phrase-title">招牌语录</p>
+        <div class="phrase-list" id="r-phrases"></div>
+      </div>
+      <div class="r-section r-actions">
+        <button class="copy-btn" id="copy-btn" onclick="copyResult()">复制结果分享</button>
+        <button class="restart-btn" onclick="restart()">再测一次</button>
+      </div>
+    </div>
+    <p class="page-footer">赛博人物志 · 纯属整活</p>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════
+   人物数据
+══════════════════════════════════════ */
+const CHARACTERS = [
+  {
+    id: 'SUN_XIAOCHUAN',
+    name: '孙笑川',
+    photo: '人物照片/孙笑川.jpeg',
+    type: '网络第一背锅侠',
+    slogan: '所有坏事都是我干的，简直无恶不作',
+    emoji: '😈',
+    color: '#7c3aed',
+    colorLight: '#f5f3ff',
+    description: '你是互联网的终极背锅侠，全网所有倒霉事都能和你扯上关系。你的人生信条是"先怼后聊，嘴臭是礼貌的高级形式"。别人在谈恋爱，你在网恋被骗；别人在直播带货，你在被封号。但这些都挡不住你，因为你是大师兄，大师兄永远不死。',
+    catchphrase: ['我是网恋教父', '大师兄天下第一', '奸淫掳掠无恶不作（恶搞）'],
+    attrs: [
+      { label: '嘴臭指数', value: 98 },
+      { label: '抗背锅能力', value: 95 },
+      { label: '网恋成功率', value: 12 },
+      { label: '抽象程度', value: 99 },
+    ],
+  },
+  {
+    id: 'MA_BAOGUO',
+    name: '马保国',
+    photo: '人物照片/马保国.jpeg',
+    type: '不讲武德大师',
+    slogan: '我大意了，没有闪',
+    emoji: '🥋',
+    color: '#b45309',
+    colorLight: '#fffbeb',
+    description: '你是互联网武林的精神领袖，输了就说对方不讲武德，赢了就说自己接化发。你的字典里没有"失败"，只有"大意"。30秒被KO四次？那叫以身殉道。你的人生哲学是：功夫嘴上讲，道理我这有。',
+    catchphrase: ['年轻人，不讲武德！', '我大意了，没有闪！', '耗子尾汁！', '松果痰抖闪电五连鞭！'],
+    attrs: [
+      { label: '武德指数', value: 20 },
+      { label: '嘴上功夫', value: 97 },
+      { label: '实战能力', value: 5 },
+      { label: '接化发成功率', value: 3 },
+    ],
+  },
+  {
+    id: 'QIEGEFALA',
+    name: '窃格瓦拉',
+    photo: '人物照片/窃格瓦拉.jpg',
+    type: '精神领袖',
+    slogan: '打工是不可能打工的，这辈子都不可能打工的',
+    emoji: '⚡',
+    color: '#dc2626',
+    colorLight: '#fef2f2',
+    description: '你是打工人精神世界的灯塔，说出了所有人想说却不敢说的话。看守所对你来说是家，打工对你来说是折磨。你不是在犯罪，你是在用自己的方式追求自由。你的名言已经超越了时代，成为了全网打工人的精神支柱。',
+    catchphrase: ['打工是不可能打工的！', '进看守所感觉像回家一样', '个个都是人才，说话又好听'],
+    attrs: [
+      { label: '精神力量', value: 99 },
+      { label: '打工意愿', value: 2 },
+      { label: '逃跑速度', value: 88 },
+      { label: '语录含金量', value: 95 },
+    ],
+  },
+  {
+    id: 'YAOSHUI_GE',
+    name: '药水哥',
+    photo: '人物照片/药水哥.jpg',
+    type: '七小时怼天怼地型',
+    slogan: '宁配吗？您配吗？',
+    emoji: '🧪',
+    color: '#0284c7',
+    colorLight: '#f0f9ff',
+    description: '你是互联网对线界的扛把子，七个小时不喝水也能持续输出，中间不带喘气的。你天生反骨，对你指指点点？那我们得聊清楚。你的战斗力不在于拳头，而在于那张不知疲倦的嘴。出门必带五瓶药水——不是为了回血，是为了对线续航。',
+    catchphrase: ['宁配吗？您配吗？', '你可以对我指点，但是不能对我指指点点！', '你可真是个崽种啊！'],
+    attrs: [
+      { label: '对线能力', value: 99 },
+      { label: '续航时长', value: 95 },
+      { label: '理智程度', value: 30 },
+      { label: '药水携带量', value: 100 },
+    ],
+  },
+  {
+    id: 'DONGYOU_GUAIGE',
+    name: '冬泳怪鸽',
+    photo: '人物照片/冬泳怪哥.jpeg',
+    type: '奥利给励志哥',
+    slogan: '奥利给！干就完事儿了！',
+    emoji: '🕊️',
+    color: '#0891b2',
+    colorLight: '#ecfeff',
+    description: '你是互联网上最纯粹的励志符号，不靠炒作，不靠人设，就靠一声"奥利给"感染了无数人。日子再难，你往冰水里一跳，什么烦恼都没了。你的库里南碎片够买一辆真车，但你说不急，因为坚持才是胜利。',
+    catchphrase: ['奥利给！没毛病，干就完事儿了！', '消除恐惧的最好办法就是面对恐惧', '无论今天多难，明天太阳照常升起'],
+    attrs: [
+      { label: '励志程度', value: 99 },
+      { label: '冬泳耐寒值', value: 97 },
+      { label: '奥利给浓度', value: 100 },
+      { label: '快板水平', value: 85 },
+    ],
+  },
+  {
+    id: 'DONGBEI_YUJIE',
+    name: '东北雨姐',
+    photo: '人物照片/东北雨姐.jpeg',
+    type: '战狼版李子柒',
+    slogan: '干啥都带劲，干啥都麻溜',
+    emoji: '💪',
+    color: '#16a34a',
+    colorLight: '#f0fdf4',
+    description: '你是东北大地孕育出的真汉子（女），一个人能扛半扇猪，徒手让任何事情都带劲儿。你是真正的"大女主"，不需要剧本，因为你的生活本身就是最好的剧本。塌房了？那就再站起来，带派！',
+    catchphrase: ['带派！', '整个大活整！', '你们别黑我了，一生气又造一桌子山珍海味'],
+    attrs: [
+      { label: '战斗力', value: 95 },
+      { label: '做饭速度', value: 98 },
+      { label: '东北豪爽度', value: 99 },
+      { label: '抗黑能力', value: 80 },
+    ],
+  },
+  {
+    id: 'FENGGE',
+    name: '峰哥亡命天涯',
+    photo: '人物照片/峰哥亡命天涯.jpeg',
+    type: '格局大师',
+    slogan: '格局小了。月入5000不配与我对话。',
+    emoji: '🌍',
+    color: '#ea580c',
+    colorLight: '#fff7ed',
+    description: '你走遍了世界，得出的结论是：大多数人格局太小。你不是在炫耀，你是在善意提醒。你的嘴是互联网的嘴替，说的每句话都能引发一场骂战，但你觉得无所谓，因为他们根本不在你的认知层次。',
+    catchphrase: ['格局小了', '月入5000的人不配与我对话', '电车只选特斯拉，油车只开丰田'],
+    attrs: [
+      { label: '格局大小', value: 99 },
+      { label: '争议指数', value: 96 },
+      { label: '引战能力', value: 94 },
+      { label: '旅行里程', value: 92 },
+    ],
+  },
+  {
+    id: 'DINGZHEN',
+    name: '丁真',
+    photo: '人物照片/丁真.jpeg',
+    type: '甜野男孩',
+    slogan: '扎西德勒！',
+    emoji: '🏔️',
+    color: '#059669',
+    colorLight: '#ecfdf5',
+    description: '你是这个互联网时代最清澈的一股涌泉。什么都不用做，就靠一个笑容让整个网络沸腾。你没有人设，你本身就是最好的人设。当所有人都在精心运营流量的时候，你只是站在那里，笑了一下。',
+    catchphrase: ['扎西德勒！', '大家好，我是丁真珍珠', '我最火的视频？我不知道，反正都很火吧'],
+    attrs: [
+      { label: '纯真指数', value: 100 },
+      { label: '清澈程度', value: 99 },
+      { label: '笑容杀伤力', value: 98 },
+      { label: '商业运营意识', value: 20 },
+    ],
+  },
+  {
+    id: 'HU_CHENGFENG',
+    name: '户乘风',
+    photo: '人物照片/户晨风.jpeg',
+    type: '互联网嘴替2.0',
+    slogan: '安卓手机都是洋零件，汝之土货，多由洋货构而成',
+    emoji: '🎤',
+    color: '#9333ea',
+    colorLight: '#faf5ff',
+    description: '你是互联网辩论场上的异类，说话夹文言、夹英文、夹统计数据，对面还没开口你已经赢了气势。你不是在争吵，你是在进行学术交流。月入5000？那是你认知层次的问题，不是我的问题。',
+    catchphrase: ['月入5000的人不配与我对话', '安卓手机都是洋零件', '汝之土货，多由洋货构而成'],
+    attrs: [
+      { label: '辩论能力', value: 97 },
+      { label: '文言文使用率', value: 75 },
+      { label: '争议指数', value: 93 },
+      { label: '月入水平', value: 99 },
+    ],
+  },
+  {
+    id: 'SICHUANFENDA',
+    name: '四川芬达',
+    photo: '人物照片/四川芬达.jpeg',
+    type: '挨告越火型',
+    slogan: '他们朝我扔粑粑，我拿粑粑做蛋挞，没座！',
+    emoji: '🎭',
+    color: '#db2777',
+    colorLight: '#fdf2f8',
+    description: '你是互联网最会变废为宝的人，被告了还能火出新高度。别人扔给你的是烂牌，你打出来的是顺子。你的人生定律：越打压越能整活，越整活越有话题。"没座"已经成为你的人生信条。',
+    catchphrase: ['没错！没座！', '他们朝我扔粑粑，我拿粑粑做蛋挞', '我是杨坤沈阳分坤！'],
+    attrs: [
+      { label: '整活能力', value: 96 },
+      { label: '抗打击能力', value: 99 },
+      { label: '模仿精准度', value: 88 },
+      { label: '被告后热度', value: 100 },
+    ],
+  },
+  {
+    id: 'CAIXUKUN',
+    name: '蔡徐坤',
+    photo: '人物照片/蔡徐坤.jpeg',
+    type: '练习时长两年半',
+    slogan: '鸡你太美！Music～',
+    emoji: '🏀',
+    color: '#e11d48',
+    colorLight: '#fff1f2',
+    description: '你是互联网的顶流明星，哪怕一个篮球动作也能引发全民狂欢。你有自己的音乐梦想，你有自己的粉丝团，你还有那句让整个互联网记住的"练习时长两年半"。你是明星，但你同时也是一个梗，而且是一个经久不衰的梗。',
+    catchphrase: ['我是练习时长两年半的个人练习生——蔡徐坤', '只因（鸡）你太美！', 'Music～'],
+    attrs: [
+      { label: '偶像魅力', value: 95 },
+      { label: '梗文化价值', value: 99 },
+      { label: '篮球实力', value: 40 },
+      { label: '粉丝凝聚力', value: 97 },
+    ],
+  },
+  {
+    id: 'A_GIAO',
+    name: '阿giao',
+    photo: '人物照片/阿giao.jpeg',
+    type: '一给我里giao型',
+    slogan: '一给我里giaogiao！开心你就giao！',
+    emoji: '🎤',
+    color: '#f59e0b',
+    colorLight: '#fffbeb',
+    description: '你是从泥土里giao出来的传奇，你的口头禅像魔咒一样刻进了无数人的脑子里。你的人生底牌是：就算跌落谷底也能giao出一条活路。复出后三台车四套房，你用"卖丑"写出了属于自己的逆袭故事。',
+    catchphrase: ['一给我里giaogiao！', '开心你就giao，不开心你就giaogiao', '七年前换成你，能giao出五千万吗？'],
+    attrs: [
+      { label: 'giao浓度', value: 100 },
+      { label: '逆袭能力', value: 95 },
+      { label: '土味说唱', value: 90 },
+      { label: '整活天赋', value: 96 },
+    ],
+  },
+  {
+    id: 'GAZI_GE',
+    name: '嘎子哥',
+    photo: '人物照片/嘎子.jpeg',
+    type: '潘嘎之交主角',
+    slogan: '网上的东西都是虚拟的，你把握不住！',
+    emoji: '🎬',
+    color: '#0369a1',
+    colorLight: '#f0f9ff',
+    description: '你是童星转型的典型案例，嘎子哥三个字承载着一代人的童年记忆。然而长大后你走上了带货之路，"潘嘎之交"让你再次出圈。你的人生有一个永恒定律：别人劝你别做的事，往往是他们自己也想做的事。',
+    catchphrase: ['网上的东西都是虚拟的，你把握不住！', '潘嘎之交（经典事件）', '我是小兵张嘎！'],
+    attrs: [
+      { label: '童年回忆值', value: 99 },
+      { label: '带货能力', value: 50 },
+      { label: '被劝阻后继续指数', value: 95 },
+      { label: '人生戏剧性', value: 88 },
+    ],
+  },
+  {
+    id: 'ZHOUSUYI',
+    name: '周淑怡',
+    photo: '人物照片/周淑怡.jpeg',
+    type: '土味女王',
+    slogan: '周淑怡多好的一个人，只可惜长了张嘴',
+    emoji: '👑',
+    color: '#7c3aed',
+    colorLight: '#faf5ff',
+    description: '你是互联网的反差女神——外表精致，但一开口全场都懵了。你是最早发现"土味视频"宝藏的那批人，你本人就是最大的梗来源。"阻冲之"这个词，是专门为你发明的。',
+    catchphrase: ['只可惜长了张嘴', '阻冲之！', '土味人生，品人生百态'],
+    attrs: [
+      { label: '颜值', value: 92 },
+      { label: '嘴巴战斗力', value: 88 },
+      { label: '反差萌', value: 99 },
+      { label: '土味鉴赏力', value: 95 },
+    ],
+  },
+  {
+    id: 'NAILONG',
+    name: '奶龙',
+    photo: '人物照片/奶龙.jpeg',
+    type: '互联网唐龙',
+    slogan: '我是奶龙！Duang～Duang～Duang～',
+    emoji: '🐉',
+    color: '#16a34a',
+    colorLight: '#f0fdf4',
+    description: '你是这个时代最魔性的存在，你不懂任何大道理，但你的傻笑能让所有人跟着笑。你没有人设，你没有梗，你本身就是梗。你是互联网十大唐物之首，但你不在乎，因为你正在快乐地流口水。',
+    catchphrase: ['我是奶龙！', 'Duang～Duang～Duang～', '今夜星光闪闪，爱你的心满满'],
+    attrs: [
+      { label: '呆萌指数', value: 100 },
+      { label: '魔性笑声', value: 98 },
+      { label: '网络传播力', value: 95 },
+      { label: '智力水平', value: 20 },
+    ],
+  },
+  {
+    id: 'LIUYONG',
+    name: '刘庸干净又卫生',
+    photo: '人物照片/刘墉干净又卫生.jpeg',
+    type: '印度美食探险家',
+    slogan: '干净又卫生！哎呀妈呀，太干净又卫生了！',
+    emoji: '🍛',
+    color: '#b45309',
+    colorLight: '#fffbeb',
+    description: '你是互联网上最乐观的勇士，面对任何食物都能喊出"干净又卫生"。别人眼里的挑战，在你这里叫"体验生活"。你带着山东口音走遍印度大街小巷，告诉全中国：只要心态好，什么都干净。',
+    catchphrase: ['干净又卫生！', '哎呀妈呀，这玩意儿太干净又卫生了！', '来，左边跟我一起画个龙'],
+    attrs: [
+      { label: '乐观指数', value: 99 },
+      { label: '肠胃铁度', value: 95 },
+      { label: '探险精神', value: 97 },
+      { label: '卫生标准', value: 10 },
+    ],
+  },
+  {
+    id: 'FAN_XIAOQIN',
+    name: '范小勤（小马云）',
+    photo: '人物照片/范小勤.jpeg',
+    type: '流量时代镜像',
+    slogan: '这小孩长得真像我小时候。——马云',
+    emoji: '☁️',
+    color: '#64748b',
+    colorLight: '#f8fafc',
+    description: '你是流量时代的一面镜子，无需做任何事，只因和某人长得像就被推上了风口浪尖。你的走红和被遗忘，都不由自己决定。你是资本机器运转中最真实的注脚——有用时是明星，没用时是路人。',
+    catchphrase: ['这小孩长得真像我小时候', '小马云', '流量来了，又走了'],
+    attrs: [
+      { label: '与马云相似度', value: 99 },
+      { label: '被消费程度', value: 98 },
+      { label: '个人意志力', value: 30 },
+      { label: '命运掌控感', value: 5 },
+    ],
+  },
+  {
+    id: 'GUO_LAOSHI',
+    name: '郭老师',
+    photo: '人物照片/郭老师.jpeg',
+    type: '迷人的郭老师',
+    slogan: '迷人的郭老师来了！',
+    emoji: '✨',
+    color: '#ec4899',
+    colorLight: '#fdf2f8',
+    description: '你是互联网上最迷人的主播，你的魅力不需要解释，因为你一出场所有人都明白了。你是土味文化的集大成者，你的每一句话都充满了"魔性"的力量，让人过耳不忘，甚至忘不掉。',
+    catchphrase: ['迷人的郭老师！', '郭美娟（疑似原名）', '魔性无法解释'],
+    attrs: [
+      { label: '迷人程度', value: 99 },
+      { label: '魔性浓度', value: 97 },
+      { label: '土味浓度', value: 88 },
+      { label: '神秘感', value: 95 },
+    ],
+  },
+  {
+    id: 'WANG_BIAN',
+    name: '王扁',
+    photo: '人物照片/王扁.jpg',
+    type: '场外比偶像更热的替代品',
+    slogan: '我是支持偶像的！',
+    emoji: '🎪',
+    color: '#f97316',
+    colorLight: '#fff7ed',
+    description: '你是互联网最成功的"蹭热度选手"——别人演唱会在场内，你在场外让观众看得更开心。你拿着芙蓉王当应援棒，跳着吸烟修炼手册，把原版的争议变成自己的流量密码。你证明了一件事：有时候模仿者比原版更有梗。',
+    catchphrase: ['我是支持偶像的！', '小扁担们！', '场内看王源，场外看王扁'],
+    attrs: [
+      { label: '模仿精准度', value: 93 },
+      { label: '争议制造能力', value: 97 },
+      { label: '蹭热度效率', value: 99 },
+      { label: '粉丝黏性', value: 88 },
+    ],
+  },
+  {
+    id: 'ZI_HENG',
+    name: '子恒',
+    photo: '人物照片/子恒.jpeg',
+    type: '跨国恋达人',
+    slogan: '爱情无国界，但分手很有界',
+    emoji: '💑',
+    color: '#8b5cf6',
+    colorLight: '#faf5ff',
+    description: '你是互联网上最浪漫的跨文化实验者，用恋爱证明了地球是圆的。你和非洲女友艾瑞卡的故事让无数网友揪心，最后的分手让大家叹息：感情的距离，不只是地理上的那几千公里。',
+    catchphrase: ['爱情无国界', '跨国恋达人', '我和艾瑞卡的故事'],
+    attrs: [
+      { label: '跨文化适应力', value: 92 },
+      { label: '恋爱指数', value: 90 },
+      { label: '分手痛苦值', value: 80 },
+      { label: '网友牵挂度', value: 88 },
+    ],
+  },
+  {
+    id: 'KANG_SHEN',
+    name: '康神',
+    photo: '人物照片/康神.jpeg',
+    type: '质疑-理解-成为',
+    slogan: '质疑康康，理解康康，成为康康',
+    emoji: '🎮',
+    color: '#0891b2',
+    colorLight: '#ecfeff',
+    description: '你是游戏圈的精神图腾，从被质疑到被理解再到被模仿，你完成了一个玩家的完整进化路线。你不说话，但每一次操作都是一种宣言。你不需要解释，因为懂的人自然懂。',
+    catchphrase: ['质疑康康，理解康康，成为康康', '瓦洛兰特高手', '操作说明一切'],
+    attrs: [
+      { label: '游戏实力', value: 97 },
+      { label: '被质疑次数', value: 95 },
+      { label: '最终被认可度', value: 99 },
+      { label: '话不多但有用', value: 92 },
+    ],
+  },
+  {
+    id: 'JIA_NAILIANG',
+    name: '贾乃亮',
+    photo: '人物照片/贾乃亮.jpeg',
+    type: '带货一哥翻车大使',
+    slogan: '亮哥来了，真诚带货，有时候也翻车',
+    emoji: '📦',
+    color: '#2563eb',
+    colorLight: '#eff6ff',
+    description: '你是娱乐圈转型带货最成功、也最坎坷的男人。你有颜值，有资历，有粉丝基础，但偏偏翻车总找上你。每次翻车你都能重新站起来，因为你有一颗真诚的心——尽管有时候那颗心被流量绑架了。',
+    catchphrase: ['亮哥直播间，今晚不睡觉！', '翻车大使在线', '真诚是最好的带货话术'],
+    attrs: [
+      { label: '带货能力', value: 88 },
+      { label: '翻车概率', value: 75 },
+      { label: '抗翻车恢复力', value: 90 },
+      { label: '粉丝忠诚度', value: 82 },
+    ],
+  },
+  {
+    id: 'DANKING',
+    name: 'danking',
+    photo: '人物照片/danking.jpeg',
+    type: '白日梦想家',
+    slogan: '一个正在努力实现目标清单的白日梦想家',
+    emoji: '☁️',
+    color: '#6366f1',
+    colorLight: '#eef2ff',
+    description: '你是互联网上最浪漫的理想主义者，你的目标清单很长，你的梦想很大，你的步伐不一定快，但你始终在路上。你不靠争议出圈，你靠的是独特的风格和创意，在这个流量为王的时代，这本身就是一种稀缺。',
+    catchphrase: ['白日梦想家', '努力实现目标清单', '创意是我的底气'],
+    attrs: [
+      { label: '梦想浓度', value: 99 },
+      { label: '创意指数', value: 95 },
+      { label: '执行力', value: 78 },
+      { label: '清醒自知度', value: 85 },
+    ],
+  },
+  {
+    id: 'DD_XIAOSHUI',
+    name: 'DD小水',
+    photo: '人物照片/DD小水.jpeg',
+    type: '赛博民工',
+    slogan: '白天工地干饭，晚上直播PK',
+    emoji: '🏗️',
+    color: '#92400e',
+    colorLight: '#fef3c7',
+    description: '你是互联网最接地气的存在，你把打工和直播融合成一种生活方式。你白天在工地搬砖，晚上在直播间带货PK，你用行动告诉所有人：打工人也可以有自己的赛场。你是赛博时代最真实的普通英雄。',
+    catchphrase: ['白天工地干饭，晚上PK带货', '赛博民工，在线！', '普通人也能有自己的直播间'],
+    attrs: [
+      { label: '打工积极性', value: 92 },
+      { label: '直播PK能力', value: 85 },
+      { label: '双线运营效率', value: 90 },
+      { label: '接地气程度', value: 99 },
+    ],
+  },
+  {
+    id: 'XIAOMING_JIANMO',
+    name: '小明剑魔',
+    photo: '人物照片/剑魔小明.jpeg',
+    type: '末法时代最后天才',
+    slogan: '回答我！look in my eyes，tell me why baby！',
+    emoji: '⚔️',
+    color: '#7f1d1d',
+    colorLight: '#fef2f2',
+    description: '你是联盟圈最会造梗的大神，"回答我"三个字喊遍整个互联网。你是剑魔玩家的精神图腾，是"末法时代最后天才"，是整个赛道的天赋型选手。弹幕对线？你是主场，输了也是胜利，因为观众全是你的粉丝。',
+    catchphrase: ['回答我！look in my eyes tell me why baby！', '越简单的英雄操作就越多？越个屁！', '我老爸得了MVP'],
+    attrs: [
+      { label: '游戏实力', value: 97 },
+      { label: '造梗速度', value: 99 },
+      { label: '弹幕对线胜率', value: 92 },
+      { label: '天才浓度', value: 96 },
+    ],
+  },
+  {
+    id: 'DAWEI_LIANGZI',
+    name: '大胃袋良子',
+    photo: '人物照片/良子.jpeg',
+    type: '味真族族长',
+    slogan: '味真足！爸爸没有肚子，是胃袋！',
+    emoji: '🍜',
+    color: '#ca8a04',
+    colorLight: '#fefce8',
+    description: '你是人类肉体极限的探索者，你一顿能吃下37根油条，你的胃是一个奇迹。弹幕在猜你能活多久，你在问为什么停不下来。你的人生格言不是励志语录，而是每吃完一顿饭后的那声响彻直播间的——味真足！',
+    catchphrase: ['味真足！味真足！味真足！', '爸爸没有肚子，是胃袋！', '我是为粉丝长的肉'],
+    attrs: [
+      { label: '食量', value: 100 },
+      { label: '肠胃承受力', value: 99 },
+      { label: '健康指数', value: 5 },
+      { label: '观众担心程度', value: 98 },
+    ],
+  },
+  {
+    id: 'CHANGSHU_ANUO',
+    name: '常熟阿诺',
+    photo: '人物照片/阿诺.jpeg',
+    type: '抽象健美传奇',
+    slogan: '这视频是真的！头顶尖尖，筋肉最强！',
+    emoji: '💪',
+    color: '#1e3a5f',
+    colorLight: '#eff6ff',
+    description: '你是中国健美圈的精神图腾，官三代富三代的王炸开局，却选择走上了抽象健美这条路。你的头型是标志，你的肌肉是传说，"生米充碳"是你的哲学，"师傅死了"是你的经典。你不只是一个人，你是一种文化。',
+    catchphrase: ['这视频是真的！', '生米充碳', '师傅死了', '头顶尖尖最强！'],
+    attrs: [
+      { label: '肌肉程度', value: 98 },
+      { label: '抽象浓度', value: 97 },
+      { label: '健美影响力', value: 99 },
+      { label: '头型辨识度', value: 100 },
+    ],
+  },
+  {
+    id: 'CHENZE',
+    name: '陈泽',
+    photo: '人物照片/陈泽.jpeg',
+    type: '土味rap之王',
+    slogan: '打开你的手机应用商店，搜索陈泽！',
+    emoji: '🎮',
+    color: '#0ea5e9',
+    colorLight: '#f0f9ff',
+    description: '你是游戏圈的流量奇才，"小手一指rap开始"，创造了"软土豆丝"、"赛博坦"等无数土梗。你能把一首歌词全是自己黑料的歌唱成大热单曲，你能把和宇将军的互怼PK变成热门素材。你不是天才，但你很会整活。',
+    catchphrase: ['打开你的手机应用商店，搜索陈泽！', '陈泽在哪播啊？', '小手一指rap开始！'],
+    attrs: [
+      { label: '游戏实力', value: 93 },
+      { label: '整活能力', value: 97 },
+      { label: '梗密度', value: 95 },
+      { label: '土味rap水平', value: 96 },
+    ],
+  },
+  {
+    id: 'LILI',
+    name: '疯狂小丽丽',
+    photo: '人物照片/丽丽.jpeg',
+    type: '发疯文学创始人',
+    slogan: '我真的会谢，救命这个世界怎么了',
+    emoji: '🤪',
+    color: '#f43f5e',
+    colorLight: '#fff1f2',
+    description: '你是互联网发疯文学的集大成者，用"一本正经地胡说八道"征服了所有人。你的笑声极具辨识度，你的表情管理出神入化，认真脸说出荒诞话是你的核心绝技。你不是在演戏，你就是这样，而这恰恰是你最大的魅力。',
+    catchphrase: ['我真的会谢', '救命，这个世界怎么了', '笑死，根本笑不死', '摆烂了，彻底摆烂了'],
+    attrs: [
+      { label: '发疯浓度', value: 99 },
+      { label: '反差萌', value: 96 },
+      { label: '传染性笑声', value: 98 },
+      { label: '理智残余量', value: 15 },
+    ],
+  },
+  {
+    id: 'AZU',
+    name: '法斗阿祖',
+    photo: '人物照片/阿祖.jpeg',
+    type: '人间凑数犬',
+    slogan: '汪汪汪（翻译：人间不值得）',
+    emoji: '🐾',
+    color: '#78716c',
+    colorLight: '#fafaf9',
+    description: '你是当代丧文化的完美代言人，那张"充满故事"的脸说出了所有人的心声：生无可恋，但又无可奈何。你不需要说话，一个眼神就能让网友破防，纷纷留言"阿祖又来人间凑数了"。你是这个时代最诚实的宠物网红。',
+    catchphrase: ['汪汪汪（翻译：人间不值得）', '我太难了，下辈子不想当狗了', '阿祖又来人间凑数了', '这个家我是一天都待不下去了'],
+    attrs: [
+      { label: '丧感指数', value: 100 },
+      { label: '表情包潜力', value: 99 },
+      { label: '生活热情', value: 5 },
+      { label: '戏精程度', value: 95 },
+    ],
+  },
+  {
+    id: 'BAIRIMXJ',
+    name: '白日梦想家（留学博主）',
+    photo: '人物照片/白日梦想家.jpeg',
+    type: '留学生活避坑指南',
+    slogan: '白日梦想家，带你看真实的留学生活',
+    emoji: '✈️',
+    color: '#0891b2',
+    colorLight: '#ecfeff',
+    description: '你是海外漂泊的留学生代言人，用第一视角记录租房踩雷、文化冲击和异乡孤独。你的视频不靠搞笑出圈，靠的是真实——留学没有想象中那么美好，但也没有想象中那么糟糕。你是那盏照亮出国路的小灯。',
+    catchphrase: ['白日梦想家，带你看真实的留学生活', '这个坑你一定要避开', '留学生活没有想象中那么美好', '关注我，留学不迷路'],
+    attrs: [
+      { label: '避坑知识量', value: 97 },
+      { label: '异乡适应力', value: 88 },
+      { label: '梦想浓度', value: 95 },
+      { label: '真实感', value: 99 },
+    ],
+  },
+  {
+    id: 'DAO_GE',
+    name: '刀哥（铁山靠）',
+    photo: '人物照片/刀哥.jpeg',
+    type: '魔性台词制造机',
+    slogan: '刀给我！指定有你！好果汁吃！',
+    emoji: '🔪',
+    color: '#b91c1c',
+    colorLight: '#fef2f2',
+    description: '你是互联网鬼畜视频的顶级素材库，一句"刀给我"的魔性发音让无数人二创停不下来。你的表情管理独树一帜，社会摇风格配上那副天生的严肃脸，产生了化学反应般的喜剧效果。你不是在整活，你本身就是整活。',
+    catchphrase: ['刀给我！', '指定有你，好果汁吃！', '你给我靠！', '兄弟们给我冲！', '我是真的真的真的栓Q了'],
+    attrs: [
+      { label: '魔性程度', value: 99 },
+      { label: '鬼畜素材价值', value: 100 },
+      { label: '社会摇水平', value: 95 },
+      { label: '表情管理', value: 20 },
+    ],
+  },
+];
+
+/* ══════════════════════════════════════
+   题目数据（紧贴人物梗，娱乐向，共30题）
+══════════════════════════════════════ */
+const QUESTIONS = [
+  /* ── Q1 ── */
+  {
+    text: '你被冤枉做了一件根本没做过的事，你的反应是？',
+    options: [
+      { text: '认了，反正我已经什么都干过了。', sub: '背锅是我的日常。', w: { SUN_XIAOCHUAN:3, QIEGEFALA:1 } },
+      { text: '年轻人，不讲武德！你等着！', sub: '耗子尾汁，我要接化发。', w: { MA_BAOGUO:3, DONGYOU_GUAIGE:1 } },
+      { text: '救命，这个世界怎么了，我真的会谢！', sub: '发疯文学专业开场。', w: { LILI:3, ZHOUSUYI:1 } },
+      { text: '他们朝我扔粑粑，我拿粑粑做蛋挞，没座！', sub: '化危机为流量。', w: { SICHUANFENDA:3, DONGBEI_YUJIE:1 } },
+    ],
+  },
+  /* ── Q2 ── */
+  {
+    text: '朋友问你为什么不去找个工作，你怎么回答？',
+    options: [
+      { text: '打工是不可能打工的，这辈子都不可能打工的。', sub: '真理已出，无需解释。', w: { QIEGEFALA:3, SUN_XIAOCHUAN:1 } },
+      { text: '月入5000的人不配问我这个问题。', sub: '格局问题。', w: { FENGGE:3, HU_CHENGFENG:2 } },
+      { text: '奥利给！干就完事儿了！', sub: '一边说一边已经在干了。', w: { DONGYOU_GUAIGE:3, DONGBEI_YUJIE:1 } },
+      { text: '你问这话不讲武德，你等我的接化发。', sub: '先讲道理再讲拳头。', w: { MA_BAOGUO:2, ZHOUSUYI:3 } },
+    ],
+  },
+  /* ── Q3 ── */
+  {
+    text: '你跟人吵架，对方明显说得有道理，你会？',
+    options: [
+      { text: '硬说对方不讲武德，我大意了没有闪。', sub: '输了道理赢了气势。', w: { MA_BAOGUO:3, FENGGE:1 } },
+      { text: '连麦七小时，宁配吗您配吗！', sub: '体力是我的优势。', w: { YAOSHUI_GE:3, SUN_XIAOCHUAN:1 } },
+      { text: '汝之观点，多由偏见构而成。', sub: '文言文降维打击。', w: { HU_CHENGFENG:3, FENGGE:2 } },
+      { text: '一摆烂，彻底摆烂了，阻冲之！', sub: '土味女王的标准操作。', w: { ZHOUSUYI:3, LILI:1 } },
+    ],
+  },
+  /* ── Q4 ── */
+  {
+    text: '你突然在网上爆红，评论区炸了，你第一反应是？',
+    options: [
+      { text: '笑一下，什么都没说，继续放羊去了。', sub: '纯天然流量，无需运营。', w: { DINGZHEN:3, DONGYOU_GUAIGE:1 } },
+      { text: '立刻录视频教大家如何谈网恋。', sub: '流量要用在刀刃上。', w: { SUN_XIAOCHUAN:3, YAOSHUI_GE:1 } },
+      { text: '格局！我早就知道我会火。', sub: '意料之中。', w: { FENGGE:3, HU_CHENGFENG:1 } },
+      { text: '开始整活，扛半扇猪出来打招呼。', sub: '以行动回应热度。', w: { DONGBEI_YUJIE:3, SICHUANFENDA:1 } },
+    ],
+  },
+  /* ── Q5 ── */
+  {
+    text: '你最理想的生活状态是？',
+    options: [
+      { text: '异乡漂泊，记录真实留学生活，帮后来者避坑。', sub: '有价值的漂泊。', w: { BAIRIMXJ:3, DANKING:2 } },
+      { text: '在看守所里，个个都是人才，说话又好听。', sub: '社交圈质量极高。', w: { QIEGEFALA:3, SUN_XIAOCHUAN:1 } },
+      { text: '冬天跳冷水，打打快板，奥利给一整天。', sub: '简单纯粹。', w: { DONGYOU_GUAIGE:3, DINGZHEN:2 } },
+      { text: '在东北，穿大花袄，干啥都带劲。', sub: '一个人能顶十个人用。', w: { DONGBEI_YUJIE:3, QIEGEFALA:1 } },
+    ],
+  },
+  /* ── Q6 ── */
+  {
+    text: '你在比赛/辩论里输了，对手来握手，你怎么做？',
+    options: [
+      { text: '我大意了！我本可以接化发的！', sub: '硬要找到输的理由。', w: { MA_BAOGUO:3, YAOSHUI_GE:1 } },
+      { text: '握手，然后发条微博：所有的失败都是我造成的。', sub: '宇宙背锅侠。', w: { SUN_XIAOCHUAN:3, SICHUANFENDA:1 } },
+      { text: '笑着看对方，扎西德勒，你已经赢了。', sub: '输得坦然，赢得纯粹。', w: { DINGZHEN:3, DONGYOU_GUAIGE:1 } },
+      { text: '你赢了什么？这头顶尖尖筋肉最强的我才是赢家。', sub: '抽象健美精神降维打击。', w: { CHANGSHU_ANUO:3, FENGGE:1 } },
+    ],
+  },
+  /* ── Q7 ── */
+  {
+    text: '老板要你加班到凌晨，你的反应是？',
+    options: [
+      { text: '打工是不可能的，这个项目我不做了。', sub: '精神自由第一。', w: { QIEGEFALA:3, SUN_XIAOCHUAN:1 } },
+      { text: '奥利给！干就完事儿了！加到天亮！', sub: '累了？不存在的。', w: { DONGYOU_GUAIGE:3, DONGBEI_YUJIE:2 } },
+      { text: '月入多少？低于某个数字我不做。', sub: '钱到位才谈加班。', w: { FENGGE:2, HU_CHENGFENG:3 } },
+      { text: '我是来人间凑数的，加班就加班吧，反正都这样了。', sub: '丧意已达极限。', w: { AZU:3, LILI:1 } },
+    ],
+  },
+  /* ── Q8 ── */
+  {
+    text: '有人在网上公开质疑你，你会怎么回应？',
+    options: [
+      { text: '宁配吗？七小时告诉你配不配。', sub: '理性沟通，以时间论输赢。', w: { YAOSHUI_GE:3, SUN_XIAOCHUAN:1 } },
+      { text: '汝之质疑，多由无知构而成。', sub: '文言文降维反击。', w: { HU_CHENGFENG:3, FENGGE:1 } },
+      { text: '模仿你，把你整成梗，反而越火。', sub: '最好的回击是整活。', w: { SICHUANFENDA:3, DONGBEI_YUJIE:1 } },
+      { text: '迷人的我来了！质疑什么？再说一遍！', sub: '自信的力量无法抗衡。', w: { GUO_LAOSHI:3, ZHOUSUYI:1 } },
+    ],
+  },
+  /* ── Q9 ── */
+  {
+    text: '你去参加一个武术比赛，30秒被打倒了，你说？',
+    options: [
+      { text: '我大意了，没有闪！年轻人不讲武德！', sub: '找到了根本原因。', w: { MA_BAOGUO:3, SUN_XIAOCHUAN:1 } },
+      { text: '奥利给！站起来继续！干就完事儿了！', sub: '精神不倒。', w: { DONGYOU_GUAIGE:3, DONGBEI_YUJIE:1 } },
+      { text: '格局问题，这种比赛没有参加的必要。', sub: '早就料到了。', w: { FENGGE:3, HU_CHENGFENG:1 } },
+      { text: '被打倒了怎么了？没事，来，我给你直播一段，赛博民工也能站着说话。', sub: '赛博民工精神永不低头。', w: { DD_XIAOSHUI:3, YAOSHUI_GE:1 } },
+    ],
+  },
+  /* ── Q10 ── */
+  {
+    text: '你被人在背后说坏话，消息传到你耳朵里，你会？',
+    options: [
+      { text: '认了，反正我什么事都干过了。', sub: '宇宙最强背锅侠。', w: { SUN_XIAOCHUAN:3, QIEGEFALA:1 } },
+      { text: '他们朝我扔粑粑，我拿粑粑做蛋挞，没座！', sub: '转化能力满分。', w: { SICHUANFENDA:3, DONGBEI_YUJIE:1 } },
+      { text: '年轻人，这叫不讲武德！还是直播比赛随便打，嘎子哥已经赢了！', sub: '流量已在，无所畏惧。', w: { GAZI_GE:3, MA_BAOGUO:1 } },
+      { text: '笑一下，什么都不说。', sub: '无声的力量最大。', w: { DINGZHEN:3, DONGYOU_GUAIGE:1 } },
+    ],
+  },
+  /* ── Q11 ── */
+  {
+    text: '如果要你用一句话总结你对人生的理解，你会说？',
+    options: [
+      { text: '打工是不可能打工的，精神自由才是真自由。', sub: '人生哲学简洁明了。', w: { QIEGEFALA:3, SUN_XIAOCHUAN:1 } },
+      { text: '我太难了，下辈子真的不想来了。', sub: '人间凑数心得体会。', w: { AZU:3, LILI:2 } },
+      { text: '格局决定结局，认知决定高度。', sub: '哲学家附体。', w: { FENGGE:2, HU_CHENGFENG:3 } },
+      { text: '我大意了，但没关系，接化发还可以再来。', sub: '失败是成功他妈。', w: { MA_BAOGUO:3, SICHUANFENDA:2 } },
+    ],
+  },
+  /* ── Q12 ── */
+  {
+    text: '你被某平台封号了，粉丝炸锅，你第一时间会？',
+    options: [
+      { text: '发道歉视频，他们扔粑粑我做蛋挞，没座！', sub: '化解危机顺便增粉。', w: { SICHUANFENDA:3, DONGBEI_YUJIE:1 } },
+      { text: '反正背过更大的锅，封号算什么。', sub: '心理素质极强。', w: { SUN_XIAOCHUAN:3, QIEGEFALA:1 } },
+      { text: '好，这次我真的不知道是怎么回事，但下次我会注意！重新开播！', sub: '认错极速，直播永不停。', w: { JIA_NAILIANG:3, DONGYOU_GUAIGE:1 } },
+      { text: '平台不讲武德，我要接化发，告他们！', sub: '维权意识觉醒。', w: { MA_BAOGUO:3, HU_CHENGFENG:1 } },
+    ],
+  },
+  /* ── Q13 ── */
+  {
+    text: '如果让你给自己的人生写一句墓志铭，你会写什么？',
+    options: [
+      { text: '打工是不可能的，一生自由，虽死无憾。', sub: '精神领袖永垂不朽。', w: { QIEGEFALA:3, SUN_XIAOCHUAN:1 } },
+      { text: '他接化发了一辈子，大意了，最后一次没有闪。', sub: '武林传奇落幕。', w: { MA_BAOGUO:3, YAOSHUI_GE:1 } },
+      { text: '奥利给！我来过，我拼过，干就完事儿了！', sub: '励志碑文首选。', w: { DONGYOU_GUAIGE:3, DONGBEI_YUJIE:1 } },
+      { text: '刀给我！指定有你，好果汁吃！世界就是这么玩的。', sub: '魔性台词永留人间。', w: { DAO_GE:3, CHENZE:1 } },
+    ],
+  },
+  /* ── Q14 ── */
+  {
+    text: '你出门旅行，在异国他乡吃到了一碗超奇怪的食物，你的反应是？',
+    options: [
+      { text: '干净又卫生！哎呀妈呀，太干净又卫生了！', sub: '永远乐观，山东口音。', w: { LIUYONG:3, DONGYOU_GUAIGE:1 } },
+      { text: '这就是留学生活的真相，关注我，避坑不迷路。', sub: '把踩雷变成内容。', w: { BAIRIMXJ:3, ZI_HENG:1 } },
+      { text: '扎西德勒，吃嘛嘛香。', sub: '无论吃什么都是享受。', w: { DINGZHEN:3, DONGYOU_GUAIGE:1 } },
+      { text: '味真足！爸爸没有肚子，是胃袋！', sub: '吃播使命感，停不下来。', w: { DAWEI_LIANGZI:3, DONGBEI_YUJIE:1 } },
+    ],
+  },
+  /* ── Q15 ── */
+  {
+    text: '朋友说你唱歌唱得很好听，你的第一反应是？',
+    options: [
+      { text: '只因你太美！Music～', sub: '练习时长两年半，当之无愧。', w: { CAIXUKUN:3, A_GIAO:1 } },
+      { text: '一给我里giaogiao！开心你就giao！', sub: '魔性本人，难以超越。', w: { A_GIAO:3, CAIXUKUN:1 } },
+      { text: '谢谢！我是小马云，帅是天生的，唱歌当然也好听。', sub: '命运选中的颜值担当。', w: { FAN_XIAOQIN:3, WANG_BIAN:1 } },
+      { text: '笑一下，回去继续冬泳。', sub: '不需要夸奖，只需要冷水。', w: { DONGYOU_GUAIGE:3, DINGZHEN:1 } },
+    ],
+  },
+  /* ── Q16 ── */
+  {
+    text: '你最近在健身，朋友问你在练什么，你怎么说？',
+    options: [
+      { text: '这视频是真的！头顶尖尖，筋肉最强！生米充碳！', sub: '抽象健美第一人。', w: { CHANGSHU_ANUO:3, DONGBEI_YUJIE:1 } },
+      { text: '我的松果痰抖闪电五连鞭，天下无敌。', sub: '武林绝学+健身结合。', w: { MA_BAOGUO:3, CHANGSHU_ANUO:1 } },
+      { text: '在练格局，月入5000的人不需要健身。', sub: '认知健身法。', w: { FENGGE:3, HU_CHENGFENG:1 } },
+      { text: '我太难了，练啥啊，根本提不起劲来。', sub: '丧到没有行动力。', w: { AZU:3, LILI:1 } },
+    ],
+  },
+  /* ── Q17 ── */
+  {
+    text: '你在直播间发了很多钱的礼物，主播完全没理你，你会？',
+    options: [
+      { text: '宁配吗？你配接受我的礼物吗？', sub: '展开七小时对线。', w: { YAOSHUI_GE:3, SUN_XIAOCHUAN:1 } },
+      { text: '没事，打赏是不可能打赏的了。下次见。', sub: '彻底心死。', w: { QIEGEFALA:3, DONGBEI_YUJIE:1 } },
+      { text: '这就是我旦King说的：质疑旦King，理解旦King，成为旦King！', sub: '三段式进化升级版直播。', w: { DANKING:3, KANG_SHEN:1 } },
+      { text: '没关系，奥利给！继续！干就完事儿了！', sub: '打赏的快乐不依赖回应。', w: { DONGYOU_GUAIGE:3, DINGZHEN:1 } },
+    ],
+  },
+  /* ── Q18 ── */
+  {
+    text: '你的偶像在网上被黑，你会怎么做？',
+    options: [
+      { text: '拿着应援棒在偶像演唱会门口支持，比场内还热闹。', sub: '场外也是一种支持。', w: { WANG_BIAN:3, CAIXUKUN:1 } },
+      { text: '连麦七小时，宁配黑我偶像？', sub: '出道即对线，护偶像一生。', w: { YAOSHUI_GE:3, CAIXUKUN:1 } },
+      { text: '质疑偶像，理解偶像，成为偶像。', sub: '三段式进化完成。', w: { KANG_SHEN:3, DANKING:2 } },
+      { text: '不管别人说什么，我练习时长两年半，我就是最强！', sub: '偶像的力量就是我的力量。', w: { CAIXUKUN:3, A_GIAO:1 } },
+    ],
+  },
+  /* ── Q19 ── */
+  {
+    text: '你被老板当众批评，当时你的表情是？',
+    options: [
+      { text: '笑一下，啥也没说，散会后继续干活。', sub: '高情商处理。', w: { DINGZHEN:3, DONGYOU_GUAIGE:1 } },
+      { text: '当场开麦：您这样说不讲武德！耗子尾汁！', sub: '正面硬刚。', w: { MA_BAOGUO:3, YAOSHUI_GE:1 } },
+      { text: '点头，嘴上答应，心里默背：打工是不可能的。', sub: '精神已经出走了。', w: { QIEGEFALA:3, SUN_XIAOCHUAN:1 } },
+      { text: '回去想好了措辞，他们扔粑粑我拿粑粑做蛋挞。', sub: '危机转化大师。', w: { SICHUANFENDA:3, FENGGE:1 } },
+    ],
+  },
+  /* ── Q20 ── */
+  {
+    text: '有人说你的方言听起来很搞笑，你的反应是？',
+    options: [
+      { text: '搞笑？这是东北话，这叫霸气，带派！', sub: '文化自信满满。', w: { DONGBEI_YUJIE:3, DINGZHEN:1 } },
+      { text: '迷人的我说什么都好听！', sub: '自带迷人气场。', w: { GUO_LAOSHI:3, ZHOUSUYI:2 } },
+      { text: '汝之嘲讽，多由无知构而成。改用文言文了。', sub: '语言升级，直接降维。', w: { HU_CHENGFENG:3, FENGGE:1 } },
+      { text: '我的方言不搞笑，是你的耳朵不讲武德。', sub: '问题出在对方身上。', w: { MA_BAOGUO:3, SUN_XIAOCHUAN:1 } },
+    ],
+  },
+  /* ── Q21 ── */
+  {
+    text: '你在吃饭，旁边有人一直盯着你，你会怎么做？',
+    options: [
+      { text: '给他们看看我的食量，一顿吃16包泡面算什么。', sub: '让他们见识什么叫大胃袋。', w: { DAWEI_LIANGZI:3, DONGBEI_YUJIE:1 } },
+      { text: '干净又卫生！哎呀，太干净又卫生了！邀请他们一起吃。', sub: '美食必须分享。', w: { LIUYONG:3, DINGZHEN:1 } },
+      { text: '宁配吗？你配盯着我吃饭？', sub: '对视就是对线的开始。', w: { YAOSHUI_GE:3, MA_BAOGUO:1 } },
+      { text: '就直笑，小手一指rap开始：打开手机应用商店搜索陈泽，搞定他！', sub: '土味rap战前宣言震场。', w: { CHENZE:3, NAILONG:1 } },
+    ],
+  },
+  /* ── Q22 ── */
+  {
+    text: '你长得和某个大名人特别像，这对你意味着什么？',
+    options: [
+      { text: '意味着我可以站在他演唱会场外，比他还火。', sub: '外貌是流量密码。', w: { WANG_BIAN:3, FAN_XIAOQIN:1 } },
+      { text: '意味着我是"小马云"，命运已定。', sub: '被流量选中，也被流量遗忘。', w: { FAN_XIAOQIN:3, WANG_BIAN:1 } },
+      { text: '意味着我练习时长两年半，果然有成效。', sub: '形似神也似。', w: { CAIXUKUN:3, A_GIAO:1 } },
+      { text: '意味着和艾瑞卡在一起，女友说我们天生一对。', sub: '跨国情缘缘分未了。', w: { ZI_HENG:3, BAIRIMXJ:1 } },
+    ],
+  },
+  /* ── Q23 ── */
+  {
+    text: '你在游戏里输了，队友开始骂你，你怎么应对？',
+    options: [
+      { text: '回答我！look in my eyes，tell me why！', sub: '剑魔玩家的标准反应。', w: { XIAOMING_JIANMO:3, YAOSHUI_GE:1 } },
+      { text: '质疑我，理解我，成为我。你迟早明白的。', sub: '三段式进化早已完成。', w: { KANG_SHEN:3, XIAOMING_JIANMO:1 } },
+      { text: '宁配吗？你配骂我？', sub: '来都来了，七小时告诉你。', w: { YAOSHUI_GE:3, SUN_XIAOCHUAN:1 } },
+      { text: '打开你的手机应用商店，搜索陈泽，我就是你的答案！', sub: '土味rap战前宣言。', w: { CHENZE:3, KANG_SHEN:1 } },
+    ],
+  },
+  /* ── Q24 ── */
+  {
+    text: '你在群里说了一句话，然后突然全群沉默了，你怎么理解这个局面？',
+    options: [
+      { text: '救命，群里怎么了，我真的会谢！摔烂了！', sub: '发疯文学现场演示。', w: { LILI:3, ZHOUSUYI:1 } },
+      { text: '他们被我的接化发震慑住了，不讲武德的沉默。', sub: '以沉默论武德。', w: { MA_BAOGUO:3, YAOSHUI_GE:1 } },
+      { text: '他们无法理解我的格局，认知层次不够。', sub: '降维成功。', w: { FENGGE:2, HU_CHENGFENG:3 } },
+      { text: '扎西德勒，沉默就是认同。', sub: '乐观解读一切。', w: { DINGZHEN:3, DONGYOU_GUAIGE:2 } },
+    ],
+  },
+  /* ── Q25 ── */
+  {
+    text: '你白天打工，晚上还要做另一件事，你是在做什么？',
+    options: [
+      { text: '白天工地干饭，晚上直播PK，赛博民工就是我。', sub: '双线运营，普通人也可以有自己的直播间。', w: { DD_XIAOSHUI:3, DONGYOU_GUAIGE:1 } },
+      { text: '白天出门旅行，晚上写博客，月入5000看不到这种生活。', sub: '全球旅行，永不停歇。', w: { FENGGE:3, HU_CHENGFENG:1 } },
+      { text: '白天练功，晚上讲武德，准备早日接化发成功。', sub: '武德不分昼夜。', w: { MA_BAOGUO:3, CHANGSHU_ANUO:1 } },
+      { text: '白天流口水，晚上继续流，Duang～每天都很快乐。', sub: '奶龙的快乐很简单。', w: { NAILONG:3, GUO_LAOSHI:1 } },
+    ],
+  },
+  /* ── Q26 ── */
+  {
+    text: '你的直播带货突然翻车被网友曝光，你怎么办？',
+    options: [
+      { text: '我真的不知道，但奥利给！下次不会了！', sub: '认错迅速，继续向前。', w: { JIA_NAILIANG:3, DONGYOU_GUAIGE:1 } },
+      { text: '这事儿是背锅，我什么都不知道，但我认了。', sub: '背锅侠哲学的终极体现。', w: { SUN_XIAOCHUAN:3, GAZI_GE:1 } },
+      { text: '他们朝我扔粑粑，我拿粑粑做蛋挞，没座！', sub: '翻车也能整出新花样。', w: { SICHUANFENDA:3, JIA_NAILIANG:1 } },
+      { text: '我说的都是真的，网上的东西你们把握不住！', sub: '硬撑到底。', w: { GAZI_GE:3, MA_BAOGUO:1 } },
+    ],
+  },
+  /* ── Q27 ── */
+  {
+    text: '你在直播间玩游戏，弹幕突然涌进来一大波黑粉，你怎么做？',
+    options: [
+      { text: '回答我！这游戏你玩过吗！tell me why！', sub: '声音洪亮，理由充分。', w: { XIAOMING_JIANMO:3, YAOSHUI_GE:1 } },
+      { text: '宁配吗？你配在我直播间发弹幕？', sub: '对线七小时，从不认输。', w: { YAOSHUI_GE:3, SUN_XIAOCHUAN:1 } },
+      { text: '不管他们，开心你就giao，不开心你就giaogiao！', sub: '保持魔性，不被影响。', w: { A_GIAO:3, DONGYOU_GUAIGE:1 } },
+      { text: '质疑康康，理解康康，成为康康。他们迟早明白。', sub: '静待花开，用实力说话。', w: { KANG_SHEN:3, XIAOMING_JIANMO:1 } },
+    ],
+  },
+  /* ── Q28 ── */
+  {
+    text: '你在街头随机遇到一个看起来很厉害的陌生人，你会？',
+    options: [
+      { text: '上去切磋，我的接化发天下无敌。', sub: '武林人士必须以武会友。', w: { MA_BAOGUO:3, YAOSHUI_GE:1 } },
+      { text: '给他递一张名片：网恋教父，欢迎来聊。', sub: '广撒网，多敛鱼。', w: { SUN_XIAOCHUAN:3, HU_CHENGFENG:1 } },
+      { text: '和他聊聊，说不定就是我的跨国缘分。', sub: '易上手的浪漫主义者。', w: { ZI_HENG:3, BAIRIMXJ:1 } },
+      { text: '问他月入多少，再决定要不要聊。', sub: '认知筛选第一步。', w: { FENGGE:2, HU_CHENGFENG:3 } },
+    ],
+  },
+  /* ── Q29 ── */
+  {
+    text: '你发现有人在复制粘贴你的风格、口头禅，你会怎么做？',
+    options: [
+      { text: '拿起芙蓉王，在他演出场外支持他，比他还出名。', sub: '模仿可以反超原版。', w: { WANG_BIAN:3, SICHUANFENDA:1 } },
+      { text: '年轻人，你这不讲武德！等我接化发！', sub: '必须维权。', w: { MA_BAOGUO:3, YAOSHUI_GE:1 } },
+      { text: '随便，天下giao者皆我徒。', sub: '宗师级别，早已放下。', w: { A_GIAO:3, SUN_XIAOCHUAN:1 } },
+      { text: '刀给我！你给我靠！指定有你！', sub: '魔性口号是最好的回击。', w: { DAO_GE:3, NAILONG:1 } },
+    ],
+  },
+  /* ── Q30 ── */
+  {
+    text: '你攒了半年的钱，终于可以买一样喜欢的东西，结果发现涨价了。你的第一反应？',
+    options: [
+      { text: '没事，打工赚钱是不可能的，买它也没意义。', sub: '淡然如斯。', w: { QIEGEFALA:3, SUN_XIAOCHUAN:1 } },
+      { text: '东北大棚蔬菜不涨价，我改吃菜了。', sub: '化悲痛为力量。', w: { DONGBEI_YUJIE:3, DINGZHEN:1 } },
+      { text: '我是白日梦想家，这种坑我一定要记录下来告诉大家！', sub: '把坑变成内容。', w: { DANKING:3, BAIRIMXJ:2 } },
+      { text: '南～Duang～Duang～Duang～还是得买！', sub: '魔性决策过程。', w: { NAILONG:3, DONGYOU_GUAIGE:1 } },
+    ],
+  },
+];
+
+/* ══════════════════════════════════════
+   状态
+══════════════════════════════════════ */
+let currentQ = 0;
+let answers  = [];
+let locked   = false;
+
+/* ══════════════════════════════════════
+   初始化 Landing
+══════════════════════════════════════ */
+(function initLanding() {
+  const grid = document.getElementById('char-grid');
+  CHARACTERS.forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'char-card';
+    const photoHtml = c.photo
+      ? `<img class="char-photo" src="${c.photo}" alt="${c.name}" />`
+      : c.emoji;
+    div.innerHTML = `
+      <div class="char-emoji">${photoHtml}</div>
+      <div class="char-info">
+        <div class="char-name">${c.name}</div>
+        <div class="char-type">${c.type}</div>
+      </div>`;
+    grid.appendChild(div);
+  });
+})();
+
+/* ══════════════════════════════════════
+   流程控制
+══════════════════════════════════════ */
+function showPage(id) {
+  ['page-landing','page-quiz','page-result'].forEach(p => {
+    document.getElementById(p).style.display = 'none';
+  });
+  document.getElementById(id).style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function startQuiz() {
+  currentQ = 0;
+  answers  = [];
+  locked   = false;
+  renderQuestion();
+  showPage('page-quiz');
+}
+
+function restart() {
+  showPage('page-landing');
+}
+
+/* ══════════════════════════════════════
+   答题渲染
+══════════════════════════════════════ */
+function renderQuestion() {
+  const total = QUESTIONS.length;
+  const q     = QUESTIONS[currentQ];
+  locked      = false;
+
+  document.getElementById('p-current').textContent  = currentQ;
+  document.getElementById('p-total').textContent    = total;
+  document.getElementById('q-num').textContent      = currentQ + 1;
+  document.getElementById('q-total').textContent    = total;
+  document.getElementById('progress-fill').style.width = (currentQ / total * 100) + '%';
+  document.getElementById('q-text').textContent = q.text;
+
+  const container = document.getElementById('options');
+  container.innerHTML = '';
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.innerHTML = `<span class="opt-main">${opt.text}</span><span class="opt-sub">${opt.sub}</span>`;
+    btn.addEventListener('click', () => selectOption(i));
+    container.appendChild(btn);
+  });
+
+  document.getElementById('prev-btn').disabled = currentQ === 0;
+}
+
+function selectOption(index) {
+  if (locked) return;
+  locked = true;
+
+  const q    = QUESTIONS[currentQ];
+  const opts = document.querySelectorAll('#options .opt');
+  opts.forEach((btn, i) => {
+    btn.classList.add('locked');
+    if (i === index) btn.classList.add('selected');
+    else btn.classList.add('dimmed');
+  });
+
+  const newAnswers = [...answers, q.options[index].w];
+
+  setTimeout(() => {
+    if (currentQ + 1 >= QUESTIONS.length) {
+      showResult(newAnswers);
+    } else {
+      answers = newAnswers;
+      currentQ++;
+      renderQuestion();
+    }
+  }, 380);
+}
+
+function prevQuestion() {
+  if (currentQ === 0 || locked) return;
+  answers = answers.slice(0, -1);
+  currentQ--;
+  renderQuestion();
+}
+
+/* ══════════════════════════════════════
+   结果计算 & 渲染
+══════════════════════════════════════ */
+function calcResult(ansArr) {
+  const total = {};
+  ansArr.forEach(w => {
+    Object.entries(w).forEach(([id, score]) => {
+      total[id] = (total[id] || 0) + score;
+    });
+  });
+  const sorted   = Object.entries(total).sort((a,b) => b[1]-a[1]);
+  const winnerId = sorted[0]?.[0] || 'DONGYOU_GUAIGE';
+  return CHARACTERS.find(c => c.id === winnerId) || CHARACTERS[4];
+}
+
+function showResult(ansArr) {
+  const c = calcResult(ansArr);
+
+  document.getElementById('r-header').style.background = c.colorLight;
+  document.getElementById('r-emoji').textContent  = c.emoji;
+  const photoEl = document.getElementById('r-photo');
+  if (c.photo) {
+    photoEl.src = c.photo;
+    photoEl.alt = c.name;
+    photoEl.className = 'r-photo has-photo';
+  } else {
+    photoEl.src = '';
+    photoEl.className = 'r-photo';
+  }
+  document.getElementById('r-name').textContent   = c.name;
+  const badge = document.getElementById('r-badge');
+  badge.textContent      = c.type;
+  badge.style.background = c.color;
+
+  document.getElementById('r-slogan').textContent = `"${c.slogan}"`;
+  document.getElementById('r-desc').textContent   = c.description;
+
+  const attrsEl = document.getElementById('r-attrs');
+  attrsEl.innerHTML = '';
+  c.attrs.forEach(attr => {
+    attrsEl.innerHTML += `
+      <div class="attr-row">
+        <div class="attr-top">
+          <span class="attr-label">${attr.label}</span>
+          <span class="attr-val" style="color:${c.color}">${attr.value}%</span>
+        </div>
+        <div class="attr-track">
+          <div class="attr-fill" style="width:${attr.value}%;background:${c.color}"></div>
+        </div>
+      </div>`;
+  });
+
+  const phrasesEl = document.getElementById('r-phrases');
+  phrasesEl.innerHTML = '';
+  c.catchphrase.forEach(p => {
+    phrasesEl.innerHTML += `<span class="phrase-tag">${p}</span>`;
+  });
+
+  const copyBtn = document.getElementById('copy-btn');
+  copyBtn.textContent = '复制结果分享';
+  copyBtn.classList.remove('copied');
+
+  showPage('page-result');
+}
+
+/* ══════════════════════════════════════
+   分享
+══════════════════════════════════════ */
+function copyResult() {
+  const name   = document.getElementById('r-name').textContent;
+  const badge  = document.getElementById('r-badge').textContent;
+  const emoji  = document.getElementById('r-emoji').textContent;
+  const slogan = document.getElementById('r-slogan').textContent;
+  const text   = `我在「赛博人物志」测出来是：${name} · ${badge} ${emoji}\n${slogan}\n你是哪位互联网传奇？→ ${location.href}`;
+
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = '✓ 已复制到剪贴板';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = '复制结果分享';
+      btn.classList.remove('copied');
+    }, 2500);
+  }).catch(() => {
+    alert('复制失败，请手动复制链接分享。');
+  });
+}
+</script>
+</body>
+</html>
