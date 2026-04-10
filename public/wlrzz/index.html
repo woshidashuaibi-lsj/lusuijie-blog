@@ -381,12 +381,12 @@ const CHARACTERS = [
     name: '峰哥亡命天涯',
     photo: '/wlrzz/人物照片/峰哥亡命天涯.jpeg',
     type: '格局大师',
-    slogan: '格局小了。月入5000不配与我对话。',
+    slogan: '这是好事啊',
     emoji: '🌍',
     color: '#ea580c',
     colorLight: '#fff7ed',
     description: '你走遍了世界，得出的结论是：大多数人格局太小。你不是在炫耀，你是在善意提醒。你的嘴是互联网的嘴替，说的每句话都能引发一场骂战，但你觉得无所谓，因为他们根本不在你的认知层次。',
-    catchphrase: ['格局小了', '月入5000的人不配与我对话', '电车只选特斯拉，油车只开丰田'],
+    catchphrase: ['格局小了', '这是好事啊'],
     attrs: [
       { label: '格局大小', value: 99 },
       { label: '争议指数', value: 96 },
@@ -847,307 +847,307 @@ const CHARACTERS = [
 ];
 
 /* ══════════════════════════════════════
-   题目数据（紧贴人物梗，娱乐向，共30题）
+   题目数据（性格倾向测试，共30题）
 ══════════════════════════════════════ */
 const QUESTIONS = [
   /* ── Q1 ── */
   {
-    text: '你被冤枉做了一件根本没做过的事，你的反应是？',
+    text: '你被冤枉了一件事，你的第一反应是？',
     options: [
-      { text: '认了，反正我已经什么都干过了。', sub: '背锅是我的日常。', w: { SUN_XIAOCHUAN:3, QIEGEFALA:1 } },
-      { text: '年轻人，不讲武德！你等着！', sub: '耗子尾汁，我要接化发。', w: { MA_BAOGUO:3, DONGYOU_GUAIGE:1 } },
-      { text: '救命，这个世界怎么了，我真的会谢！', sub: '发疯文学专业开场。', w: { LILI:3, ZHOUSUYI:1 } },
-      { text: '他们朝我扔粑粑，我拿粑粑做蛋挞，没座！', sub: '化危机为流量。', w: { SICHUANFENDA:3, DONGBEI_YUJIE:1 } },
+      { text: '先承认，反正有没有做过对我来说都差不多。', sub: '认锅是一种人生境界。', w: { SUN_XIAOCHUAN:3, QIEGEFALA:1 } },
+      { text: '立刻据理力争，对方这么做太不厚道了。', sub: '道理必须讲清楚。', w: { MA_BAOGUO:3, YAOSHUI_GE:1 } },
+      { text: '整个人都崩了，这世界太难了。', sub: '情绪先来，理智后到。', w: { LILI:3, AZU:1 } },
+      { text: '把这件事变成一个段子，反将一军。', sub: '危机就是素材。', w: { SICHUANFENDA:3, DONGBEI_YUJIE:1 } },
     ],
   },
   /* ── Q2 ── */
   {
-    text: '朋友问你为什么不去找个工作，你怎么回答？',
+    text: '你有一段空闲时间，什么事都不用做，你会？',
     options: [
-      { text: '打工是不可能打工的，这辈子都不可能打工的。', sub: '真理已出，无需解释。', w: { QIEGEFALA:3, SUN_XIAOCHUAN:1 } },
-      { text: '月入5000的人不配问我这个问题。', sub: '格局问题。', w: { FENGGE:3, HU_CHENGFENG:2 } },
-      { text: '奥利给！干就完事儿了！', sub: '一边说一边已经在干了。', w: { DONGYOU_GUAIGE:3, DONGBEI_YUJIE:1 } },
-      { text: '你问这话不讲武德，你等我的接化发。', sub: '先讲道理再讲拳头。', w: { MA_BAOGUO:2, ZHOUSUYI:3 } },
+      { text: '完全放松，躺着发呆，不想任何事。', sub: '精神自由才是真自由。', w: { QIEGEFALA:3, AZU:2 } },
+      { text: '出门体验新鲜事，把见闻记录下来。', sub: '生活就是素材库。', w: { BAIRIMXJ:3, DANKING:2 } },
+      { text: '锻炼身体或者挑战极限项目。', sub: '时间就是用来燃烧的。', w: { DONGYOU_GUAIGE:3, DONGBEI_YUJIE:1 } },
+      { text: '规划下一步，思考怎么让自己再进一步。', sub: '认知要不断升级。', w: { FENGGE:3, HU_CHENGFENG:2 } },
     ],
   },
   /* ── Q3 ── */
   {
-    text: '你跟人吵架，对方明显说得有道理，你会？',
+    text: '你和别人发生了争执，对方明显占理，你会怎么做？',
     options: [
-      { text: '硬说对方不讲武德，我大意了没有闪。', sub: '输了道理赢了气势。', w: { MA_BAOGUO:3, FENGGE:1 } },
-      { text: '连麦七小时，宁配吗您配吗！', sub: '体力是我的优势。', w: { YAOSHUI_GE:3, SUN_XIAOCHUAN:1 } },
-      { text: '汝之观点，多由偏见构而成。', sub: '文言文降维打击。', w: { HU_CHENGFENG:3, FENGGE:2 } },
-      { text: '一摆烂，彻底摆烂了，阻冲之！', sub: '土味女王的标准操作。', w: { ZHOUSUYI:3, LILI:1 } },
+      { text: '坚持自己没错，一定是对方有什么问题。', sub: '我的判断不会有误。', w: { MA_BAOGUO:3, FENGGE:1 } },
+      { text: '绝不服输，把每个细节都掰扯清楚。', sub: '耗时间是我的强项。', w: { YAOSHUI_GE:3, SUN_XIAOCHUAN:1 } },
+      { text: '表面认同，心里觉得对方认知层次不够。', sub: '不屑于辩解。', w: { HU_CHENGFENG:3, FENGGE:2 } },
+      { text: '干脆摆烂认输，反而觉得有点好笑。', sub: '摆烂也是一种策略。', w: { ZHOUSUYI:3, LILI:1 } },
     ],
   },
   /* ── Q4 ── */
   {
-    text: '你突然在网上爆红，评论区炸了，你第一反应是？',
+    text: '你突然莫名其妙地走红了，你的第一反应是？',
     options: [
-      { text: '笑一下，什么都没说，继续放羊去了。', sub: '纯天然流量，无需运营。', w: { DINGZHEN:3, DONGYOU_GUAIGE:1 } },
-      { text: '立刻录视频教大家如何谈网恋。', sub: '流量要用在刀刃上。', w: { SUN_XIAOCHUAN:3, YAOSHUI_GE:1 } },
-      { text: '格局！我早就知道我会火。', sub: '意料之中。', w: { FENGGE:3, HU_CHENGFENG:1 } },
-      { text: '开始整活，扛半扇猪出来打招呼。', sub: '以行动回应热度。', w: { DONGBEI_YUJIE:3, SICHUANFENDA:1 } },
+      { text: '有点懵，保持原样，继续做自己的事。', sub: '流量只是过客。', w: { DINGZHEN:3, DONGYOU_GUAIGE:1 } },
+      { text: '赶紧抓住机会，开始运营，扩大影响力。', sub: '流量就要用好。', w: { SUN_XIAOCHUAN:3, GAZI_GE:1 } },
+      { text: '意料之中，我本来就应该被更多人看到。', sub: '实至名归罢了。', w: { FENGGE:3, HU_CHENGFENG:1 } },
+      { text: '整活！趁热打铁多搞几个大活。', sub: '趁着热度搞事情。', w: { DONGBEI_YUJIE:3, SICHUANFENDA:1 } },
     ],
   },
   /* ── Q5 ── */
   {
-    text: '你最理想的生活状态是？',
+    text: '你最向往的生活方式是什么？',
     options: [
-      { text: '异乡漂泊，记录真实留学生活，帮后来者避坑。', sub: '有价值的漂泊。', w: { BAIRIMXJ:3, DANKING:2 } },
-      { text: '在看守所里，个个都是人才，说话又好听。', sub: '社交圈质量极高。', w: { QIEGEFALA:3, SUN_XIAOCHUAN:1 } },
-      { text: '冬天跳冷水，打打快板，奥利给一整天。', sub: '简单纯粹。', w: { DONGYOU_GUAIGE:3, DINGZHEN:2 } },
-      { text: '在东北，穿大花袄，干啥都带劲。', sub: '一个人能顶十个人用。', w: { DONGBEI_YUJIE:3, QIEGEFALA:1 } },
+      { text: '到处漂泊，用镜头记录真实的世界给别人看。', sub: '做别人的眼睛。', w: { BAIRIMXJ:3, DANKING:2 } },
+      { text: '不受约束，想做什么做什么，不被任何规则束缚。', sub: '自由是最高追求。', w: { QIEGEFALA:3, DINGZHEN:1 } },
+      { text: '每天挑战自我，突破身体和意志的极限。', sub: '活着就要拼尽全力。', w: { DONGYOU_GUAIGE:3, DONGBEI_YUJIE:2 } },
+      { text: '在故乡，踏踏实实，和大自然在一起。', sub: '简单纯粹最幸福。', w: { DINGZHEN:3, LIUYONG:1 } },
     ],
   },
   /* ── Q6 ── */
   {
-    text: '你在比赛/辩论里输了，对手来握手，你怎么做？',
+    text: '你失败了，有人过来安慰你，你会？',
     options: [
-      { text: '我大意了！我本可以接化发的！', sub: '硬要找到输的理由。', w: { MA_BAOGUO:3, YAOSHUI_GE:1 } },
-      { text: '握手，然后发条微博：所有的失败都是我造成的。', sub: '宇宙背锅侠。', w: { SUN_XIAOCHUAN:3, SICHUANFENDA:1 } },
-      { text: '笑着看对方，扎西德勒，你已经赢了。', sub: '输得坦然，赢得纯粹。', w: { DINGZHEN:3, DONGYOU_GUAIGE:1 } },
-      { text: '你赢了什么？这头顶尖尖筋肉最强的我才是赢家。', sub: '抽象健美精神降维打击。', w: { CHANGSHU_ANUO:3, FENGGE:1 } },
+      { text: '解释这次失败是有原因的，不是我的能力问题。', sub: '失败总有客观理由。', w: { MA_BAOGUO:3, FENGGE:1 } },
+      { text: '感谢对方，但内心觉得这次只是大意了。', sub: '承认大意，但不认输。', w: { SUN_XIAOCHUAN:3, MA_BAOGUO:1 } },
+      { text: '笑笑，谢谢，然后继续去做下一件事。', sub: '输了就输了，继续。', w: { DINGZHEN:3, DONGYOU_GUAIGE:2 } },
+      { text: '用肌肉证明自己，失败只是过程。', sub: '身体的强大无法被否定。', w: { CHANGSHU_ANUO:3, DONGBEI_YUJIE:1 } },
     ],
   },
   /* ── Q7 ── */
   {
-    text: '老板要你加班到凌晨，你的反应是？',
+    text: '面对高强度的工作任务，你的态度是？',
     options: [
-      { text: '打工是不可能的，这个项目我不做了。', sub: '精神自由第一。', w: { QIEGEFALA:3, SUN_XIAOCHUAN:1 } },
-      { text: '奥利给！干就完事儿了！加到天亮！', sub: '累了？不存在的。', w: { DONGYOU_GUAIGE:3, DONGBEI_YUJIE:2 } },
-      { text: '月入多少？低于某个数字我不做。', sub: '钱到位才谈加班。', w: { FENGGE:2, HU_CHENGFENG:3 } },
-      { text: '我是来人间凑数的，加班就加班吧，反正都这样了。', sub: '丧意已达极限。', w: { AZU:3, LILI:1 } },
+      { text: '根本不应该做这种事，自由比任何任务重要。', sub: '劳动不是我的归宿。', w: { QIEGEFALA:3, AZU:1 } },
+      { text: '全力以赴，累了继续，不做完不罢休。', sub: '拼就对了。', w: { DONGYOU_GUAIGE:3, DONGBEI_YUJIE:2 } },
+      { text: '先看看回报，值不值，再决定投入多少。', sub: '利益优先。', w: { HU_CHENGFENG:3, FENGGE:2 } },
+      { text: '做完就行，别想太多，反正都这样了。', sub: '随遇而安。', w: { AZU:3, LILI:1 } },
     ],
   },
   /* ── Q8 ── */
   {
-    text: '有人在网上公开质疑你，你会怎么回应？',
+    text: '有人公开批评你，你倾向于怎么回应？',
     options: [
-      { text: '宁配吗？七小时告诉你配不配。', sub: '理性沟通，以时间论输赢。', w: { YAOSHUI_GE:3, SUN_XIAOCHUAN:1 } },
-      { text: '汝之质疑，多由无知构而成。', sub: '文言文降维反击。', w: { HU_CHENGFENG:3, FENGGE:1 } },
-      { text: '模仿你，把你整成梗，反而越火。', sub: '最好的回击是整活。', w: { SICHUANFENDA:3, DONGBEI_YUJIE:1 } },
-      { text: '迷人的我来了！质疑什么？再说一遍！', sub: '自信的力量无法抗衡。', w: { GUO_LAOSHI:3, ZHOUSUYI:1 } },
+      { text: '正面迎击，把道理说透，说多久都行。', sub: '真理不怕辩论。', w: { YAOSHUI_GE:3, SUN_XIAOCHUAN:1 } },
+      { text: '用更高维度的逻辑回击，让对方无从反驳。', sub: '思维降维打击。', w: { HU_CHENGFENG:3, FENGGE:1 } },
+      { text: '把批评变成话题，反而让自己更出圈。', sub: '黑红也是红。', w: { SICHUANFENDA:3, WANG_BIAN:1 } },
+      { text: '用自信和魅力化解，让对方自己觉得没意思。', sub: '气场压制。', w: { GUO_LAOSHI:3, ZHOUSUYI:1 } },
     ],
   },
   /* ── Q9 ── */
   {
-    text: '你去参加一个武术比赛，30秒被打倒了，你说？',
+    text: '你尝试了某件新事物，结果完全失败，你会？',
     options: [
-      { text: '我大意了，没有闪！年轻人不讲武德！', sub: '找到了根本原因。', w: { MA_BAOGUO:3, SUN_XIAOCHUAN:1 } },
-      { text: '奥利给！站起来继续！干就完事儿了！', sub: '精神不倒。', w: { DONGYOU_GUAIGE:3, DONGBEI_YUJIE:1 } },
-      { text: '格局问题，这种比赛没有参加的必要。', sub: '早就料到了。', w: { FENGGE:3, HU_CHENGFENG:1 } },
-      { text: '被打倒了怎么了？没事，来，我给你直播一段，赛博民工也能站着说话。', sub: '赛博民工精神永不低头。', w: { DD_XIAOSHUI:3, YAOSHUI_GE:1 } },
+      { text: '觉得是环境或对方的问题，不是自己的原因。', sub: '外因第一。', w: { MA_BAOGUO:3, SUN_XIAOCHUAN:1 } },
+      { text: '重新来过，失败了再试，直到成功。', sub: '输了不代表完了。', w: { DONGYOU_GUAIGE:3, JIA_NAILIANG:1 } },
+      { text: '觉得这件事本身就不值得做，格局不对。', sub: '选择比努力更重要。', w: { FENGGE:3, HU_CHENGFENG:1 } },
+      { text: '把失败过程录下来，发出去，反向涨粉。', sub: '失败也是内容。', w: { DD_XIAOSHUI:3, BAIRIMXJ:1 } },
     ],
   },
   /* ── Q10 ── */
   {
-    text: '你被人在背后说坏话，消息传到你耳朵里，你会？',
+    text: '有人在背后说你坏话，你知道了，你会？',
     options: [
-      { text: '认了，反正我什么事都干过了。', sub: '宇宙最强背锅侠。', w: { SUN_XIAOCHUAN:3, QIEGEFALA:1 } },
-      { text: '他们朝我扔粑粑，我拿粑粑做蛋挞，没座！', sub: '转化能力满分。', w: { SICHUANFENDA:3, DONGBEI_YUJIE:1 } },
-      { text: '年轻人，这叫不讲武德！还是直播比赛随便打，嘎子哥已经赢了！', sub: '流量已在，无所畏惧。', w: { GAZI_GE:3, MA_BAOGUO:1 } },
-      { text: '笑一下，什么都不说。', sub: '无声的力量最大。', w: { DINGZHEN:3, DONGYOU_GUAIGE:1 } },
+      { text: '无所谓，反正说什么我都认了。', sub: '背锅无所畏惧。', w: { SUN_XIAOCHUAN:3, QIEGEFALA:1 } },
+      { text: '把负面评价变成素材，整合进自己的内容。', sub: '差评也是原材料。', w: { SICHUANFENDA:3, WANG_BIAN:1 } },
+      { text: '不在乎，继续做自己，时间会证明一切。', sub: '坦然无惧。', w: { DINGZHEN:3, KANG_SHEN:1 } },
+      { text: '觉得好笑，别人的话影响不了我的状态。', sub: '笑对一切。', w: { GAZI_GE:3, DONGBEI_YUJIE:1 } },
     ],
   },
   /* ── Q11 ── */
   {
-    text: '如果要你用一句话总结你对人生的理解，你会说？',
+    text: '你觉得人生最重要的是什么？',
     options: [
-      { text: '打工是不可能打工的，精神自由才是真自由。', sub: '人生哲学简洁明了。', w: { QIEGEFALA:3, SUN_XIAOCHUAN:1 } },
-      { text: '我太难了，下辈子真的不想来了。', sub: '人间凑数心得体会。', w: { AZU:3, LILI:2 } },
-      { text: '格局决定结局，认知决定高度。', sub: '哲学家附体。', w: { FENGGE:2, HU_CHENGFENG:3 } },
-      { text: '我大意了，但没关系，接化发还可以再来。', sub: '失败是成功他妈。', w: { MA_BAOGUO:3, SICHUANFENDA:2 } },
+      { text: '自由，不被任何规则和工作束缚。', sub: '精神独立第一位。', w: { QIEGEFALA:3, DINGZHEN:1 } },
+      { text: '认知，不断提升格局和眼界。', sub: '思维决定一切。', w: { HU_CHENGFENG:3, FENGGE:2 } },
+      { text: '体验，什么都试一试，活得丰富。', sub: '广度比深度更重要。', w: { DONGYOU_GUAIGE:3, LIUYONG:1 } },
+      { text: '崩溃大笑，不知道说什么，摆了，真的摆了。', sub: '发疯也是一种哲学。', w: { LILI:3, AZU:2 } },
     ],
   },
   /* ── Q12 ── */
   {
-    text: '你被某平台封号了，粉丝炸锅，你第一时间会？',
+    text: '你因为一个误会被众多网友攻击，你会怎么办？',
     options: [
-      { text: '发道歉视频，他们扔粑粑我做蛋挞，没座！', sub: '化解危机顺便增粉。', w: { SICHUANFENDA:3, DONGBEI_YUJIE:1 } },
-      { text: '反正背过更大的锅，封号算什么。', sub: '心理素质极强。', w: { SUN_XIAOCHUAN:3, QIEGEFALA:1 } },
-      { text: '好，这次我真的不知道是怎么回事，但下次我会注意！重新开播！', sub: '认错极速，直播永不停。', w: { JIA_NAILIANG:3, DONGYOU_GUAIGE:1 } },
-      { text: '平台不讲武德，我要接化发，告他们！', sub: '维权意识觉醒。', w: { MA_BAOGUO:3, HU_CHENGFENG:1 } },
+      { text: '把攻击的素材整合起来，做成内容反将一军。', sub: '被骂就要被骂出价值。', w: { SICHUANFENDA:3, SUN_XIAOCHUAN:1 } },
+      { text: '该背的锅背着，时间长了自然清白。', sub: '沉默是最好的辩护。', w: { SUN_XIAOCHUAN:3, DINGZHEN:1 } },
+      { text: '发声明，诚恳道歉，然后快速重新出发。', sub: '认错要快，出发要更快。', w: { JIA_NAILIANG:3, DONGYOU_GUAIGE:1 } },
+      { text: '公开驳斥，逐条反击，绝不妥协。', sub: '这种事不能忍。', w: { MA_BAOGUO:3, YAOSHUI_GE:1 } },
     ],
   },
   /* ── Q13 ── */
   {
-    text: '如果让你给自己的人生写一句墓志铭，你会写什么？',
+    text: '如果你可以用一句话概括自己的人生态度，你会选哪句？',
     options: [
-      { text: '打工是不可能的，一生自由，虽死无憾。', sub: '精神领袖永垂不朽。', w: { QIEGEFALA:3, SUN_XIAOCHUAN:1 } },
-      { text: '他接化发了一辈子，大意了，最后一次没有闪。', sub: '武林传奇落幕。', w: { MA_BAOGUO:3, YAOSHUI_GE:1 } },
-      { text: '奥利给！我来过，我拼过，干就完事儿了！', sub: '励志碑文首选。', w: { DONGYOU_GUAIGE:3, DONGBEI_YUJIE:1 } },
-      { text: '刀给我！指定有你，好果汁吃！世界就是这么玩的。', sub: '魔性台词永留人间。', w: { DAO_GE:3, CHENZE:1 } },
+      { text: '不被束缚，不服管，活得自在就好。', sub: '自由是唯一信仰。', w: { QIEGEFALA:3, AZU:1 } },
+      { text: '拼尽全力，永不放弃，干就完了。', sub: '执行力就是一切。', w: { DONGYOU_GUAIGE:3, DONGBEI_YUJIE:1 } },
+      { text: '魔性地活着，管它别人怎么看。', sub: '真实就是最好的人设。', w: { DAO_GE:3, A_GIAO:1 } },
+      { text: '记录真实，帮助他人少走弯路。', sub: '有意义才叫活着。', w: { BAIRIMXJ:3, DANKING:1 } },
     ],
   },
   /* ── Q14 ── */
   {
-    text: '你出门旅行，在异国他乡吃到了一碗超奇怪的食物，你的反应是？',
+    text: '你独自在异地，遇到了一种你完全不认识的食物，你会？',
     options: [
-      { text: '干净又卫生！哎呀妈呀，太干净又卫生了！', sub: '永远乐观，山东口音。', w: { LIUYONG:3, DONGYOU_GUAIGE:1 } },
-      { text: '这就是留学生活的真相，关注我，避坑不迷路。', sub: '把踩雷变成内容。', w: { BAIRIMXJ:3, ZI_HENG:1 } },
-      { text: '扎西德勒，吃嘛嘛香。', sub: '无论吃什么都是享受。', w: { DINGZHEN:3, DONGYOU_GUAIGE:1 } },
-      { text: '味真足！爸爸没有肚子，是胃袋！', sub: '吃播使命感，停不下来。', w: { DAWEI_LIANGZI:3, DONGBEI_YUJIE:1 } },
+      { text: '直接吃，没什么可怕的，什么都是体验。', sub: '勇气是最好的调料。', w: { LIUYONG:3, DONGYOU_GUAIGE:1 } },
+      { text: '把这次踩雷记录下来，告诉更多人。', sub: '踩坑也是一种贡献。', w: { BAIRIMXJ:3, DANKING:1 } },
+      { text: '笑一笑，吃一口，反正管它好不好吃。', sub: '没什么大不了的。', w: { DINGZHEN:3, ZI_HENG:1 } },
+      { text: '既然来了就大口吃，越多越好。', sub: '吃是人生大事。', w: { DAWEI_LIANGZI:3, DONGBEI_YUJIE:1 } },
     ],
   },
   /* ── Q15 ── */
   {
-    text: '朋友说你唱歌唱得很好听，你的第一反应是？',
+    text: '别人夸你某件事做得很厉害，你的内心反应是？',
     options: [
-      { text: '只因你太美！Music～', sub: '练习时长两年半，当之无愧。', w: { CAIXUKUN:3, A_GIAO:1 } },
-      { text: '一给我里giaogiao！开心你就giao！', sub: '魔性本人，难以超越。', w: { A_GIAO:3, CAIXUKUN:1 } },
-      { text: '谢谢！我是小马云，帅是天生的，唱歌当然也好听。', sub: '命运选中的颜值担当。', w: { FAN_XIAOQIN:3, WANG_BIAN:1 } },
-      { text: '笑一下，回去继续冬泳。', sub: '不需要夸奖，只需要冷水。', w: { DONGYOU_GUAIGE:3, DINGZHEN:1 } },
+      { text: '理所当然，我本来就在这件事上投入了大量时间。', sub: '付出就有回报。', w: { CAIXUKUN:3, KANG_SHEN:1 } },
+      { text: '高兴，但更想用自己的方式告诉对方你有多厉害。', sub: '表达是一种能力。', w: { A_GIAO:3, CHENZE:1 } },
+      { text: '笑笑，谢谢，然后继续做自己的事。', sub: '夸奖不影响节奏。', w: { DONGYOU_GUAIGE:3, DINGZHEN:2 } },
+      { text: '被夸了就很开心，想把这个时刻分享出去。', sub: '开心就要说出来。', w: { FAN_XIAOQIN:3, NAILONG:1 } },
     ],
   },
   /* ── Q16 ── */
   {
-    text: '你最近在健身，朋友问你在练什么，你怎么说？',
+    text: '你在持续做一件事，但短期看不到效果，你会？',
     options: [
-      { text: '这视频是真的！头顶尖尖，筋肉最强！生米充碳！', sub: '抽象健美第一人。', w: { CHANGSHU_ANUO:3, DONGBEI_YUJIE:1 } },
-      { text: '我的松果痰抖闪电五连鞭，天下无敌。', sub: '武林绝学+健身结合。', w: { MA_BAOGUO:3, CHANGSHU_ANUO:1 } },
-      { text: '在练格局，月入5000的人不需要健身。', sub: '认知健身法。', w: { FENGGE:3, HU_CHENGFENG:1 } },
-      { text: '我太难了，练啥啊，根本提不起劲来。', sub: '丧到没有行动力。', w: { AZU:3, LILI:1 } },
+      { text: '继续做，外表的结果迟早会体现出来。', sub: '相信过程。', w: { CHANGSHU_ANUO:3, DONGYOU_GUAIGE:1 } },
+      { text: '觉得是路径不对，调整思路重来。', sub: '方法比努力重要。', w: { FENGGE:3, HU_CHENGFENG:2 } },
+      { text: '没劲，越来越提不起兴趣，算了吧。', sub: '动力需要及时反馈。', w: { AZU:3, LILI:1 } },
+      { text: '坚持下去，反正干就完了，效果总会来的。', sub: '干就是答案。', w: { DONGYOU_GUAIGE:3, JIA_NAILIANG:1 } },
     ],
   },
   /* ── Q17 ── */
   {
-    text: '你在直播间发了很多钱的礼物，主播完全没理你，你会？',
+    text: '你付出了很多，但对方完全没有回应，你会？',
     options: [
-      { text: '宁配吗？你配接受我的礼物吗？', sub: '展开七小时对线。', w: { YAOSHUI_GE:3, SUN_XIAOCHUAN:1 } },
-      { text: '没事，打赏是不可能打赏的了。下次见。', sub: '彻底心死。', w: { QIEGEFALA:3, DONGBEI_YUJIE:1 } },
-      { text: '这就是我旦King说的：质疑旦King，理解旦King，成为旦King！', sub: '三段式进化升级版直播。', w: { DANKING:3, KANG_SHEN:1 } },
-      { text: '没关系，奥利给！继续！干就完事儿了！', sub: '打赏的快乐不依赖回应。', w: { DONGYOU_GUAIGE:3, DINGZHEN:1 } },
+      { text: '觉得对方配不上自己的付出，提出质疑。', sub: '付出需要被看见。', w: { YAOSHUI_GE:3, MA_BAOGUO:1 } },
+      { text: '算了，这种事就当没发生过，不再计较。', sub: '放下比坚持更难。', w: { QIEGEFALA:3, DINGZHEN:1 } },
+      { text: '静静等待，相信迟早会被理解和认可。', sub: '时间是最好的见证。', w: { DANKING:3, KANG_SHEN:2 } },
+      { text: '继续付出，干就完了，结果迟早会有的。', sub: '过程本身有意义。', w: { DONGYOU_GUAIGE:3, JIA_NAILIANG:1 } },
     ],
   },
   /* ── Q18 ── */
   {
-    text: '你的偶像在网上被黑，你会怎么做？',
+    text: '你喜欢的事物被别人批评，你会怎么回应？',
     options: [
-      { text: '拿着应援棒在偶像演唱会门口支持，比场内还热闹。', sub: '场外也是一种支持。', w: { WANG_BIAN:3, CAIXUKUN:1 } },
-      { text: '连麦七小时，宁配黑我偶像？', sub: '出道即对线，护偶像一生。', w: { YAOSHUI_GE:3, CAIXUKUN:1 } },
-      { text: '质疑偶像，理解偶像，成为偶像。', sub: '三段式进化完成。', w: { KANG_SHEN:3, DANKING:2 } },
-      { text: '不管别人说什么，我练习时长两年半，我就是最强！', sub: '偶像的力量就是我的力量。', w: { CAIXUKUN:3, A_GIAO:1 } },
+      { text: '用行动证明，比争论更有力量。', sub: '操作说明一切。', w: { KANG_SHEN:3, WANG_BIAN:1 } },
+      { text: '用时间和持续投入来证明自己是对的。', sub: '只要坚持，结果会说话。', w: { CAIXUKUN:3, DANKING:1 } },
+      { text: '逻辑反击，让对方知道自己的认知局限。', sub: '先讲道理。', w: { HU_CHENGFENG:3, FENGGE:1 } },
+      { text: '不在乎，我喜欢就够了，不需要别人认可。', sub: '自洽才是真自信。', w: { A_GIAO:3, DINGZHEN:1 } },
     ],
   },
   /* ── Q19 ── */
   {
-    text: '你被老板当众批评，当时你的表情是？',
+    text: '在公开场合你被领导或长辈批评，你的反应是？',
     options: [
-      { text: '笑一下，啥也没说，散会后继续干活。', sub: '高情商处理。', w: { DINGZHEN:3, DONGYOU_GUAIGE:1 } },
-      { text: '当场开麦：您这样说不讲武德！耗子尾汁！', sub: '正面硬刚。', w: { MA_BAOGUO:3, YAOSHUI_GE:1 } },
-      { text: '点头，嘴上答应，心里默背：打工是不可能的。', sub: '精神已经出走了。', w: { QIEGEFALA:3, SUN_XIAOCHUAN:1 } },
-      { text: '回去想好了措辞，他们扔粑粑我拿粑粑做蛋挞。', sub: '危机转化大师。', w: { SICHUANFENDA:3, FENGGE:1 } },
+      { text: '微笑点头，内心平静，等结束了继续做自己的事。', sub: '表面配合，内心自由。', w: { DINGZHEN:3, DONGYOU_GUAIGE:1 } },
+      { text: '当场反驳，说清楚自己为什么这样做。', sub: '道理要当场讲。', w: { MA_BAOGUO:3, YAOSHUI_GE:1 } },
+      { text: '心里飘走了，想着等这件事过去再说。', sub: '逃避也是一种选择。', w: { QIEGEFALA:3, AZU:1 } },
+      { text: '把这次批评变成动力，之后用结果回击。', sub: '用行动说话。', w: { SICHUANFENDA:3, DONGBEI_YUJIE:1 } },
     ],
   },
   /* ── Q20 ── */
   {
-    text: '有人说你的方言听起来很搞笑，你的反应是？',
+    text: '你的某个特点被人嘲笑，你会怎么做？',
     options: [
-      { text: '搞笑？这是东北话，这叫霸气，带派！', sub: '文化自信满满。', w: { DONGBEI_YUJIE:3, DINGZHEN:1 } },
-      { text: '迷人的我说什么都好听！', sub: '自带迷人气场。', w: { GUO_LAOSHI:3, ZHOUSUYI:2 } },
-      { text: '汝之嘲讽，多由无知构而成。改用文言文了。', sub: '语言升级，直接降维。', w: { HU_CHENGFENG:3, FENGGE:1 } },
-      { text: '我的方言不搞笑，是你的耳朵不讲武德。', sub: '问题出在对方身上。', w: { MA_BAOGUO:3, SUN_XIAOCHUAN:1 } },
+      { text: '豪爽地认了，然后把这个特点发挥到极致。', sub: '把短板变名片。', w: { DONGBEI_YUJIE:3, A_GIAO:1 } },
+      { text: '用自信和气场盖过对方，让对方自讨没趣。', sub: '气场碾压。', w: { GUO_LAOSHI:3, ZHOUSUYI:2 } },
+      { text: '反将一军，从更高维度解释自己这个特点的价值。', sub: '维度降维打击。', w: { HU_CHENGFENG:3, FENGGE:1 } },
+      { text: '觉得对方完全搞不懂我，懒得解释。', sub: '不配解释。', w: { MA_BAOGUO:3, SUN_XIAOCHUAN:1 } },
     ],
   },
   /* ── Q21 ── */
   {
-    text: '你在吃饭，旁边有人一直盯着你，你会怎么做？',
+    text: '你在一个陌生的社交场合，你会倾向于？',
     options: [
-      { text: '给他们看看我的食量，一顿吃16包泡面算什么。', sub: '让他们见识什么叫大胃袋。', w: { DAWEI_LIANGZI:3, DONGBEI_YUJIE:1 } },
-      { text: '干净又卫生！哎呀，太干净又卫生了！邀请他们一起吃。', sub: '美食必须分享。', w: { LIUYONG:3, DINGZHEN:1 } },
-      { text: '宁配吗？你配盯着我吃饭？', sub: '对视就是对线的开始。', w: { YAOSHUI_GE:3, MA_BAOGUO:1 } },
-      { text: '就直笑，小手一指rap开始：打开手机应用商店搜索陈泽，搞定他！', sub: '土味rap战前宣言震场。', w: { CHENZE:3, NAILONG:1 } },
+      { text: '大吃一顿，用食物建立社交纽带。', sub: '吃饭是万能破冰剂。', w: { DAWEI_LIANGZI:3, DONGBEI_YUJIE:1 } },
+      { text: '热情招待，分享食物，让所有人都开心。', sub: '善意是最好的名片。', w: { LIUYONG:3, DINGZHEN:1 } },
+      { text: '观察为主，看谁有料，再决定要不要聊。', sub: '选择性社交。', w: { YAOSHUI_GE:3, FENGGE:1 } },
+      { text: '用自己的方式整活破冰，让全场都注意到你。', sub: '存在感第一。', w: { CHENZE:3, NAILONG:1 } },
     ],
   },
   /* ── Q22 ── */
   {
-    text: '你长得和某个大名人特别像，这对你意味着什么？',
+    text: '你和某个人有一些外表或气质上的相似，你会？',
     options: [
-      { text: '意味着我可以站在他演唱会场外，比他还火。', sub: '外貌是流量密码。', w: { WANG_BIAN:3, FAN_XIAOQIN:1 } },
-      { text: '意味着我是"小马云"，命运已定。', sub: '被流量选中，也被流量遗忘。', w: { FAN_XIAOQIN:3, WANG_BIAN:1 } },
-      { text: '意味着我练习时长两年半，果然有成效。', sub: '形似神也似。', w: { CAIXUKUN:3, A_GIAO:1 } },
-      { text: '意味着和艾瑞卡在一起，女友说我们天生一对。', sub: '跨国情缘缘分未了。', w: { ZI_HENG:3, BAIRIMXJ:1 } },
+      { text: '把这个相似点变成自己的流量入口。', sub: '相似就是资源。', w: { WANG_BIAN:3, FAN_XIAOQIN:1 } },
+      { text: '被动接受，觉得这种比较有点无奈。', sub: '命运不由自己掌控。', w: { FAN_XIAOQIN:3, AZU:1 } },
+      { text: '欣然接受，这说明自己的努力和积累有了成效。', sub: '像谁是一种认可。', w: { CAIXUKUN:3, KANG_SHEN:1 } },
+      { text: '觉得这是缘分，说不定能从这里开始一段故事。', sub: '缘分就是这样来的。', w: { ZI_HENG:3, BAIRIMXJ:1 } },
     ],
   },
   /* ── Q23 ── */
   {
-    text: '你在游戏里输了，队友开始骂你，你怎么应对？',
+    text: '你在一个竞技场合表现失常，队友开始抱怨，你会？',
     options: [
-      { text: '回答我！look in my eyes，tell me why！', sub: '剑魔玩家的标准反应。', w: { XIAOMING_JIANMO:3, YAOSHUI_GE:1 } },
-      { text: '质疑我，理解我，成为我。你迟早明白的。', sub: '三段式进化早已完成。', w: { KANG_SHEN:3, XIAOMING_JIANMO:1 } },
-      { text: '宁配吗？你配骂我？', sub: '来都来了，七小时告诉你。', w: { YAOSHUI_GE:3, SUN_XIAOCHUAN:1 } },
-      { text: '打开你的手机应用商店，搜索陈泽，我就是你的答案！', sub: '土味rap战前宣言。', w: { CHENZE:3, KANG_SHEN:1 } },
+      { text: '情绪激动地质问对方，凭什么这样评判你。', sub: '先发制人。', w: { XIAOMING_JIANMO:3, YAOSHUI_GE:1 } },
+      { text: '保持冷静，相信自己的实力迟早被认可。', sub: '过程是积累，结果是证明。', w: { KANG_SHEN:3, CAIXUKUN:1 } },
+      { text: '反问对方有没有资格评价你。', sub: '先看看资格。', w: { YAOSHUI_GE:3, MA_BAOGUO:1 } },
+      { text: '用独特的方式让整个场合的关注点转移到你身上。', sub: '氛围都是可以营造的。', w: { CHENZE:3, A_GIAO:1 } },
     ],
   },
   /* ── Q24 ── */
   {
-    text: '你在群里说了一句话，然后突然全群沉默了，你怎么理解这个局面？',
+    text: '你说了一句话，周围人都沉默了，你会怎么想？',
     options: [
-      { text: '救命，群里怎么了，我真的会谢！摔烂了！', sub: '发疯文学现场演示。', w: { LILI:3, ZHOUSUYI:1 } },
-      { text: '他们被我的接化发震慑住了，不讲武德的沉默。', sub: '以沉默论武德。', w: { MA_BAOGUO:3, YAOSHUI_GE:1 } },
-      { text: '他们无法理解我的格局，认知层次不够。', sub: '降维成功。', w: { FENGGE:2, HU_CHENGFENG:3 } },
-      { text: '扎西德勒，沉默就是认同。', sub: '乐观解读一切。', w: { DINGZHEN:3, DONGYOU_GUAIGE:2 } },
+      { text: '一定是自己说错了什么，既尴尬又好笑，整个人都不好了。', sub: '反差萌全程在线。', w: { ZHOUSUYI:3, LILI:2 } },
+      { text: '觉得是自己的观点太超前，他们一时反应不过来。', sub: '超前不被理解是正常的。', w: { MA_BAOGUO:3, HU_CHENGFENG:1 } },
+      { text: '无所谓，沉默也是一种反馈，继续做自己。', sub: '不在乎外部评价。', w: { FENGGE:2, DINGZHEN:3 } },
+      { text: '觉得有点好玩，好奇自己说了什么这么神奇。', sub: '把尴尬当有趣。', w: { NAILONG:3, DONGYOU_GUAIGE:1 } },
     ],
   },
   /* ── Q25 ── */
   {
-    text: '你白天打工，晚上还要做另一件事，你是在做什么？',
+    text: '你同时有一份正职和一个副业，你怎么平衡？',
     options: [
-      { text: '白天工地干饭，晚上直播PK，赛博民工就是我。', sub: '双线运营，普通人也可以有自己的直播间。', w: { DD_XIAOSHUI:3, DONGYOU_GUAIGE:1 } },
-      { text: '白天出门旅行，晚上写博客，月入5000看不到这种生活。', sub: '全球旅行，永不停歇。', w: { FENGGE:3, HU_CHENGFENG:1 } },
-      { text: '白天练功，晚上讲武德，准备早日接化发成功。', sub: '武德不分昼夜。', w: { MA_BAOGUO:3, CHANGSHU_ANUO:1 } },
-      { text: '白天流口水，晚上继续流，Duang～每天都很快乐。', sub: '奶龙的快乐很简单。', w: { NAILONG:3, GUO_LAOSHI:1 } },
+      { text: '两件事都全力做，白天一件事，晚上另一件。', sub: '时间是挤出来的。', w: { DD_XIAOSHUI:3, DONGYOU_GUAIGE:1 } },
+      { text: '副业才是真正的出路，正职只是过渡。', sub: '格局要放大看。', w: { FENGGE:3, HU_CHENGFENG:1 } },
+      { text: '把两件事都做得中规中矩，不出错就行。', sub: '稳定也是一种策略。', w: { MA_BAOGUO:2, JIA_NAILIANG:3 } },
+      { text: '沉浸在自己的节奏里，两件事都做得有点呆萌。', sub: '开心最重要。', w: { NAILONG:3, GUO_LAOSHI:1 } },
     ],
   },
   /* ── Q26 ── */
   {
-    text: '你的直播带货突然翻车被网友曝光，你怎么办？',
+    text: '你做了一件事情，结果翻车了被人嘲笑，你会？',
     options: [
-      { text: '我真的不知道，但奥利给！下次不会了！', sub: '认错迅速，继续向前。', w: { JIA_NAILIANG:3, DONGYOU_GUAIGE:1 } },
-      { text: '这事儿是背锅，我什么都不知道，但我认了。', sub: '背锅侠哲学的终极体现。', w: { SUN_XIAOCHUAN:3, GAZI_GE:1 } },
-      { text: '他们朝我扔粑粑，我拿粑粑做蛋挞，没座！', sub: '翻车也能整出新花样。', w: { SICHUANFENDA:3, JIA_NAILIANG:1 } },
-      { text: '我说的都是真的，网上的东西你们把握不住！', sub: '硬撑到底。', w: { GAZI_GE:3, MA_BAOGUO:1 } },
+      { text: '诚恳道歉，快速调整，重新出发。', sub: '认错是再出发的第一步。', w: { JIA_NAILIANG:3, DONGYOU_GUAIGE:1 } },
+      { text: '先把责任分担一下，这不全是我的锅。', sub: '客观分析责任。', w: { SUN_XIAOCHUAN:3, GAZI_GE:1 } },
+      { text: '把翻车过程整合成内容，反向出圈。', sub: '翻车也是一种热度。', w: { SICHUANFENDA:3, WANG_BIAN:1 } },
+      { text: '坚持自己没错，对方才是有问题的那个。', sub: '我的判断不会错。', w: { GAZI_GE:3, MA_BAOGUO:1 } },
     ],
   },
   /* ── Q27 ── */
   {
-    text: '你在直播间玩游戏，弹幕突然涌进来一大波黑粉，你怎么做？',
+    text: '你在一个公开场合展示自己，来了一批不友好的人，你会？',
     options: [
-      { text: '回答我！这游戏你玩过吗！tell me why！', sub: '声音洪亮，理由充分。', w: { XIAOMING_JIANMO:3, YAOSHUI_GE:1 } },
-      { text: '宁配吗？你配在我直播间发弹幕？', sub: '对线七小时，从不认输。', w: { YAOSHUI_GE:3, SUN_XIAOCHUAN:1 } },
-      { text: '不管他们，开心你就giao，不开心你就giaogiao！', sub: '保持魔性，不被影响。', w: { A_GIAO:3, DONGYOU_GUAIGE:1 } },
-      { text: '质疑康康，理解康康，成为康康。他们迟早明白。', sub: '静待花开，用实力说话。', w: { KANG_SHEN:3, XIAOMING_JIANMO:1 } },
+      { text: '激动反击，质问他们凭什么这样对你。', sub: '正面硬刚。', w: { XIAOMING_JIANMO:3, YAOSHUI_GE:1 } },
+      { text: '用时间和持续的表现让他们慢慢闭嘴。', sub: '实力是最好的回击。', w: { KANG_SHEN:3, CAIXUKUN:1 } },
+      { text: '把不友好当成互动素材，反将一军。', sub: '黑粉就是粉丝。', w: { A_GIAO:3, CHENZE:1 } },
+      { text: '用自己的魔性和真实感化解敌意。', sub: '真实比完美更有力量。', w: { DONGYOU_GUAIGE:3, GUO_LAOSHI:1 } },
     ],
   },
   /* ── Q28 ── */
   {
-    text: '你在街头随机遇到一个看起来很厉害的陌生人，你会？',
+    text: '你在生活中偶遇了一个很特别的人，你会？',
     options: [
-      { text: '上去切磋，我的接化发天下无敌。', sub: '武林人士必须以武会友。', w: { MA_BAOGUO:3, YAOSHUI_GE:1 } },
-      { text: '给他递一张名片：网恋教父，欢迎来聊。', sub: '广撒网，多敛鱼。', w: { SUN_XIAOCHUAN:3, HU_CHENGFENG:1 } },
-      { text: '和他聊聊，说不定就是我的跨国缘分。', sub: '易上手的浪漫主义者。', w: { ZI_HENG:3, BAIRIMXJ:1 } },
-      { text: '问他月入多少，再决定要不要聊。', sub: '认知筛选第一步。', w: { FENGGE:2, HU_CHENGFENG:3 } },
+      { text: '主动出击，看看能不能建立一些关系。', sub: '主动是一种习惯。', w: { SUN_XIAOCHUAN:3, ZI_HENG:1 } },
+      { text: '观察对方，评估是否值得深入了解。', sub: '筛选比数量更重要。', w: { HU_CHENGFENG:3, FENGGE:2 } },
+      { text: '觉得缘分说不定能带来一段浪漫的故事。', sub: '浪漫主义是天性。', w: { ZI_HENG:3, BAIRIMXJ:1 } },
+      { text: '先观察，喜欢就说，不喜欢就走。', sub: '真实才能遇到真实。', w: { DINGZHEN:3, DONGYOU_GUAIGE:1 } },
     ],
   },
   /* ── Q29 ── */
   {
-    text: '你发现有人在复制粘贴你的风格、口头禅，你会怎么做？',
+    text: '有人在模仿你的风格，越做越好，你会？',
     options: [
-      { text: '拿起芙蓉王，在他演出场外支持他，比他还出名。', sub: '模仿可以反超原版。', w: { WANG_BIAN:3, SICHUANFENDA:1 } },
-      { text: '年轻人，你这不讲武德！等我接化发！', sub: '必须维权。', w: { MA_BAOGUO:3, YAOSHUI_GE:1 } },
-      { text: '随便，天下giao者皆我徒。', sub: '宗师级别，早已放下。', w: { A_GIAO:3, SUN_XIAOCHUAN:1 } },
-      { text: '刀给我！你给我靠！指定有你！', sub: '魔性口号是最好的回击。', w: { DAO_GE:3, NAILONG:1 } },
+      { text: '把他模仿的动作变成自己新一轮的流量入口。', sub: '模仿者可以成为我的素材。', w: { WANG_BIAN:3, SICHUANFENDA:1 } },
+      { text: '觉得对方这样做不厚道，提出反对。', sub: '原创要被尊重。', w: { MA_BAOGUO:3, YAOSHUI_GE:1 } },
+      { text: '无所谓，模仿代表你已经成为了某种标志。', sub: '被模仿是一种荣耀。', w: { A_GIAO:3, KANG_SHEN:1 } },
+      { text: '有点好笑，同时有点开心，这种感觉很奇妙。', sub: '魔性的传播让人喜悦。', w: { DAO_GE:3, NAILONG:1 } },
     ],
   },
   /* ── Q30 ── */
   {
-    text: '你攒了半年的钱，终于可以买一样喜欢的东西，结果发现涨价了。你的第一反应？',
+    text: '你期待很久的事情，因为外部原因落空了，你会？',
     options: [
-      { text: '没事，打工赚钱是不可能的，买它也没意义。', sub: '淡然如斯。', w: { QIEGEFALA:3, SUN_XIAOCHUAN:1 } },
-      { text: '东北大棚蔬菜不涨价，我改吃菜了。', sub: '化悲痛为力量。', w: { DONGBEI_YUJIE:3, DINGZHEN:1 } },
-      { text: '我是白日梦想家，这种坑我一定要记录下来告诉大家！', sub: '把坑变成内容。', w: { DANKING:3, BAIRIMXJ:2 } },
-      { text: '南～Duang～Duang～Duang～还是得买！', sub: '魔性决策过程。', w: { NAILONG:3, DONGYOU_GUAIGE:1 } },
+      { text: '算了，这种事反正计划赶不上变化，早看透了。', sub: '期望越低失望越小。', w: { QIEGEFALA:3, AZU:1 } },
+      { text: '自己想办法，换个方向重新出发。', sub: '条件不够就自己创造条件。', w: { DONGBEI_YUJIE:3, ZHOUSUYI:2 } },
+      { text: '把这次落空记录下来，帮助别人少踩同样的坑。', sub: '失败也有传播价值。', w: { DANKING:3, BAIRIMXJ:2 } },
+      { text: '下次一定！继续期待，继续快乐。', sub: '乐观是永动机。', w: { NAILONG:3, LIUYONG:1 } },
     ],
   },
 ];
