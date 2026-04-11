@@ -1,159 +1,289 @@
-.booklistContainer {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 2.5rem 0 1rem 0;
+/* ===== 宇宙容器 ===== */
+.universe {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: radial-gradient(ellipse at 45% 35%, #0a1628 0%, #04091a 55%, #000 100%);
+  overflow: hidden;
+  transition: opacity 0.6s ease, transform 0.6s ease;
+  user-select: none;
 }
 
-.header {
-  margin-bottom: 2rem;
+.universe.entering {
+  opacity: 0;
+  transform: scale(1.12);
+  pointer-events: none;
 }
 
-.header h1 {
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: #222;
-  margin-bottom: 0.4rem;
-}
-
-.bookEmoji {
-  font-size: 1.5rem;
-  vertical-align: middle;
-}
-
-.subtitle {
-  color: #888;
-  font-size: 0.95rem;
-  margin-top: 0.3rem;
-}
-
-.booklistMain {
+/* ===== 主 Canvas ===== */
+.mainCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
+  height: 100%;
+  cursor: grab;
+  z-index: 1;
+  display: block;
 }
 
-.bookGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
-  gap: 1.8rem;
+.mainCanvas:active {
+  cursor: grabbing;
 }
 
-.bookCard {
-  display: flex;
-  align-items: center;
-  background: #f7f8fa;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(120,120,140,0.07);
-  padding: 1.2rem 1.5rem;
-  transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
-  border: 1px solid #ececec;
-  min-height: 180px;
-  text-decoration: none;
-  color: inherit;
-  cursor: pointer;
+/* ===== 中心标题 ===== */
+.centerTitle {
+  position: absolute;
+  top: 5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  pointer-events: none;
+  z-index: 5;
 }
 
-.bookCard:hover {
-  box-shadow: 0 8px 32px rgba(60, 60, 100, 0.12);
-  border-color: #a5b4fc;
-  transform: translateY(-2px);
+.centerTitleText {
+  font-size: 1.9rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #a78bfa 0%, #38bdf8 50%, #f472b6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 5px;
+  filter: drop-shadow(0 0 24px rgba(167, 139, 250, 0.45));
 }
 
-.bookCover {
-  width: 110px;
-  height: 150px;
-  object-fit: cover;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-  margin-right: 2rem;
-  background: #e9e9eb;
-  flex-shrink: 0;
+.centerTitleSub {
+  margin-top: 0.5rem;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.35);
+  letter-spacing: 1.5px;
+  animation: subtlePulse 3.5s ease-in-out infinite;
 }
 
-.bookInfo {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-width: 0;
+@keyframes subtlePulse {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.7; }
 }
 
-.bookTitle {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #222;
-  margin-bottom: 0.4rem;
+/* ===== 书籍信息面板 ===== */
+.bookInfoPanel {
+  position: absolute;
+  width: 230px;
+  background: rgba(6, 8, 24, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid transparent;
+  border-radius: 16px;
+  padding: 1.4rem 1.2rem;
+  z-index: 20;
+  text-align: center;
+  animation: panelAppear 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: all;
 }
 
-.bookAuthor {
-  color: #6366f1;
-  font-size: 1rem;
-  margin-bottom: 0.4rem;
+@keyframes panelAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.88) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
-.bookRating {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  color: #f59e42;
-  font-size: 1rem;
-  margin-bottom: 0.4rem;
+.panelEmoji {
+  font-size: 2.2rem;
+  margin-bottom: 0.5rem;
+  line-height: 1;
 }
 
-.ratingStars {
-  color: #f59e42;
+.panelTitle {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.25rem;
+  line-height: 1.3;
+}
+
+.panelAuthor {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.45);
+  margin-bottom: 0.5rem;
+}
+
+.panelTheme {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  margin-bottom: 0.6rem;
+}
+
+.panelAtmo {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.65;
+  margin-bottom: 0.7rem;
+}
+
+.panelRating {
+  font-size: 0.88rem;
+  color: #f59e0b;
+  margin-bottom: 1rem;
   letter-spacing: 1px;
 }
 
-.ratingNum {
-  font-size: 1rem;
-  font-weight: bold;
-  color: #f59e42;
+.enterBtn {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.8px;
+  transition: opacity 0.18s, transform 0.18s;
 }
 
-.myComment {
-  background: #f2f6fc;
-  border-left: 3px solid #6366f1;
-  padding: 0.6rem 1rem;
-  border-radius: 6px;
-  font-size: 0.97rem;
-  color: #333;
-  margin-top: 0.1rem;
-  word-break: break-word;
+.enterBtn:hover {
+  opacity: 0.85;
+  transform: scale(1.04);
 }
 
-.readHint {
+.enterBtn:active {
+  transform: scale(0.98);
+}
+
+/* ===== 底部书单 Hints ===== */
+.bookHints {
+  position: absolute;
+  bottom: 1.8rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.8rem;
+  z-index: 10;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.bookHintItem {
+  padding: 0.38rem 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.8rem;
+  cursor: pointer;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-top: 0.6rem;
-  font-size: 0.9rem;
-  color: #6366f1;
-  font-weight: 500;
+  gap: 0.38rem;
+  transition: background 0.2s, color 0.2s, transform 0.15s;
 }
 
-.chapterCount {
-  background: #eef2ff;
-  color: #6366f1;
-  padding: 0.15rem 0.6rem;
-  border-radius: 20px;
-  font-size: 0.82rem;
-  font-weight: 600;
+.bookHintItem:hover {
+  background: rgba(255, 255, 255, 0.09);
+  color: #fff;
+  transform: translateY(-1px);
 }
 
-@media (max-width: 800px) {
-  .bookGrid {
-    grid-template-columns: 1fr;
-    gap: 1.2rem;
+.bookHintActive {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
+}
+
+/* ===== 缩放控件 ===== */
+.zoomControls {
+  position: absolute;
+  right: 1.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 10;
+}
+
+.zoomBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.18s, color 0.18s, transform 0.15s;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 0;
+}
+
+.zoomBtn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  transform: scale(1.12);
+}
+
+.zoomBtn:active {
+  transform: scale(0.94);
+}
+
+.zoomBar {
+  width: 3px;
+  height: 70px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+}
+
+.zoomBarFill {
+  width: 100%;
+  background: linear-gradient(to top, #a78bfa, #38bdf8);
+  border-radius: 2px;
+  transition: height 0.15s ease;
+  min-height: 2px;
+}
+
+
+/* ===== 移动端适配 ===== */
+@media (max-width: 768px) {
+  .centerTitleText {
+    font-size: 1.4rem;
+    letter-spacing: 3px;
   }
-  .bookCard {
-    flex-direction: column;
-    align-items: flex-start;
-    min-height: unset;
-    padding: 1rem;
+
+  .bookInfoPanel {
+    position: fixed;
+    left: 50% !important;
+    top: auto !important;
+    bottom: 5.5rem;
+    transform: translateX(-50%);
+    width: calc(100vw - 2.5rem);
+    max-width: 320px;
+    animation: panelSlideUp 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
-  .bookCover {
-    margin-right: 0;
-    margin-bottom: 1rem;
-    width: 90px;
-    height: 120px;
+
+  @keyframes panelSlideUp {
+    from { opacity: 0; transform: translateX(-50%) translateY(20px) scale(0.92); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
   }
+
+  .bookHints {
+    bottom: 1rem;
+    gap: 0.5rem;
+  }
+
 }
