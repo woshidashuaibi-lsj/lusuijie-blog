@@ -138,7 +138,7 @@ export default function StyleConfig({ project, onUpdate, onNext, onBack }: Props
       </div>
 
       <div className={styles.hint}>
-        ✦ 准备工作已完成！点击"开始创作"后，你将进入逐章写作模式，AI 会记住所有设定。
+        ✦ 准备工作已完成！点击&ldquo;开始创作&rdquo;后，你将进入逐章写作模式，AI 会记住所有设定。
       </div>
 
       <div className={styles.footer}>

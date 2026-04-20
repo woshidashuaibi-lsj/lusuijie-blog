@@ -456,7 +456,7 @@ export default function ChapterWriter({ project, onUpdate, onBackToWizard }: Pro
           ) : (
             <div className={styles.emptyEditor}>
               <div className={styles.emptyEditorIcon}>✦</div>
-              <p>选择左侧章节开始创作<br />或点击"新章节"开始第一章</p>
+              <p>选择左侧章节开始创作<br />或点击&ldquo;新章节&rdquo;开始第一章</p>
               <button className={styles.generateBtn} onClick={addNewChapter}>
                 开始第一章
               </button>

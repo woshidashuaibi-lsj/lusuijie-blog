@@ -102,7 +102,7 @@ export default function ForeshadowPanel({ foreshadows, currentChapterNumber, onU
         {foreshadows.length === 0 && (
           <div className={styles.empty}>
             暂无伏笔记录<br />
-            <span style={{ fontSize: '0.72rem', opacity: 0.5 }}>在"情节规划"步骤中添加</span>
+            <span style={{ fontSize: '0.72rem', opacity: 0.5 }}>在&ldquo;情节规划&rdquo;步骤中添加</span>
           </div>
         )}
       </div>
