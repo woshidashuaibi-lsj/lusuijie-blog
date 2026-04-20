@@ -10,6 +10,7 @@
  */
 
 import type { NovelProject, StoryBibleSnapshot } from '@/types/novel';
+import { syncProjectToCloud, deleteProjectFromCloud } from '@/lib/novelSync';
 
 const DB_NAME = 'novel-creator';
 const DB_VERSION = 1;
@@ -158,18 +159,21 @@ interface SnapshotRecord {
 export async function saveProject(project: NovelProject): Promise<void> {
   const toSave = { ...project, updatedAt: Date.now() };
 
+  // 本地写入
   if (!isIndexedDBAvailable()) {
     lsSaveProject(toSave);
-    return;
+  } else {
+    try {
+      const db = await getDB();
+      await db.put(STORE_PROJECTS, toSave);
+    } catch (e) {
+      console.error('[NovelDB] IndexedDB 写入失败，降级到 localStorage:', e);
+      lsSaveProject(toSave);
+    }
   }
 
-  try {
-    const db = await getDB();
-    await db.put(STORE_PROJECTS, toSave);
-  } catch (e) {
-    console.error('[NovelDB] IndexedDB 写入失败，降级到 localStorage:', e);
-    lsSaveProject(toSave);
-  }
+  // 云端同步（异步，不阻塞，失败静默）
+  syncProjectToCloud(toSave).catch(() => {});
 }
 
 /**
@@ -212,29 +216,32 @@ export async function listProjects(): Promise<NovelProject[]> {
  * 删除项目及其快照
  */
 export async function deleteProject(id: string): Promise<void> {
+  // 本地删除
   if (!isIndexedDBAvailable()) {
     lsDeleteProject(id);
-    return;
-  }
+  } else {
+    try {
+      const db = await getDB();
+      const tx = db.transaction([STORE_PROJECTS, STORE_SNAPSHOTS], 'readwrite');
+      await tx.objectStore(STORE_PROJECTS).delete(id);
 
-  try {
-    const db = await getDB();
-    const tx = db.transaction([STORE_PROJECTS, STORE_SNAPSHOTS], 'readwrite');
-    await tx.objectStore(STORE_PROJECTS).delete(id);
-
-    // 删除该项目所有快照
-    const snapshotStore = tx.objectStore(STORE_SNAPSHOTS) as IDBPObjectStore;
-    const index = snapshotStore.index('byProject');
-    let cursor = await index.openCursor(id);
-    while (cursor) {
-      await cursor.delete();
-      cursor = await cursor.continue();
+      // 删除该项目所有快照
+      const snapshotStore = tx.objectStore(STORE_SNAPSHOTS) as IDBPObjectStore;
+      const index = snapshotStore.index('byProject');
+      let cursor = await index.openCursor(id);
+      while (cursor) {
+        await cursor.delete();
+        cursor = await cursor.continue();
+      }
+      await tx.done;
+    } catch (e) {
+      console.error('[NovelDB] IndexedDB 删除失败，降级到 localStorage:', e);
+      lsDeleteProject(id);
     }
-    await tx.done;
-  } catch (e) {
-    console.error('[NovelDB] IndexedDB 删除失败，降级到 localStorage:', e);
-    lsDeleteProject(id);
   }
+
+  // 云端同步删除（异步，不阻塞）
+  deleteProjectFromCloud(id).catch(() => {});
 }
 
 // ── 快照管理 ─────────────────────────────────────────────────────────────────

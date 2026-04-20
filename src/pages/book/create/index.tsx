@@ -2,7 +2,8 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import type { NovelProject } from '@/types/novel';
-import { listProjects, deleteProject } from '@/lib/novelDB';
+import { listProjects, deleteProject, saveProject } from '@/lib/novelDB';
+import { fetchProjectsByDeviceId, getDeviceId } from '@/lib/novelSync';
 import NovelCreator from '@/components/NovelCreator';
 import styles from './create.module.css';
 
@@ -19,6 +20,11 @@ export default function CreatePage() {
   const [loading, setLoading] = useState(true);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [showProjectList, setShowProjectList] = useState(false);
+  // 换设备恢复
+  const [showRestore, setShowRestore] = useState(false);
+  const [restoreDeviceId, setRestoreDeviceId] = useState('');
+  const [restoring, setRestoring] = useState(false);
+  const [restoreMsg, setRestoreMsg] = useState('');
 
   useEffect(() => {
     listProjects().then(list => {
@@ -52,6 +58,39 @@ export default function CreatePage() {
     if (!confirm('确定删除此项目？此操作不可撤销。')) return;
     await deleteProject(id);
     setProjects(prev => prev.filter(p => p.id !== id));
+  };
+
+  // 从另一台设备恢复数据
+  const handleRestore = async () => {
+    if (!restoreDeviceId.trim()) {
+      setRestoreMsg('请输入设备码');
+      return;
+    }
+    setRestoring(true);
+    setRestoreMsg('正在从云端拉取…');
+    try {
+      const cloudProjects = await fetchProjectsByDeviceId(restoreDeviceId.trim());
+      if (cloudProjects.length === 0) {
+        setRestoreMsg('未找到该设备码对应的数据，请检查设备码是否正确');
+        setRestoring(false);
+        return;
+      }
+      // 逐个保存到本地
+      for (const p of cloudProjects) {
+        await saveProject(p);
+      }
+      const updated = await listProjects();
+      setProjects(updated);
+      setRestoreMsg(`✓ 已恢复 ${cloudProjects.length} 个项目！`);
+      setTimeout(() => {
+        setShowRestore(false);
+        setRestoreMsg('');
+        setRestoreDeviceId('');
+      }, 1500);
+    } catch {
+      setRestoreMsg('恢复失败，请稍后重试');
+    }
+    setRestoring(false);
   };
 
   if (loading) {
@@ -94,6 +133,48 @@ export default function CreatePage() {
             <div className={styles.logo}>✦ 创造世界</div>
             <p className={styles.subtitle}>你的 AI 小说创作工坊</p>
           </div>
+
+          {/* 设备码 & 换设备恢复 */}
+          <div style={{ marginBottom: '1.5rem', padding: '0.75rem 1rem', background: 'rgba(167,139,250,0.06)', borderRadius: '8px', border: '1px solid rgba(167,139,250,0.15)', fontSize: '0.8rem', color: 'rgba(255,255,255,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+            <span>
+              我的设备码：<code style={{ color: '#a78bfa', letterSpacing: '0.1em', userSelect: 'all' }}>{getDeviceId()}</code>
+              <span style={{ marginLeft: '0.5rem', opacity: 0.6 }}>（换设备时输入此码恢复数据）</span>
+            </span>
+            <button
+              onClick={() => setShowRestore(v => !v)}
+              style={{ background: 'none', border: '1px solid rgba(167,139,250,0.3)', borderRadius: '6px', color: '#a78bfa', padding: '0.3rem 0.75rem', cursor: 'pointer', fontSize: '0.78rem', whiteSpace: 'nowrap' }}
+            >
+              从其他设备恢复
+            </button>
+          </div>
+
+          {/* 恢复弹窗 */}
+          {showRestore && (
+            <div style={{ marginBottom: '1.5rem', padding: '1rem', background: 'rgba(167,139,250,0.08)', borderRadius: '10px', border: '1px solid rgba(167,139,250,0.2)' }}>
+              <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', marginBottom: '0.75rem' }}>输入另一台设备的设备码：</div>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <input
+                  value={restoreDeviceId}
+                  onChange={e => setRestoreDeviceId(e.target.value.toUpperCase())}
+                  placeholder="例如：AB12CD34"
+                  maxLength={8}
+                  style={{ flex: 1, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(167,139,250,0.3)', borderRadius: '6px', color: '#fff', padding: '0.5rem 0.75rem', fontSize: '0.9rem', letterSpacing: '0.15em', outline: 'none' }}
+                />
+                <button
+                  onClick={handleRestore}
+                  disabled={restoring}
+                  style={{ background: '#a78bfa', border: 'none', borderRadius: '6px', color: '#fff', padding: '0.5rem 1rem', cursor: restoring ? 'wait' : 'pointer', fontSize: '0.85rem', opacity: restoring ? 0.6 : 1 }}
+                >
+                  {restoring ? '恢复中…' : '恢复'}
+                </button>
+              </div>
+              {restoreMsg && (
+                <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: restoreMsg.startsWith('✓') ? '#4ade80' : '#f87171' }}>
+                  {restoreMsg}
+                </div>
+              )}
+            </div>
+          )}
 
           <div className={styles.projectList}>
             {/* 新建项目卡片 */}
