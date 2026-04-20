@@ -1,0 +1,246 @@
+/* CharacterGallery 人物图鉴组件样式 */
+
+/* ─── 容器 ───────────────────────────────────────────────────────────────── */
+.galleryContainer {
+  width: 100%;
+}
+
+.emptyTip {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 1rem;
+}
+
+/* ─── 人物网格 ───────────────────────────────────────────────────────────── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+/* ─── 人物卡片 ───────────────────────────────────────────────────────────── */
+.card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.cardExpanded {
+  border-width: 2px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ─── 卡片头部（折叠态可见）─────────────────────────────────────────────── */
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+}
+
+.avatarWrap {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+}
+
+.cardInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.cardName {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.2rem;
+}
+
+.cardRole {
+  font-size: 0.8rem;
+  opacity: 0.65;
+  color: #fff;
+  margin-bottom: 0.5rem;
+}
+
+.cardTraitsPreview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.traitTag {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.expandArrow {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.4);
+  transition: transform 0.25s ease;
+  flex-shrink: 0;
+  margin-top: 0.2rem;
+}
+
+.expandArrowOpen {
+  transform: rotate(180deg);
+}
+
+/* ─── 展开详情区 ─────────────────────────────────────────────────────────── */
+.cardDetail {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  animation: fadeSlideIn 0.2s ease;
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.detailSection {
+  margin-bottom: 0.9rem;
+}
+
+.detailSection:last-child {
+  margin-bottom: 0;
+}
+
+.detailLabel {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  opacity: 0.5;
+  color: #fff;
+  margin-bottom: 0.4rem;
+}
+
+.traitsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.traitsListItem {
+  font-size: 0.83rem;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.5;
+  padding-left: 1rem;
+  position: relative;
+}
+
+.traitsListItem::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  opacity: 0.5;
+}
+
+.speechStyleText {
+  font-size: 0.83rem;
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1.6;
+  font-style: italic;
+}
+
+.relationsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.relationItem {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.5;
+}
+
+/* ─── 行动按钮 ───────────────────────────────────────────────────────────── */
+.actionBtns {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.actionBtn {
+  flex: 1;
+  padding: 0.6rem 0.5rem;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1.5px solid transparent;
+  text-align: center;
+}
+
+.actionBtnTalk {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.85);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.actionBtnTalk:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+
+.actionBtnPlay {
+  color: #111;
+  font-weight: 700;
+}
+
+.actionBtnPlay:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+/* ─── 响应式 ─────────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .actionBtns {
+    flex-direction: column;
+  }
+}

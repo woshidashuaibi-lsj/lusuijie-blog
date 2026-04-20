@@ -25,6 +25,7 @@ const BOOK_WORLDS: Record<string, {
   chatLabel: string;
   chatEnabled: boolean;
   chatCharacter?: string;
+  charactersEnabled: boolean;
 }> = {
   'dao-gui-yi-xian': {
     theme: '道诡异仙',
@@ -42,6 +43,7 @@ const BOOK_WORLDS: Record<string, {
     chatLabel: '与李火旺对话',
     chatEnabled: true,
     chatCharacter: '李火旺',
+    charactersEnabled: true,
   },
   'wo-kanjian-de-shijie': {
     theme: '我看见的世界',
@@ -59,6 +61,7 @@ const BOOK_WORLDS: Record<string, {
     chatLabel: '与李飞飞对话',
     chatEnabled: true,
     chatCharacter: '李飞飞',
+    charactersEnabled: true,
   },
 };
 
@@ -78,6 +81,7 @@ const DEFAULT_WORLD = {
   readLabel: '阅读原著',
   chatLabel: '与人物对话',
   chatEnabled: false,
+  charactersEnabled: false,
 };
 
 interface WorldProps {
@@ -168,6 +172,7 @@ export default function WorldPage({ slug, title, author, cover }: WorldProps) {
   // 查找对应的 chat 页路径
   const chatPath = `/book/${slug}/chat`;
   const readPath = `/book/${slug}`;
+  const charactersPath = `/book/${slug}/characters`;
 
   return (
     <>
@@ -283,6 +288,26 @@ export default function WorldPage({ slug, title, author, cover }: WorldProps) {
                   </div>
                 </div>
               )}
+
+              {/* 探索人物图鉴 */}
+              {world.charactersEnabled ? (
+                <button
+                  className={styles.gateBtn}
+                  onClick={() => navigateTo(charactersPath)}
+                  style={{
+                    background: `linear-gradient(135deg, ${world.secondColor}33, ${world.secondColor}11)`,
+                    borderColor: world.color,
+                    color: '#fff',
+                  }}
+                >
+                  <div className={styles.gateBtnIcon} style={{ color: world.color }}>👥</div>
+                  <div className={styles.gateBtnContent}>
+                    <div className={styles.gateBtnLabel}>探索人物图鉴</div>
+                    <div className={styles.gateBtnSub}>了解人物·扮演角色·沉浸体验</div>
+                  </div>
+                  <div className={styles.gateBtnArrow} style={{ color: world.color }}>→</div>
+                </button>
+              ) : null}
             </div>
           </div>
         </div>

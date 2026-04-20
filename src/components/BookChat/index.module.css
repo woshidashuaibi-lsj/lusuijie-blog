@@ -47,9 +47,31 @@
 }
 
 .headerRight {
-  width: 80px;
+  min-width: 80px;
   display: flex;
+  align-items: center;
   justify-content: flex-end;
+  gap: 0.4rem;
+}
+
+.switchCharBtn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1.5px solid #e5e7eb;
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.switchCharBtn:hover {
+  border-color: #6366f1;
+  background: #f0f1ff;
 }
 
 .buildBtn {
@@ -378,6 +400,174 @@
   cursor: not-allowed;
 }
 
+/* 玩家扮演模式横幅 */
+.playerModeBanner {
+  background: linear-gradient(135deg, #f0f1ff, #f5f3ff);
+  border-bottom: 1px solid #e0e7ff;
+  padding: 0.5rem 1.5rem;
+}
+
+.playerModeBannerInner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.82rem;
+  flex-wrap: wrap;
+}
+
+.playerModeTag {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: #4f46e5;
+  font-weight: 500;
+}
+
+.playerModeSep {
+  color: #a5b4fc;
+  font-size: 1rem;
+}
+
+/* AI 发言人标签 */
+.speakerLabel {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #6366f1;
+  margin-bottom: 0.3rem;
+  letter-spacing: 0.3px;
+}
+
+/* 输入区上方的玩家标识 */
+.playerInputHint {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 1.5rem 0;
+  font-size: 0.78rem;
+  color: #9ca3af;
+}
+
+/* ─── 人物选择器 ──────────────────────────────────────────────────────────── */
+.pickerOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(3px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: pickerFadeIn 0.18s ease;
+}
+
+@keyframes pickerFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.pickerModal {
+  background: #fff;
+  border: 1px solid;
+  border-radius: 16px;
+  padding: 1.2rem;
+  width: 100%;
+  max-width: 360px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.15);
+  animation: pickerSlideUp 0.2s ease;
+}
+
+@keyframes pickerSlideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.pickerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.9rem;
+}
+
+.pickerTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.pickerClose {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  background: #f3f4f6;
+  color: #6b7280;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pickerClose:hover {
+  background: #e5e7eb;
+}
+
+.pickerList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.pickerItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.9rem;
+  background: #f9fafb;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: left;
+  width: 100%;
+}
+
+.pickerItem:hover {
+  background: #f0f1ff;
+  border-color: #c7d2fe;
+}
+
+.pickerItemActive {
+  background: #f0f1ff !important;
+}
+
+.pickerItemAvatar {
+  font-size: 1.3rem;
+  width: 1.8rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.pickerItemInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.pickerItemName {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.pickerItemRole {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin-top: 0.1rem;
+}
+
 @media (max-width: 600px) {
   .header {
     padding: 0.75rem 1rem;
@@ -401,5 +591,13 @@
 
   .suggestionBtn {
     font-size: 0.8rem;
+  }
+
+  .playerModeBanner {
+    padding: 0.45rem 1rem;
+  }
+
+  .playerInputHint {
+    padding: 0.35rem 1rem 0;
   }
 }

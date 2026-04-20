@@ -23,6 +23,9 @@ const allowedOrigins = [
   'https://lusuijie.com.cn',
   'http://lusuijie.com.cn',
   'http://localhost:3000',
+  'http://localhost:3001',
+  'http://localhost:3002',
+  'http://localhost:3003',
   // OSS 静态域名
   'https://lusuijie-blog-static.oss-cn-beijing.aliyuncs.com',
 ];
@@ -80,7 +83,17 @@ app.post('/api/rag', async (req: Request, res: Response) => {
 
 // POST /api/rag/stream - 流式问答接口（SSE）
 app.post('/api/rag/stream', async (req: Request, res: Response) => {
-  const { question, bookSlug = 'wo-kanjian-de-shijie' } = req.body as { question?: string; bookSlug?: string };
+  const {
+    question,
+    bookSlug = 'wo-kanjian-de-shijie',
+    characterId,
+    playerCharacterId,
+  } = req.body as {
+    question?: string;
+    bookSlug?: string;
+    characterId?: string;
+    playerCharacterId?: string;
+  };
 
   if (!question || typeof question !== 'string' || question.trim().length === 0) {
     return res.status(400).json({ message: '问题不能为空' });
@@ -110,7 +123,12 @@ app.post('/api/rag/stream', async (req: Request, res: Response) => {
     }
 
     try {
-      const { sources, stream } = await queryStream(question.trim(), bookSlug);
+      const { sources, stream } = await queryStream(
+        question.trim(),
+        bookSlug,
+        characterId,
+        playerCharacterId
+      );
 
       // 先把 sources 发给前端（每次都发，前端会覆盖）
       send('sources', sources);

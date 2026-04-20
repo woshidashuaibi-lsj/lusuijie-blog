@@ -1,0 +1,260 @@
+/* ===== 人物图鉴页面样式 ===== */
+
+.page {
+  position: relative;
+  min-height: 100vh;
+  padding: 4rem 2rem 4rem;
+  opacity: 0;
+  transform: scale(0.98);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  overflow-x: hidden;
+}
+
+.page.loaded {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ─── 背景光晕 ────────────────────────────────────────────────────────────── */
+.bgGlow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40vh;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bottomGlow {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 200px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── 返回按钮 ────────────────────────────────────────────────────────────── */
+.backBtn {
+  position: fixed;
+  top: 1.2rem;
+  left: 1.5rem;
+  z-index: 20;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid;
+  border-radius: 8px;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: background 0.2s;
+  backdrop-filter: blur(8px);
+  letter-spacing: 0.5px;
+}
+
+.backBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ─── 主内容 ──────────────────────────────────────────────────────────────── */
+.main {
+  position: relative;
+  z-index: 10;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+/* ─── 页面标题区 ──────────────────────────────────────────────────────────── */
+.pageHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 2.5rem;
+  gap: 0.6rem;
+}
+
+.pageBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid;
+  border-radius: 999px;
+  padding: 0.25rem 0.8rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+}
+
+.pageTitle {
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin: 0.3rem 0 0;
+  letter-spacing: 2px;
+}
+
+.pageDesc {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.45);
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* ─── 人物选择弹窗 ────────────────────────────────────────────────────────── */
+.selectorOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.selectorModal {
+  background: #0a0a1a;
+  border: 1px solid;
+  border-radius: 20px;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 400px;
+  animation: slideUp 0.25s ease;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.selectorHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.selectorTitle {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.selectorClose {
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8rem;
+  transition: background 0.15s;
+}
+
+.selectorClose:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.selectorDesc {
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 0 0 1rem;
+  line-height: 1.6;
+}
+
+.selectorList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.selectorEmpty {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 0.88rem;
+  padding: 1rem 0;
+  margin: 0;
+}
+
+.selectorItem {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+  width: 100%;
+}
+
+.selectorItem:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateX(4px);
+}
+
+.selectorItemAvatar {
+  font-size: 1.4rem;
+  width: 2rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.selectorItemInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.selectorItemName {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.selectorItemRole {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.45);
+  margin-top: 0.15rem;
+}
+
+.selectorItemArrow {
+  font-size: 1rem;
+  font-weight: 700;
+  transition: transform 0.15s;
+}
+
+.selectorItem:hover .selectorItemArrow {
+  transform: translateX(4px);
+}
+
+/* ─── 响应式 ──────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .page {
+    padding: 5rem 1rem 2rem;
+  }
+
+  .pageTitle {
+    font-size: 1.7rem;
+  }
+
+  .backBtn {
+    top: 0.9rem;
+    left: 1rem;
+  }
+}

@@ -2,6 +2,7 @@
  * RAG 核心逻辑 - Supabase PostgreSQL 版本
  * 支持多本书，通过 collectionName 区分
  * 支持从书中自动提取角色人设（extractPersona）
+ * 支持角色扮演对话：单角色（读者模式）和双角色（玩家扮演模式）
  */
 
 import fs from 'fs';
@@ -9,6 +10,39 @@ import path from 'path';
 import { Pool } from 'pg';
 import { getEmbeddings } from './embeddings';
 import { callLLM, callLLMStream, LLMMessage } from './llm';
+
+// ─── 人物数据接口（与前端 src/types/character.ts 保持一致）────────────────────
+
+interface CharacterData {
+  id: string;
+  name: string;
+  avatar: string;
+  role: string;
+  traits: string[];
+  speechStyle: string;
+  persona: string;
+  relations: Array<{ characterId: string; description: string }>;
+}
+
+/** 读取书籍人物数据（从 src/data/characters/ 目录读取，与 Next.js 共享数据源）*/
+function loadCharactersData(bookSlug: string): CharacterData[] {
+  try {
+    // fc-api 部署在项目根目录的子目录，数据文件在 ../src/data/characters/
+    const filePath = path.join(__dirname, '../../..', 'src', 'data', 'characters', `${bookSlug}.json`);
+    if (!fs.existsSync(filePath)) return [];
+    const raw = fs.readFileSync(filePath, 'utf-8');
+    const data = JSON.parse(raw) as { characters?: CharacterData[] };
+    return data.characters || [];
+  } catch {
+    return [];
+  }
+}
+
+/** 根据 characterId 获取人物数据 */
+function getCharacterById(bookSlug: string, characterId: string): CharacterData | null {
+  const characters = loadCharactersData(bookSlug);
+  return characters.find(c => c.id === characterId) || null;
+}
 
 // ─── 书籍配置 ────────────────────────────────────────────────────────────────
 
@@ -169,10 +203,31 @@ ${sample}
 
 // ─── System Prompt 构建 ────────────────────────────────────────────────────────
 
-function buildSystemPrompt(bookSlug: string, context: string): string {
+/**
+ * 构建单角色 System Prompt（读者模式）
+ * @param bookSlug 书籍 slug
+ * @param context  RAG 检索到的上下文
+ * @param characterId 可选，指定人物 ID（优先级高于默认主角）
+ */
+function buildSystemPrompt(bookSlug: string, context: string, characterId?: string): string {
   const config = BOOK_CONFIGS[bookSlug] || BOOK_CONFIGS['wo-kanjian-de-shijie'];
-  const rp = config.roleplay;
 
+  // 优先使用 characterId 指定的人物数据
+  if (characterId) {
+    const character = getCharacterById(bookSlug, characterId);
+    if (character && character.persona) {
+      return `${character.persona}
+
+以下是你（${character.name}）相关的书中片段，用来帮助你回答读者的问题：
+
+${context}
+
+请以${character.name}的口吻和语气，用第一人称回答读者的问题。`;
+    }
+  }
+
+  // 使用默认主角人设
+  const rp = config.roleplay;
   if (rp?.enabled) {
     const persona = getPersona(bookSlug);
     if (persona) {
@@ -193,6 +248,45 @@ ${context}
 
 相关段落：
 ${context}`;
+}
+
+/**
+ * 构建双角色 System Prompt（玩家扮演模式）
+ * AI 以 aiCharacterId 身份对话，同时告知对方（玩家）是 playerCharacterId
+ * @param bookSlug          书籍 slug
+ * @param context           RAG 检索到的上下文
+ * @param aiCharacterId     AI 扮演的人物 ID
+ * @param playerCharacterId 玩家扮演的人物 ID
+ */
+export function buildDualRoleSystemPrompt(
+  bookSlug: string,
+  context: string,
+  aiCharacterId: string,
+  playerCharacterId: string
+): string {
+  const aiCharacter = getCharacterById(bookSlug, aiCharacterId);
+  const playerCharacter = getCharacterById(bookSlug, playerCharacterId);
+
+  // 如果找不到 AI 角色，降级为单角色模式
+  if (!aiCharacter) {
+    return buildSystemPrompt(bookSlug, context);
+  }
+
+  const playerInfo = playerCharacter
+    ? `重要背景：你正在与书中的另一位角色「${playerCharacter.name}」对话。
+「${playerCharacter.name}」的身份：${playerCharacter.role}
+「${playerCharacter.name}」的性格：${playerCharacter.traits.slice(0, 3).join('；')}`
+    : '';
+
+  return `${aiCharacter.persona}
+
+${playerInfo}
+
+以下是与当前对话相关的书中片段：
+
+${context}
+
+请保持「${aiCharacter.name}」的口吻与人物性格，以第一人称回应对方。不要打破人物扮演，始终以${aiCharacter.name}的视角说话。`;
 }
 
 // ─── 公共类型 ──────────────────────────────────────────────────────────────────
@@ -286,10 +380,16 @@ export async function query(question: string, bookSlug = 'wo-kanjian-de-shijie')
 
 /**
  * 流式问答：返回 sources + MiniMax 原始 SSE 流
+ * @param question          用户问题
+ * @param bookSlug          书籍 slug
+ * @param characterId       读者模式：AI 扮演的人物 ID（可选，不传则用默认主角）
+ * @param playerCharacterId 玩家扮演模式：玩家的人物 ID（传入则进入双角色模式）
  */
 export async function queryStream(
   question: string,
-  bookSlug = 'wo-kanjian-de-shijie'
+  bookSlug = 'wo-kanjian-de-shijie',
+  characterId?: string,
+  playerCharacterId?: string
 ): Promise<{ sources: RagSource[]; stream: ReadableStream<Uint8Array> }> {
   const pool = getPool();
   const embeddings = getEmbeddings();
@@ -312,8 +412,18 @@ export async function queryStream(
       .map((s, i) => `[来源 ${i + 1}] 章节：${s.chapterTitle}\n${s.excerpt}`)
       .join('\n\n---\n\n');
 
+    // 根据是否传入 playerCharacterId 决定使用单角色还是双角色 system prompt
+    let systemPrompt: string;
+    if (playerCharacterId && characterId && playerCharacterId !== characterId) {
+      // 玩家扮演模式：characterId 是 AI 角色，playerCharacterId 是玩家角色
+      systemPrompt = buildDualRoleSystemPrompt(bookSlug, context, characterId, playerCharacterId);
+    } else {
+      // 读者模式：characterId 可选
+      systemPrompt = buildSystemPrompt(bookSlug, context, characterId);
+    }
+
     const messages: LLMMessage[] = [
-      { role: 'system', content: buildSystemPrompt(bookSlug, context) },
+      { role: 'system', content: systemPrompt },
       { role: 'user', content: question },
     ];
 
