@@ -338,6 +338,9 @@ const stream = await callLLMStream([
   }
 ```
 
+ReadableStream 怎么解析 SSE，有什么坑？
+核心是 buffer 拼接机制。网络传输是字节流，一条 SSE 消息可能被拆成多个 chunk 到达，不能对每次 read() 的结果直接解析。正确做法是用 buf 变量累积，按 \n 切割，用 pop() 保留可能不完整的最后一行，等下次 read() 拼接。另外中文字符要用 decode(value, { stream: true }) 防止多字节截断。
+
 ### 5.3 SSE 流转发（后端 → 前端）
 
 后端把 MiniMax 的原始 SSE 流解析后，转换成我们自定义的事件格式：
