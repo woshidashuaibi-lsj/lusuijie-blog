@@ -1,0 +1,80 @@
+/* ===== 记忆状态指示器 ===== */
+.container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.55rem 0.9rem;
+  background: rgba(6, 12, 26, 0.9);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  transition: border-color 0.3s;
+  pointer-events: none;
+}
+
+.indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.icon {
+  font-size: 0.9rem;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.icon.spin {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.texts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+}
+
+.mainText {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  line-height: 1.2;
+}
+
+.subText {
+  font-size: 0.62rem;
+  color: rgba(255, 255, 255, 0.35);
+  line-height: 1.2;
+}
+
+.wordCount {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.5px;
+  padding-left: 0.75rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ===== 移动端 ===== */
+@media (max-width: 768px) {
+  .container {
+    bottom: 1rem;
+    right: 1rem;
+    padding: 0.45rem 0.7rem;
+  }
+  
+  .subText {
+    display: none;
+  }
+}

@@ -1,0 +1,63 @@
+/* ===== 人物卡片 ===== */
+.charCard {
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.025);
+  margin-bottom: 0.85rem;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.charHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+
+.charHeader:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.charAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.charInfo {
+  flex: 1;
+}
+
+.charName {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.charRole {
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  margin-top: 0.15rem;
+}
+
+.charToggle {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+.charBody {
+  padding: 0 1.25rem 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 1.1rem;
+}

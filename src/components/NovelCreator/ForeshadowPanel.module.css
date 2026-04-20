@@ -1,0 +1,107 @@
+/* ===== 伏笔面板 ===== */
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
+}
+
+.title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 0.5px;
+}
+
+.hint {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.2);
+}
+
+.list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+
+.list::-webkit-scrollbar { width: 3px; }
+.list::-webkit-scrollbar-track { background: transparent; }
+.list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.08); border-radius: 99px; }
+
+.sectionLabel {
+  font-size: 0.65rem;
+  color: rgba(245, 158, 11, 0.7);
+  letter-spacing: 1px;
+  padding: 0.3rem 0.5rem;
+  text-transform: uppercase;
+}
+
+.item {
+  padding: 0.6rem 0.7rem;
+  border-radius: 8px;
+  margin-bottom: 0.35rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.highlighted {
+  background: rgba(245, 158, 11, 0.05);
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+.desc {
+  font-size: 0.8rem;
+  color: #e2e8f0;
+  line-height: 1.5;
+  margin-bottom: 0.3rem;
+}
+
+.meta {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.meta span {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.statusBtn {
+  padding: 0.2rem 0.6rem;
+  background: none;
+  border: 1px solid;
+  border-radius: 99px;
+  font-size: 0.68rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.statusBtn:hover {
+  opacity: 0.75;
+  transform: scale(0.97);
+}
+
+.divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.05);
+  margin: 0.5rem 0;
+}
+
+.empty {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.25);
+  font-size: 0.8rem;
+  padding: 2rem 1rem;
+  line-height: 2;
+}

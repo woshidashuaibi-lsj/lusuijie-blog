@@ -20,8 +20,13 @@ function getKeys() {
   return { apiKey, groupId };
 }
 
+export interface CallLLMOptions {
+  maxTokens?: number;
+  temperature?: number;
+}
+
 /** 普通非流式调用（用于 build 等场景） */
-export async function callLLM(messages: LLMMessage[]): Promise<string> {
+export async function callLLM(messages: LLMMessage[], options: CallLLMOptions = {}): Promise<string> {
   const { apiKey } = getKeys();
 
   const res = await fetch(MINIMAX_URL, {
@@ -33,8 +38,8 @@ export async function callLLM(messages: LLMMessage[]): Promise<string> {
     body: JSON.stringify({
       model: 'MiniMax-M2.7',
       messages,
-      temperature: 0.3,
-      max_tokens: 1024,
+      temperature: options.temperature ?? 0.3,
+      max_tokens: options.maxTokens ?? 4096,
     }),
   });
 
@@ -89,7 +94,7 @@ export async function callLLM(messages: LLMMessage[]): Promise<string> {
 }
 
 /** 流式调用，返回 Response 的 body（SSE 原始流），由调用方负责管道转发 */
-export async function callLLMStream(messages: LLMMessage[]): Promise<ReadableStream<Uint8Array>> {
+export async function callLLMStream(messages: LLMMessage[], options: CallLLMOptions = {}): Promise<ReadableStream<Uint8Array>> {
   const { apiKey } = getKeys();
 
   // 30 秒超时，防止 fetch 无限挂起导致 "fetch failed"
@@ -107,8 +112,8 @@ export async function callLLMStream(messages: LLMMessage[]): Promise<ReadableStr
       body: JSON.stringify({
         model: 'MiniMax-M2.7',
         messages,
-        temperature: 0.3,
-        max_tokens: 1024,
+        temperature: options.temperature ?? 0.75,
+        max_tokens: options.maxTokens ?? 8192,
         stream: true,
       }),
       signal: controller.signal,

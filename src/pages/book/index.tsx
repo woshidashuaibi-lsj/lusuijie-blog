@@ -736,6 +736,20 @@ export default function BookListPage() {
               </div>
             );
           })}
+
+          {/* 创造世界入口 */}
+          <div
+            className={styles.bookHintItem}
+            style={{
+              borderColor: '#f59e0b',
+              background: 'rgba(245, 158, 11, 0.06)',
+              cursor: 'pointer',
+            }}
+            onClick={() => router.push('/book/create')}
+          >
+            <span style={{ color: '#f59e0b' }}>✦</span>
+            <span style={{ color: '#fbbf24', fontWeight: 700 }}>创造世界</span>
+          </div>
         </div>
 
         {/* 缩放控件 */}

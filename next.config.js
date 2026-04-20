@@ -1,6 +1,10 @@
 /** @type {import('next').NextConfig} */
+const isProd = process.env.NODE_ENV === 'production' && process.env.STATIC_EXPORT === 'true';
+
 const nextConfig = {
-  output: 'export',
+  // output: 'export' 仅在静态导出构建时启用（npm run export）
+  // 开发模式下必须关闭，否则 API Routes 全部 404
+  ...(isProd ? { output: 'export' } : {}),
   trailingSlash: true,
 
   images: {
