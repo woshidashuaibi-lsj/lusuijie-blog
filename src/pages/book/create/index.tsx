@@ -1,47 +1,64 @@
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import type { User } from '@supabase/supabase-js';
 import type { NovelProject } from '@/types/novel';
 import { listProjects, deleteProject, saveProject } from '@/lib/novelDB';
-import { fetchProjectsByDeviceId, getDeviceId } from '@/lib/novelSync';
+import {
+  fetchProjectsByDeviceId,
+  getDeviceId,
+  getCurrentUser,
+  onAuthStateChange,
+  signInWithGitHub,
+  signOut,
+} from '@/lib/novelSync';
 import NovelCreator from '@/components/NovelCreator';
 import styles from './create.module.css';
 
 /**
  * 创作工坊入口页面
- * - 有存档：显示项目列表，选择继续创作或新建
- * - 无存档：直接进入新建流程
+ * - 未登录：显示 GitHub 登录提示（也可跳过直接用设备码模式）
+ * - 已登录：显示项目列表，支持新建/继续创作
  */
 export default function CreatePage() {
   const router = useRouter();
   const { project: projectIdParam } = router.query;
 
+  const [user, setUser] = useState<User | null | 'loading'>('loading');
   const [projects, setProjects] = useState<NovelProject[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [showProjectList, setShowProjectList] = useState(false);
-  // 换设备恢复
+  const [signingIn, setSigningIn] = useState(false);
+
+  // 换设备恢复（未登录时使用）
   const [showRestore, setShowRestore] = useState(false);
   const [restoreDeviceId, setRestoreDeviceId] = useState('');
   const [restoring, setRestoring] = useState(false);
   const [restoreMsg, setRestoreMsg] = useState('');
 
+  // 初始化：获取登录状态
   useEffect(() => {
+    getCurrentUser().then(u => setUser(u));
+    const unsubPromise = onAuthStateChange(u => setUser(u));
+    return () => { unsubPromise.then(unsub => unsub()); };
+  }, []);
+
+  // 登录状态确定后加载项目列表
+  useEffect(() => {
+    if (user === 'loading') return;
     listProjects().then(list => {
       setProjects(list);
       setLoading(false);
       if (projectIdParam && typeof projectIdParam === 'string') {
-        // URL 带了 project ID，直接进入
         setSelectedProjectId(projectIdParam);
       } else if (list.length === 0) {
-        // 没有任何项目，直接新建
         setSelectedProjectId('new');
       } else {
-        // 有项目，显示选择列表
         setShowProjectList(true);
       }
     });
-  }, [projectIdParam]);
+  }, [user, projectIdParam]);
 
   const handleSelectProject = (id: string) => {
     setSelectedProjectId(id);
@@ -60,7 +77,18 @@ export default function CreatePage() {
     setProjects(prev => prev.filter(p => p.id !== id));
   };
 
-  // 从另一台设备恢复数据
+  const handleSignIn = async () => {
+    setSigningIn(true);
+    await signInWithGitHub();
+    // signInWithGitHub 会跳转页面，所以下面的代码不会执行
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    setUser(null);
+  };
+
+  // 从另一台设备恢复数据（未登录时使用）
   const handleRestore = async () => {
     if (!restoreDeviceId.trim()) {
       setRestoreMsg('请输入设备码');
@@ -75,7 +103,6 @@ export default function CreatePage() {
         setRestoring(false);
         return;
       }
-      // 逐个保存到本地
       for (const p of cloudProjects) {
         await saveProject(p);
       }
@@ -93,7 +120,8 @@ export default function CreatePage() {
     setRestoring(false);
   };
 
-  if (loading) {
+  // 加载中
+  if (user === 'loading' || loading) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#060c1a', color: 'rgba(255,255,255,0.4)', flexDirection: 'column', gap: '1rem' }}>
         <div style={{ width: '40px', height: '40px', border: '3px solid rgba(167,139,250,0.2)', borderTopColor: '#a78bfa', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
@@ -134,22 +162,65 @@ export default function CreatePage() {
             <p className={styles.subtitle}>你的 AI 小说创作工坊</p>
           </div>
 
-          {/* 设备码 & 换设备恢复 */}
-          <div style={{ marginBottom: '1.5rem', padding: '0.75rem 1rem', background: 'rgba(167,139,250,0.06)', borderRadius: '8px', border: '1px solid rgba(167,139,250,0.15)', fontSize: '0.8rem', color: 'rgba(255,255,255,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
-            <span>
-              我的设备码：<code style={{ color: '#a78bfa', letterSpacing: '0.1em', userSelect: 'all' }}>{getDeviceId()}</code>
-              <span style={{ marginLeft: '0.5rem', opacity: 0.6 }}>（换设备时输入此码恢复数据）</span>
-            </span>
-            <button
-              onClick={() => setShowRestore(v => !v)}
-              style={{ background: 'none', border: '1px solid rgba(167,139,250,0.3)', borderRadius: '6px', color: '#a78bfa', padding: '0.3rem 0.75rem', cursor: 'pointer', fontSize: '0.78rem', whiteSpace: 'nowrap' }}
-            >
-              从其他设备恢复
-            </button>
+          {/* 登录状态栏 */}
+          <div style={{ marginBottom: '1.5rem', padding: '0.75rem 1rem', background: 'rgba(167,139,250,0.06)', borderRadius: '8px', border: '1px solid rgba(167,139,250,0.15)', fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+            {user ? (
+              // 已登录
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                  {(user as User).user_metadata?.avatar_url && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={(user as User).user_metadata.avatar_url}
+                      alt="avatar"
+                      style={{ width: '24px', height: '24px', borderRadius: '50%', border: '1px solid rgba(167,139,250,0.4)' }}
+                    />
+                  )}
+                  <span style={{ color: 'rgba(255,255,255,0.8)' }}>
+                    {(user as User).user_metadata?.user_name || (user as User).email}
+                  </span>
+                  <span style={{ color: '#4ade80', fontSize: '0.72rem' }}>● 已登录</span>
+                </div>
+                <button
+                  onClick={handleSignOut}
+                  style={{ background: 'none', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '6px', color: 'rgba(255,255,255,0.4)', padding: '0.3rem 0.75rem', cursor: 'pointer', fontSize: '0.75rem' }}
+                >
+                  退出登录
+                </button>
+              </>
+            ) : (
+              // 未登录
+              <>
+                <div>
+                  <span>登录后数据自动跨设备同步</span>
+                  <span style={{ marginLeft: '1rem', opacity: 0.5 }}>
+                    （未登录：设备码 <code style={{ color: '#a78bfa', userSelect: 'all' }}>{getDeviceId()}</code>）
+                  </span>
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <button
+                    onClick={handleSignIn}
+                    disabled={signingIn}
+                    style={{ background: '#a78bfa', border: 'none', borderRadius: '6px', color: '#fff', padding: '0.35rem 0.9rem', cursor: signingIn ? 'wait' : 'pointer', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.4rem', opacity: signingIn ? 0.7 : 1 }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                    {signingIn ? '跳转中…' : 'GitHub 登录'}
+                  </button>
+                  <button
+                    onClick={() => setShowRestore(v => !v)}
+                    style={{ background: 'none', border: '1px solid rgba(167,139,250,0.3)', borderRadius: '6px', color: '#a78bfa', padding: '0.3rem 0.75rem', cursor: 'pointer', fontSize: '0.75rem' }}
+                  >
+                    设备码恢复
+                  </button>
+                </div>
+              </>
+            )}
           </div>
 
-          {/* 恢复弹窗 */}
-          {showRestore && (
+          {/* 设备码恢复弹窗（未登录时） */}
+          {!user && showRestore && (
             <div style={{ marginBottom: '1.5rem', padding: '1rem', background: 'rgba(167,139,250,0.08)', borderRadius: '10px', border: '1px solid rgba(167,139,250,0.2)' }}>
               <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', marginBottom: '0.75rem' }}>输入另一台设备的设备码：</div>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
