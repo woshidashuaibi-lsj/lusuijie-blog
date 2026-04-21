@@ -86,9 +86,13 @@ export async function callLLM(messages: LLMMessage[], options: CallLLMOptions = 
   }
 
   const msg = data.choices?.[0]?.message;
-  const content = msg?.content || msg?.reasoning_content;
+  // 只取 content 字段，不 fallback 到 reasoning_content（推理内容不是业务结果）
+  // reasoning_content 是思维链文本，不能当作 JSON 或业务响应返回
+  const content = msg?.content;
   if (!content) {
-    throw new Error(`MiniMax API 返回格式异常: ${JSON.stringify(data)}`);
+    // 调试：打印完整响应帮助排查
+    console.warn('[callLLM] content 为空, msg:', JSON.stringify(msg)?.slice(0, 300));
+    throw new Error(`MiniMax API 返回内容为空: ${JSON.stringify(data).slice(0, 300)}`);
   }
   return content;
 }

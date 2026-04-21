@@ -329,19 +329,64 @@ app.get('/api/rag/persona-status', (req: Request, res: Response) => {
 // 小说创作 API
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** 从 AI 返回文本中提取 JSON 对象或数组，并清理常见格式问题 */
+/**
+ * 从 AI 返回文本中提取 JSON 对象或数组，并清理常见格式问题
+ * 
+ * 改进：
+ * 1. 优先提取 markdown 代码块中的 JSON
+ * 2. 使用括号匹配算法找最后一个完整的 JSON 块（避免把思维链里的 { 当起点）
+ * 3. 清理全角引号
+ */
 function extractJSON(text: string, type: 'object' | 'array' = 'object'): string {
   let s = text.trim();
+
+  // 1. 优先从 markdown 代码块提取
   const codeBlockMatch = s.match(/```(?:json)?\s*([\s\S]*?)```/);
-  if (codeBlockMatch) s = codeBlockMatch[1].trim();
-  s = s.replace(/[\u2018\u2019]/g, "'").replace(/[\u201c\u201d]/g, '"');
-  if (type === 'array') {
-    const m = s.match(/\[[\s\S]*\]/);
-    if (m) s = m[0];
-  } else {
-    const m = s.match(/\{[\s\S]*\}/);
-    if (m) s = m[0];
+  if (codeBlockMatch) {
+    s = codeBlockMatch[1].trim();
   }
+
+  // 2. 清理全角引号
+  s = s.replace(/[\u2018\u2019]/g, "'").replace(/[\u201c\u201d]/g, '"');
+
+  // 3. 用括号匹配算法找最后一个完整的 JSON 块
+  //    这样即使思维链中包含 { 字符，也能正确定位到最后的有效 JSON
+  const [openChar, closeChar] = type === 'array' ? ['[', ']'] : ['{', '}'];
+
+  let lastStart = -1;
+  let lastEnd = -1;
+
+  for (let i = 0; i < s.length; i++) {
+    if (s[i] === openChar) {
+      // 从这个起点开始，尝试找匹配的闭合括号
+      let depth = 0;
+      let inString = false;
+      let escape = false;
+      for (let j = i; j < s.length; j++) {
+        const c = s[j];
+        if (escape) { escape = false; continue; }
+        if (c === '\\' && inString) { escape = true; continue; }
+        if (c === '"') { inString = !inString; continue; }
+        if (inString) continue;
+        if (c === openChar) depth++;
+        else if (c === closeChar) {
+          depth--;
+          if (depth === 0) {
+            // 找到了一个完整的块，记录下来（优先取最后一个）
+            lastStart = i;
+            lastEnd = j;
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  if (lastStart !== -1 && lastEnd !== -1) {
+    return s.slice(lastStart, lastEnd + 1);
+  }
+
+  // 降级：返回原始文本（让 JSON.parse 抛出更清晰的错误）
   return s;
 }
 
@@ -400,25 +445,46 @@ app.post('/api/novel/outline', async (req: Request, res: Response) => {
       { role: 'user', content: `请根据以下故事灵感，生成完整的小说大纲：\n\n${idea.trim()}` },
     ], { temperature: 0.7 });
 
-    const jsonStr = extractJSON(content);
-    const outline = JSON.parse(jsonStr) as Record<string, unknown>;
+    // 尝试解析 JSON
+    let outline: Record<string, unknown> | null = null;
+    let parseError: string | null = null;
 
-    const required = ['genre', 'theme', 'logline', 'setting', 'conflict', 'arc', 'estimatedChapters'];
-    for (const field of required) {
-      if (!outline[field] && outline[field] !== 0) {
-        throw new Error(`AI 返回的大纲缺少字段: ${field}`);
-      }
+    try {
+      const jsonStr = extractJSON(content);
+      outline = JSON.parse(jsonStr) as Record<string, unknown>;
+    } catch (e) {
+      parseError = e instanceof Error ? e.message : 'JSON 解析失败';
+      console.warn('[novel/outline] JSON 解析失败，原始内容 (前500字):', content.slice(0, 500));
     }
 
+    // 解析成功：正常返回结构化数据
+    if (outline) {
+      return res.status(200).json({
+        idea: idea.trim(),
+        genre: String(outline.genre || ''),
+        theme: String(outline.theme || ''),
+        logline: String(outline.logline || ''),
+        setting: String(outline.setting || ''),
+        conflict: String(outline.conflict || ''),
+        arc: String(outline.arc || ''),
+        estimatedChapters: Number(outline.estimatedChapters) || 30,
+      });
+    }
+
+    // 解析失败兜底：把 AI 原始返回文本透传给前端
+    // 前端可以展示给用户，避免白屏或无意义的报错
+    console.warn('[novel/outline] 使用兜底模式，解析错误:', parseError);
     return res.status(200).json({
       idea: idea.trim(),
-      genre: String(outline.genre || ''),
-      theme: String(outline.theme || ''),
-      logline: String(outline.logline || ''),
-      setting: String(outline.setting || ''),
-      conflict: String(outline.conflict || ''),
-      arc: String(outline.arc || ''),
-      estimatedChapters: Number(outline.estimatedChapters) || 30,
+      genre: '',
+      theme: '',
+      logline: content.slice(0, 200),  // 用原始内容作为 logline 展示
+      setting: '',
+      conflict: '',
+      arc: content,                      // 原始全文放到 arc 字段，前端可展示
+      estimatedChapters: 30,
+      _rawContent: content,              // 透传原始内容，前端可用于调试
+      _parseError: parseError,
     });
   } catch (error) {
     console.error('[novel/outline] 大纲生成失败:', error);
@@ -517,12 +583,34 @@ app.post('/api/novel/suggest', async (req: Request, res: Response) => {
       { role: 'user', content: `${contextSection}请评审第${chapterNumber}章草稿：\n\n${content.slice(0, 6000)}` },
     ], { temperature: 0.5 });
 
-    const jsonStr = extractJSON(responseText, 'array');
-    const suggestions = JSON.parse(jsonStr) as unknown[];
+    let suggestions: unknown[] | null = null;
+    let parseError: string | null = null;
 
-    if (!Array.isArray(suggestions)) throw new Error('AI 返回格式错误');
+    try {
+      const jsonStr = extractJSON(responseText, 'array');
+      const parsed = JSON.parse(jsonStr) as unknown[];
+      if (Array.isArray(parsed)) suggestions = parsed;
+      else parseError = 'AI 返回的不是数组格式';
+    } catch (e) {
+      parseError = e instanceof Error ? e.message : 'JSON 解析失败';
+      console.warn('[novel/suggest] JSON 解析失败，原始内容 (前300字):', responseText.slice(0, 300));
+    }
 
-    return res.status(200).json({ suggestions });
+    // 解析成功
+    if (suggestions) {
+      return res.status(200).json({ suggestions });
+    }
+
+    // 兜底：把原始文本作为一条建议返回，不报错
+    console.warn('[novel/suggest] 使用兜底模式，解析错误:', parseError);
+    return res.status(200).json({
+      suggestions: [{
+        dimension: 'AI 原始建议',
+        issue: '返回格式解析失败',
+        suggestion: responseText,
+      }],
+      _parseError: parseError,
+    });
   } catch (error) {
     console.error('[novel/suggest] 建议生成失败:', error);
     return res.status(500).json({ message: error instanceof Error ? error.message : '建议生成失败' });
