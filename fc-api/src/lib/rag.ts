@@ -24,16 +24,20 @@ interface CharacterData {
   relations: Array<{ characterId: string; description: string }>;
 }
 
-/** 读取书籍人物数据（从 src/data/characters/ 目录读取，与 Next.js 共享数据源）*/
+/** 读取书籍人物数据（从 fc-api/data/characters/ 目录读取）*/
 function loadCharactersData(bookSlug: string): CharacterData[] {
   try {
-    // fc-api 部署在项目根目录的子目录，数据文件在 ../src/data/characters/
-    const filePath = path.join(__dirname, '../../..', 'src', 'data', 'characters', `${bookSlug}.json`);
-    if (!fs.existsSync(filePath)) return [];
+    // __dirname = dist/lib，往上两级是 fc-api 根目录，data/characters 在根目录下
+    const filePath = path.join(__dirname, '../..', 'data', 'characters', `${bookSlug}.json`);
+    if (!fs.existsSync(filePath)) {
+      console.warn(`[loadCharactersData] 人物数据文件不存在: ${filePath}`);
+      return [];
+    }
     const raw = fs.readFileSync(filePath, 'utf-8');
     const data = JSON.parse(raw) as { characters?: CharacterData[] };
     return data.characters || [];
-  } catch {
+  } catch (e) {
+    console.error(`[loadCharactersData] 读取失败:`, e);
     return [];
   }
 }
@@ -41,6 +45,7 @@ function loadCharactersData(bookSlug: string): CharacterData[] {
 /** 根据 characterId 获取人物数据 */
 function getCharacterById(bookSlug: string, characterId: string): CharacterData | null {
   const characters = loadCharactersData(bookSlug);
+  console.log(`[getCharacterById] bookSlug=${bookSlug} characterId=${JSON.stringify(characterId)} available_ids=${JSON.stringify(characters.map(c => c.id))}`);
   return characters.find(c => c.id === characterId) || null;
 }
 
@@ -212,17 +217,22 @@ ${sample}
 function buildSystemPrompt(bookSlug: string, context: string, characterId?: string): string {
   const config = BOOK_CONFIGS[bookSlug] || BOOK_CONFIGS['wo-kanjian-de-shijie'];
 
+  console.log(`[buildSystemPrompt] bookSlug=${bookSlug} characterId=${characterId}`);
+
   // 优先使用 characterId 指定的人物数据
   if (characterId) {
     const character = getCharacterById(bookSlug, characterId);
+    console.log(`[buildSystemPrompt] getCharacterById result: ${character ? `found name=${character.name} persona_len=${character.persona?.length}` : 'NOT FOUND'}`);
     if (character && character.persona) {
       return `${character.persona}
 
-以下是你（${character.name}）相关的书中片段，用来帮助你回答读者的问题：
+【重要】你的身份是「${character.name}」，始终以第一人称「我」代表${character.name}说话。下方书中片段仅作为背景参考，片段中出现的其他人物视角不代表你的视角，不要代入其他角色。
+
+以下是与当前对话相关的书中背景片段（仅供参考，不代表你的视角）：
 
 ${context}
 
-请以${character.name}的口吻和语气，用第一人称回答读者的问题。`;
+请严格以「${character.name}」的口吻、性格和立场，用第一人称回答读者的问题。`;
     }
   }
 
@@ -280,13 +290,15 @@ export function buildDualRoleSystemPrompt(
 
   return `${aiCharacter.persona}
 
+【重要】你的身份是「${aiCharacter.name}」，始终以第一人称「我」代表${aiCharacter.name}说话。下方书中片段仅作为背景参考，片段中出现的其他人物视角不代表你的视角，不要代入其他角色。
+
 ${playerInfo}
 
-以下是与当前对话相关的书中片段：
+以下是与当前对话相关的书中背景片段（仅供参考，不代表你的视角）：
 
 ${context}
 
-请保持「${aiCharacter.name}」的口吻与人物性格，以第一人称回应对方。不要打破人物扮演，始终以${aiCharacter.name}的视角说话。`;
+请严格以「${aiCharacter.name}」的口吻与人物性格，以第一人称回应对方。不要打破人物扮演。`;
 }
 
 // ─── 公共类型 ──────────────────────────────────────────────────────────────────

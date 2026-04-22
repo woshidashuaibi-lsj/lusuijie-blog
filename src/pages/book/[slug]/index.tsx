@@ -2,6 +2,7 @@ import { GetStaticPaths, GetStaticProps } from 'next';
 import Head from 'next/head';
 import booksData from '@/data/books.json';
 import BookReader from '@/components/BookReader';
+import BookAccessGate from '@/components/BookAccessGate';
 import type { Book } from '@/components/BookReader';
 
 const { books } = booksData;
@@ -17,7 +18,9 @@ export default function BookReaderPage({ book }: Props) {
         <title>{book.title} - 卢穗杰的博客</title>
         <meta name="description" content={`阅读《${book.title}》by ${book.author}`} />
       </Head>
-      <BookReader book={book} />
+      <BookAccessGate>
+        <BookReader book={book} />
+      </BookAccessGate>
     </>
   );
 }

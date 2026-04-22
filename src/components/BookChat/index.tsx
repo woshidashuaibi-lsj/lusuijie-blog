@@ -557,6 +557,8 @@ export default function BookChat({
           placeholder={
             isPlayerMode
               ? `以 ${playerName} 的身份说些什么…`
+              : hasSpecifiedCharacter
+              ? `向${aiName}提问…`
               : isRoleplay
               ? (BOOK_ROLEPLAY[bookSlug]?.placeholder || `向${aiName}提问…`)
               : '向 AI 提问关于这本书的内容…'

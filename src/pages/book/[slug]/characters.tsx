@@ -8,6 +8,7 @@ import fs from 'fs';
 import booksData from '@/data/books.json';
 import type { Character } from '@/types/character';
 import CharacterGallery from '@/components/CharacterGallery';
+import BookAccessGate from '@/components/BookAccessGate';
 import styles from './characters.module.css';
 
 const { books } = booksData;
@@ -142,6 +143,7 @@ export default function CharactersPage({ slug, title, characters }: CharactersPa
   }, [router.query, slug, router]);
 
   return (
+    <BookAccessGate>
     <>
       <Head>
         <title>{`${title} · 人物图鉴`}</title>
@@ -211,6 +213,7 @@ export default function CharactersPage({ slug, title, characters }: CharactersPa
         )}
       </div>
     </>
+    </BookAccessGate>
   );
 }
 

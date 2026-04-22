@@ -1,6 +1,7 @@
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import Navigation from '@/components/Navigation';
+import BookAccessGate from '@/components/BookAccessGate';
 import booksData from '@/data/books.json';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import styles from './index.module.css';
@@ -662,7 +663,7 @@ export default function BookListPage() {
         <meta name="description" content="在宇宙中漫游，探索每一本书的世界" />
       </Head>
       <Navigation />
-
+      <BookAccessGate>
       <div className={`${styles.universe} ${entering ? styles.entering : ''}`}>
         <canvas
           ref={canvasRef}
@@ -773,6 +774,7 @@ export default function BookListPage() {
         </div>
 
       </div>
+      </BookAccessGate>
     </>
   );
 }

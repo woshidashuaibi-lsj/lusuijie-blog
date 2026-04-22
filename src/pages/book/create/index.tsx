@@ -13,6 +13,7 @@ import {
   signOut,
 } from '@/lib/novelSync';
 import NovelCreator from '@/components/NovelCreator';
+import BookAccessGate from '@/components/BookAccessGate';
 import styles from './create.module.css';
 
 /**
@@ -147,6 +148,7 @@ export default function CreatePage() {
 
   // 项目选择列表
   return (
+    <BookAccessGate>
     <>
       <Head>
         <title>创造世界 - 选择项目</title>
@@ -295,5 +297,6 @@ export default function CreatePage() {
         </div>
       </div>
     </>
+    </BookAccessGate>
   );
 }

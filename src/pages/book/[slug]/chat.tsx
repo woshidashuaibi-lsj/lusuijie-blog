@@ -12,6 +12,7 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import booksData from '@/data/books.json';
 import BookChat from '@/components/BookChat';
+import BookAccessGate from '@/components/BookAccessGate';
 import type { Character } from '@/types/character';
 
 // 静态 import 各书籍人物数据（Next.js 支持 JSON 静态导入，不触发 autoExport）
@@ -35,21 +36,27 @@ export default function BookChatPage({ slug, title, characters }: ChatPageProps)
   const router = useRouter();
   const { character, playerCharacter, aiCharacter } = router.query;
 
+  // 静态导出下 router.query 首次渲染为空，等 isReady 后再挂载 BookChat
+  // 避免 characterId 初始化为 undefined 导致 AI 走主角 fallback
+  if (!router.isReady) return null;
+
   return (
-    <>
-      <Head>
-        <title>与《{title}》对话 - 卢穗杰的博客</title>
-        <meta name="description" content={`AI 问答：基于《${title}》内容的智能对话`} />
-      </Head>
-      <BookChat
-        bookSlug={slug}
-        bookTitle={title}
-        characters={characters}
-        initialCharacterId={typeof character === 'string' ? character : undefined}
-        playerCharacterId={typeof playerCharacter === 'string' ? playerCharacter : undefined}
-        aiCharacterId={typeof aiCharacter === 'string' ? aiCharacter : undefined}
-      />
-    </>
+    <BookAccessGate>
+      <>
+        <Head>
+          <title>与《{title}》对话 - 卢穗杰的博客</title>
+          <meta name="description" content={`AI 问答：基于《${title}》内容的智能对话`} />
+        </Head>
+        <BookChat
+          bookSlug={slug}
+          bookTitle={title}
+          characters={characters}
+          initialCharacterId={typeof character === 'string' ? character : undefined}
+          playerCharacterId={typeof playerCharacter === 'string' ? playerCharacter : undefined}
+          aiCharacterId={typeof aiCharacter === 'string' ? aiCharacter : undefined}
+        />
+      </>
+    </BookAccessGate>
   );
 }
 

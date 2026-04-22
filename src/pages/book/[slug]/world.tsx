@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useRef, useState } from 'react';
 import booksData from '@/data/books.json';
+import BookAccessGate from '@/components/BookAccessGate';
 import styles from './world.module.css';
 
 const { books } = booksData;
@@ -175,6 +176,7 @@ export default function WorldPage({ slug, title, author, cover }: WorldProps) {
   const charactersPath = `/book/${slug}/characters`;
 
   return (
+    <BookAccessGate>
     <>
       <Head>
         <title>{`进入《${title}》的世界`}</title>
@@ -319,6 +321,7 @@ export default function WorldPage({ slug, title, author, cover }: WorldProps) {
         />
       </div>
     </>
+    </BookAccessGate>
   );
 }
 
