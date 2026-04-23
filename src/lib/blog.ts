@@ -79,10 +79,15 @@ export function getPostBySlug(
     // 计算阅读时间（简单估算：200字/分钟）
     const readingTime = Math.ceil(content.length / 200);
 
+    const rawDate = data.date;
+    const dateStr = rawDate instanceof Date
+      ? rawDate.toISOString().slice(0, 10)
+      : String(rawDate || "");
+
     return {
       slug,
       title: data.title || "",
-      date: data.date || "",
+      date: dateStr,
       category: foundCategory || "",
       tags: data.tags || [],
       description: data.description || "",
