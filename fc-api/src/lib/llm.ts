@@ -50,6 +50,12 @@ export async function callLLM(messages: LLMMessage[], options: CallLLMOptions = 
 
   const rawText = await res.text();
 
+  // === 诊断日志 START ===
+  console.log('[callLLM] rawText length:', rawText.length);
+  console.log('[callLLM] rawText lines count:', rawText.split('\n').filter(l => l.trim()).length);
+  console.log('[callLLM] rawText (first 1000):', rawText.slice(0, 1000));
+  // === 诊断日志 END ===
+
   // MiniMax 有时会返回多行 JSON（限流错误行 + 实际响应行拼在一起）
   // 逐行尝试解析，找到包含 choices 的那行
   type MiniMaxResp = {
@@ -61,11 +67,16 @@ export async function callLLM(messages: LLMMessage[], options: CallLLMOptions = 
 
   let data: MiniMaxResp | null = null;
   const lines = rawText.split('\n').filter(l => l.trim());
-  for (const line of lines) {
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    console.log(`[callLLM] parsing line[${i}] (len=${line.length}):`, line.slice(0, 200));
     try {
       const parsed = JSON.parse(line) as MiniMaxResp;
       // 优先找有 choices 的行
       if (parsed.choices) {
+        console.log(`[callLLM] found choices at line[${i}], choices[0].message keys:`, Object.keys(parsed.choices?.[0]?.message || {}));
+        console.log(`[callLLM] content (200):`, (parsed.choices?.[0]?.message?.content || '').slice(0, 200));
+        console.log(`[callLLM] reasoning_content (200):`, (parsed.choices?.[0]?.message?.reasoning_content || '').slice(0, 200));
         data = parsed;
         break;
       }
@@ -76,6 +87,7 @@ export async function callLLM(messages: LLMMessage[], options: CallLLMOptions = 
       }
     } catch (e) {
       if ((e as Error).message.startsWith('MiniMax 限流')) throw e;
+      console.log(`[callLLM] line[${i}] JSON.parse failed:`, (e as Error).message.slice(0, 100));
       // 解析失败忽略这行，继续下一行
     }
   }
@@ -91,9 +103,12 @@ export async function callLLM(messages: LLMMessage[], options: CallLLMOptions = 
   const content = msg?.content;
   if (!content) {
     // 调试：打印完整响应帮助排查
-    console.warn('[callLLM] content 为空, msg:', JSON.stringify(msg)?.slice(0, 300));
+    console.warn('[callLLM] content 为空, msg keys:', Object.keys(msg || {}));
+    console.warn('[callLLM] reasoning_content (500):', msg?.reasoning_content?.slice(0, 500));
+    console.warn('[callLLM] full data:', JSON.stringify(data).slice(0, 500));
     throw new Error(`MiniMax API 返回内容为空: ${JSON.stringify(data).slice(0, 300)}`);
   }
+  console.log('[callLLM] content OK, length:', content.length, 'preview:', content.slice(0, 200));
   return content;
 }
 

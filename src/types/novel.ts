@@ -134,6 +134,8 @@ export interface StyleConfig {
 // ── 章节 ─────────────────────────────────────────────────────────────────────
 export type ChapterStatus = 'pending' | 'generating' | 'draft' | 'done';
 
+import type { StoryboardScene } from './storyboard';
+
 export interface Chapter {
   id: string;
   /** 章节编号（从1开始） */
@@ -156,6 +158,8 @@ export interface Chapter {
   notes: string;
   createdAt: number;
   updatedAt: number;
+  /** 分镜数据（可选，生成后存储） */
+  storyboard?: StoryboardScene;
 }
 
 // ── 词汇表条目（命名一致性）────────────────────────────────────────────────────

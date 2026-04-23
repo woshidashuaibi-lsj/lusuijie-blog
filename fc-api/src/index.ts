@@ -349,16 +349,12 @@ function extractJSON(text: string, type: 'object' | 'array' = 'object'): string 
   // 2. 清理全角引号
   s = s.replace(/[\u2018\u2019]/g, "'").replace(/[\u201c\u201d]/g, '"');
 
-  // 3. 用括号匹配算法找最后一个完整的 JSON 块
-  //    这样即使思维链中包含 { 字符，也能正确定位到最后的有效 JSON
+  // 3. 找第一个完整的目标类型 JSON 块（[ 找最外层数组，{ 找最外层对象）
+  //    遇到目标起始符后，用括号深度匹配找到对应结束符，立即返回
   const [openChar, closeChar] = type === 'array' ? ['[', ']'] : ['{', '}'];
-
-  let lastStart = -1;
-  let lastEnd = -1;
 
   for (let i = 0; i < s.length; i++) {
     if (s[i] === openChar) {
-      // 从这个起点开始，尝试找匹配的闭合括号
       let depth = 0;
       let inString = false;
       let escape = false;
@@ -372,18 +368,12 @@ function extractJSON(text: string, type: 'object' | 'array' = 'object'): string 
         else if (c === closeChar) {
           depth--;
           if (depth === 0) {
-            // 找到了一个完整的块，记录下来（优先取最后一个）
-            lastStart = i;
-            lastEnd = j;
-            break;
+            // 找到第一个完整的块，直接返回
+            return s.slice(i, j + 1);
           }
         }
       }
     }
-  }
-
-  if (lastStart !== -1 && lastEnd !== -1) {
-    return s.slice(lastStart, lastEnd + 1);
   }
 
   // 降级：返回原始文本（让 JSON.parse 抛出更清晰的错误）
@@ -701,6 +691,153 @@ app.post('/api/novel/generate', async (req: Request, res: Response) => {
     console.error('[novel/generate] 章节生成失败:', error);
     sendEvent('error', { message: error instanceof Error ? error.message : '章节生成失败' });
     res.end();
+  }
+});
+
+// POST /api/novel/storyboard - 分镜生成
+app.post('/api/novel/storyboard', async (req: Request, res: Response) => {
+  const { content, chapterNumber, chapterTitle, characters } = req.body as {
+    content?: string;
+    chapterNumber?: number;
+    chapterTitle?: string;
+    characters?: { name: string; appearance?: string }[];
+  };
+
+  if (!content || typeof content !== 'string' || content.trim().length === 0) {
+    return res.status(400).json({ message: '章节内容不能为空' });
+  }
+
+  const charNames = Array.isArray(characters)
+    ? characters.map((c) => c.name).join('、')
+    : '';
+
+  // 角色外貌映射表，用于生成 imagePrompt
+  const charAppearanceMap: Record<string, string> = {};
+  if (Array.isArray(characters)) {
+    for (const c of characters) {
+      if (c.name && c.appearance) {
+        charAppearanceMap[c.name] = c.appearance;
+      }
+    }
+  }
+
+  const VALID_POSES = ['stand', 'sit', 'run', 'fight', 'fall'];
+  const VALID_SCENES = ['outdoor', 'indoor', 'abstract'];
+  const VALID_POS = ['left', 'center', 'right'];
+
+  // 内容截取：最多传 5000 字给 LLM
+  const contentForLLM = content.trim().slice(0, 5000);
+
+  // 用 few-shot 示例引导模型直接输出 JSON
+  const systemPrompt = `你是专业的漫画分镜脚本编辑。只输出一个 JSON 数组，不要任何解释、标题或代码块标记。
+
+你的职责是：
+1. 仔细阅读章节内容，理解故事节奏、场景转换和情感变化
+2. 自主决定需要多少格分镜（通常每个独立场景/事件1格，情绪强烈的关键时刻可单独一格）
+3. 确保分镜覆盖：开场环境、主要事件经过、高潮冲突、情感收尾
+4. 每格必须包含 imagePrompt（英文），用于 AI 图像生成，描述该格的场景画面
+
+输出示例（严格按此格式）：
+[{"index":1,"sceneType":"outdoor","narration":"晨雾笼罩山峰","imagePrompt":"misty mountain peak at dawn, anime style, young man standing, soft light","figures":[{"name":"林逸","pose":"stand","positionX":"center","dialogue":"今日必有大事"}]},{"index":2,"sceneType":"indoor","narration":"结果令人震惊","imagePrompt":"dimly lit hall, young man with shocked expression, elder pointing, dramatic lighting, anime style","figures":[{"name":"林逸","pose":"fall","positionX":"center","dialogue":"怎么可能"}]}]
+
+字段规则（必须严格遵守，否则渲染失败）：
+- index：从1开始的连续整数
+- sceneType：只能是 outdoor 或 indoor 或 abstract（内心/梦境/回忆用abstract）
+- narration：场景旁白，≤20字，可省略
+- imagePrompt：英文图像描述，包含场景环境+人物动态+光线氛围+风格，必填，50字以内
+- figures：人物数组，每格1到2人，不能为空数组
+- figures[].name：人物姓名，必须用已知人物名
+- figures[].pose：只能是 stand 或 sit 或 run 或 fight 或 fall
+- figures[].positionX：只能是 left 或 center 或 right（2人时一左一右）
+- figures[].dialogue：台词，≤15字，关键对白才加，可省略
+
+已知人物及外貌：${charNames || '主角'}${Object.keys(charAppearanceMap).length > 0 ? '\n人物外貌参考：' + Object.entries(charAppearanceMap).map(([n, a]) => `${n}: ${a}`).join('；') : ''}
+注意：每格 figures 不能为空！imagePrompt 必须是英文，且融入人物外貌特征！`;
+
+  const userPrompt = `请为以下章节设计完整的漫画分镜。根据故事内容自主决定格数（不要有数量限制，有几个独立场景就画几格），按叙事顺序推进。只输出JSON数组，不要其他文字：
+
+第${chapterNumber}章《${chapterTitle}》
+${contentForLLM}`;
+
+  try {
+    const llmOutput = await callLLM(
+      [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
+      { temperature: 0.1, maxTokens: 4096 }
+    );
+    console.log('[storyboard] llmOutput length:', llmOutput.length);
+    console.log('[storyboard] llmOutput full:', llmOutput);
+
+    const jsonStr = extractJSON(llmOutput, 'array');
+    console.log('[storyboard] jsonStr length:', jsonStr.length);
+    console.log('[storyboard] jsonStr full:', jsonStr.slice(0, 2000));
+
+    let parsed: Record<string, unknown>[];
+    try {
+      parsed = JSON.parse(jsonStr) as Record<string, unknown>[];
+    } catch (parseErr) {
+      console.error('[storyboard] JSON.parse failed:', (parseErr as Error).message);
+      console.error('[storyboard] jsonStr that failed:', jsonStr);
+      throw parseErr;
+    }
+
+    console.log('[storyboard] parsed length:', parsed.length);
+    console.log('[storyboard] parsed[0]:', JSON.stringify(parsed[0]));
+
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      throw new Error('LLM 未返回有效的分镜数组');
+    }
+
+    // 默认人物名（取已知人物第一个，否则用"主角"）
+    const defaultCharName = charNames ? charNames.split('、')[0] : '主角';
+
+    const panels = parsed.slice(0, 40).map((p, i) => {
+      console.log(`[storyboard] panel[${i}] raw figures:`, JSON.stringify(p.figures));
+      const rawFigures = Array.isArray(p.figures) ? p.figures : [];
+      const mappedFigures = rawFigures
+        .slice(0, 2)
+        .map((f: Record<string, unknown>) => ({
+          name: String(f.name || defaultCharName),
+          pose: VALID_POSES.includes(f.pose as string) ? (f.pose as string) : 'stand',
+          positionX: VALID_POS.includes(f.positionX as string) ? (f.positionX as string) : 'center',
+          ...(f.dialogue ? { dialogue: String(f.dialogue).slice(0, 15) } : {}),
+        }));
+
+      // figures 为空时补一个默认站立人物，避免渲染空白格
+      const figures = mappedFigures.length > 0
+        ? mappedFigures
+        : [{ name: defaultCharName, pose: 'stand', positionX: 'center' }];
+
+      // 生成 imagePrompt：优先用 LLM 返回的，否则根据场景和人物自动生成
+      let imagePrompt = '';
+      if (p.imagePrompt && typeof p.imagePrompt === 'string') {
+        imagePrompt = String(p.imagePrompt).slice(0, 200);
+      } else {
+        // fallback：根据场景和人物自动拼接英文描述
+        const sceneDesc = p.sceneType === 'outdoor' ? 'outdoor scene' : p.sceneType === 'indoor' ? 'indoor scene' : 'abstract dreamlike scene';
+        const figDesc = figures.map((f: { name: string; pose: string }) => {
+          const appearance = charAppearanceMap[f.name];
+          return appearance ? `${f.name} (${appearance}), ${f.pose}ing` : `${f.name}, ${f.pose}ing`;
+        }).join(', ');
+        const narration = p.narration ? String(p.narration) : '';
+        imagePrompt = `${sceneDesc}, ${figDesc}${narration ? ', ' + narration : ''}, anime style, manga panel, detailed`;
+      }
+
+      return {
+        index: i + 1,
+        sceneType: VALID_SCENES.includes(p.sceneType as string) ? p.sceneType : 'abstract',
+        ...(p.narration ? { narration: String(p.narration).slice(0, 20) } : {}),
+        imagePrompt,
+        figures,
+      };
+    });
+
+    return res.status(200).json({ panels });
+  } catch (error) {
+    console.error('[novel/storyboard] 分镜生成失败:', error);
+    return res.status(500).json({ message: error instanceof Error ? error.message : '分镜生成失败' });
   }
 });
 
