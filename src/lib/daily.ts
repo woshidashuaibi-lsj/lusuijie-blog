@@ -33,10 +33,15 @@ export function getAllDailyPosts(): DailyPost[] {
     const fileContents = fs.readFileSync(fullPath, 'utf8');
     const { data, content } = matter(fileContents);
 
+    const rawDate = data.date;
+    const dateStr = rawDate instanceof Date
+      ? rawDate.toISOString().slice(0, 10)
+      : String(rawDate || slug);
+
     return {
       slug,
       title: data.title || slug,
-      date: data.date || slug,
+      date: dateStr,
       summary: data.summary || '',
       content,
     } as DailyPost;
@@ -74,10 +79,15 @@ export function getDailyPostBySlug(slug: string): DailyPost | null {
   const fileContents = fs.readFileSync(fullPath, 'utf8');
   const { data, content } = matter(fileContents);
 
+  const rawDate = data.date;
+  const dateStr = rawDate instanceof Date
+    ? rawDate.toISOString().slice(0, 10)
+    : String(rawDate || slug);
+
   return {
     slug,
     title: data.title || slug,
-    date: data.date || slug,
+    date: dateStr,
     summary: data.summary || '',
     content,
   };
