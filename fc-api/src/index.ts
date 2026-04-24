@@ -841,6 +841,117 @@ ${contentForLLM}`;
   }
 });
 
+// POST /api/characters/extract - AI 从书籍内容实时提取人物图鉴
+app.post('/api/characters/extract', async (req: Request, res: Response) => {
+  const {
+    bookSlug,
+    knownCharacterIds = [],
+  } = req.body as {
+    bookSlug?: string;
+    knownCharacterIds?: string[];
+  };
+
+  if (!bookSlug || typeof bookSlug !== 'string') {
+    return res.status(400).json({ message: 'bookSlug 不能为空' });
+  }
+
+  // 读取书籍章节内容
+  let chapters: { title: string; content: string }[];
+  try {
+    const bookData = loadBookData(bookSlug);
+    chapters = bookData.chapters;
+  } catch (e) {
+    return res.status(404).json({ message: `找不到书籍数据: ${bookSlug}` });
+  }
+
+  if (!chapters || chapters.length === 0) {
+    return res.status(404).json({ message: '书籍暂无章节数据' });
+  }
+
+  // 读取已有人物数据（用于过滤）
+  let knownIds: string[] = knownCharacterIds || [];
+  // 同时读本地 characters 文件中的 ID
+  const charFilePath = path.join(__dirname, '..', 'data', 'characters', `${bookSlug}.json`);
+  if (fs.existsSync(charFilePath)) {
+    try {
+      const raw = fs.readFileSync(charFilePath, 'utf-8');
+      const parsed = JSON.parse(raw) as { characters?: Array<{ id: string; name: string }> };
+      const fileIds = (parsed.characters || []).map((c) => c.id);
+      knownIds = Array.from(new Set([...knownIds, ...fileIds]));
+    } catch {}
+  }
+
+  // 取前 20 章，每章最多 600 字
+  const sample = chapters
+    .slice(0, 20)
+    .map((ch) => `【${ch.title}】\n${ch.content.slice(0, 600)}`)
+    .join('\n\n---\n\n');
+
+  const systemPrompt = `你是专业的小说人物分析师。你的任务是从小说章节内容中识别出所有有姓名、有台词或有明确描述的配角/次要人物，并为每位人物生成结构化的人物图鉴卡片。
+只输出一个合法 JSON 数组，不要任何解释、代码块标记（\`\`\`）或前言。
+
+每个人物对象格式如下：
+{
+  "id": "unique-slug（英文小写 + 连字符，如 zhang-san）",
+  "name": "人物姓名",
+  "avatar": "一个最能代表该人物性格/职业的 emoji",
+  "role": "人物身份/标签（15字以内）",
+  "traits": ["性格特征1（10字以内）", "性格特征2", "性格特征3"],
+  "speechStyle": "说话风格描述（30字以内）",
+  "persona": "角色扮演人设描述（50字以内）",
+  "relations": [],
+  "isAiExtracted": true
+}
+
+注意：
+- 只提取配角或次要人物，不要提取主角（第一人称叙述者或出现最频繁的人物）
+- 每个人物的 traits 至少 2 条
+- avatar 使用 emoji 表情符号，不要使用文字
+- isAiExtracted 固定为 true，用于前端标识这是 AI 推断出的人物`;
+
+  const userPrompt = `以下是书籍内容节选，请提取所有出现的配角/次要人物，生成人物图鉴 JSON 数组。只输出 JSON，不要其他任何内容：
+
+${sample}`;
+
+  try {
+    const llmOutput = await callLLM(
+      [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
+      { temperature: 0.3, maxTokens: 3000 }
+    );
+
+    console.log('[characters/extract] llmOutput length:', llmOutput.length);
+
+    const jsonStr = extractJSON(llmOutput, 'array');
+    let extracted: Record<string, unknown>[];
+    try {
+      extracted = JSON.parse(jsonStr) as Record<string, unknown>[];
+    } catch (parseErr) {
+      console.error('[characters/extract] JSON.parse failed:', (parseErr as Error).message);
+      throw new Error('AI 返回的内容无法解析为 JSON，请重试');
+    }
+
+    if (!Array.isArray(extracted) || extracted.length === 0) {
+      return res.status(200).json({ characters: [] });
+    }
+
+    // 过滤掉已有人物（按 id 匹配，同时简单过滤掉明显无效条目）
+    const filtered = extracted.filter((c) => {
+      if (!c || typeof c !== 'object') return false;
+      const id = typeof c.id === 'string' ? c.id : '';
+      if (knownIds.includes(id)) return false;
+      return typeof c.name === 'string' && c.name.trim().length > 0;
+    });
+
+    return res.status(200).json({ characters: filtered });
+  } catch (error) {
+    console.error('[characters/extract] 失败:', error);
+    return res.status(500).json({ message: error instanceof Error ? error.message : '人物提取失败，请重试' });
+  }
+});
+
 // 启动本地服务（本地开发用）
 if (require.main === module) {
   const PORT = process.env.PORT || 3001;

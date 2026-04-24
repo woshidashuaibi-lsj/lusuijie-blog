@@ -234,6 +234,149 @@
   transform: translateY(-1px);
 }
 
+/* ─── 获取更多 ───────────────────────────────────────────────────────────── */
+.loadMoreWrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.loadMoreBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.72rem 1.8rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid;
+  border-radius: 40px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.02em;
+}
+
+.loadMoreBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.loadMoreBtn:active {
+  transform: translateY(0);
+}
+
+.loadMoreIcon {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+.loadMoreHint {
+  padding: 0.15rem 0.55rem;
+  border-radius: 20px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* ─── AI 提取人物卡片 ─────────────────────────────────────────────────────── */
+.cardAi {
+  border-style: dashed !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.cardAi:hover {
+  border-color: rgba(255, 255, 255, 0.22) !important;
+}
+
+.aiTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 0.18rem 0.6rem;
+  border-radius: 20px;
+  margin-bottom: 0.65rem;
+}
+
+/* ─── 骨架屏 ─────────────────────────────────────────────────────────────── */
+.skeletonCard {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 1.25rem;
+  animation: skeletonPulse 1.4s ease-in-out infinite;
+}
+
+.skeletonHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+}
+
+.skeletonAvatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.skeletonInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 0.2rem;
+}
+
+.skeletonLine {
+  height: 0.75rem;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+@keyframes skeletonPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* ─── 错误提示 & 重试 ────────────────────────────────────────────────────── */
+.errorTip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.retryBtn {
+  padding: 0.3rem 0.85rem;
+  border-radius: 20px;
+  border: 1px solid;
+  background: transparent;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.retryBtn:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ─── 提取完毕提示 ───────────────────────────────────────────────────────── */
+.extractDone {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.35);
+  letter-spacing: 0.04em;
+}
+
 /* ─── 响应式 ─────────────────────────────────────────────────────────────── */
 @media (max-width: 600px) {
   .grid {
