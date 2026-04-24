@@ -5,7 +5,7 @@ import type { Character } from '@/types/character';
 import styles from './index.module.css';
 
 // API 地址
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://lusuijie.com.cn:3001';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'https://lusuijie.com.cn:3001';
 
 // ─── CharacterCard 子组件 ──────────────────────────────────────────────────
 
