@@ -54,7 +54,12 @@ export default function DailyPage({ groups, latestPost }: DailyPageProps) {
     <>
       <Head>
         <title>AI 日报 - 卢穗杰的博客</title>
-        <meta name="description" content="每日 AI 资讯速览，由 OpenClaw 自动聚合" />
+        <meta name="description" content="每日 AI 资讯速览，自动聚合最新人工智能资讯、模型进展与技术动态。" />
+        <link rel="canonical" href="https://lusuijie.com.cn/daily/" />
+        <meta property="og:title" content="AI 日报 | 卢穗杰的博客" />
+        <meta property="og:description" content="每日 AI 资讯速览，涵盖最新人工智能动态。" />
+        <meta property="og:url" content="https://lusuijie.com.cn/daily/" />
+        <meta property="og:type" content="website" />
       </Head>
       <Navigation />
       <div className={styles.dailyPage}>

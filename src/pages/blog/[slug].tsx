@@ -17,13 +17,35 @@ export default function BlogPost({ post, htmlContent }: BlogPostProps) {
   return (
     <>
       <Head>
-        <title>{post.title} | 阿杰的博客</title>
-        <meta name="description" content={post.description} />
+        <title>{post.title} | 卢穗杰的博客</title>
+        <meta name="description" content={post.description || `阅读《${post.title}》- 卢穗杰的博客`} />
+        <link rel="canonical" href={`https://lusuijie.com.cn/blog/${post.slug}/`} />
         <meta property="og:title" content={post.title} />
-        <meta property="og:description" content={post.description} />
+        <meta property="og:description" content={post.description || `阅读《${post.title}》- 卢穗杰的博客`} />
         <meta property="og:type" content="article" />
+        <meta property="og:url" content={`https://lusuijie.com.cn/blog/${post.slug}/`} />
+        <meta property="og:image" content={post.cover || 'https://lusuijie.com.cn/favicon.jpg'} />
         <meta property="article:published_time" content={post.date} />
-        {post.cover && <meta property="og:image" content={post.cover} />}
+        <meta property="article:author" content="卢穗杰" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'BlogPosting',
+              headline: post.title,
+              description: post.description,
+              datePublished: post.date,
+              author: {
+                '@type': 'Person',
+                name: '卢穗杰',
+                url: 'https://lusuijie.com.cn',
+              },
+              url: `https://lusuijie.com.cn/blog/${post.slug}/`,
+              image: post.cover || 'https://lusuijie.com.cn/favicon.jpg',
+            }),
+          }}
+        />
       </Head>
       <BlogPostPage post={post} htmlContent={htmlContent} />
     </>

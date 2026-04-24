@@ -659,8 +659,13 @@ export default function BookListPage() {
   return (
     <>
       <Head>
-        <title>书单 - 星际图书馆</title>
-        <meta name="description" content="在宇宙中漫游，探索每一本书的世界" />
+        <title>书单 - 星际图书馆 | 卢穗杰的博客</title>
+        <meta name="description" content="卢穗杰的书单与阅读笔记，在星际图书馆中漫游探索每一本书的世界。" />
+        <link rel="canonical" href="https://lusuijie.com.cn/book/" />
+        <meta property="og:title" content="书单 - 星际图书馆 | 卢穗杰的博客" />
+        <meta property="og:description" content="卢穗杰的书单，在星际图书馆中漫游探索每一本书的世界。" />
+        <meta property="og:url" content="https://lusuijie.com.cn/book/" />
+        <meta property="og:type" content="website" />
       </Head>
       <Navigation />
       <BookAccessGate>

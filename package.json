@@ -10,7 +10,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "export": "STATIC_EXPORT=true next build",
+    "export": "STATIC_EXPORT=true next build && node scripts/generate-sitemap.js",
     "deploy": "npm run export && node scripts/upload-oss.js",
     "upload:images": "node scripts/upload-images.js",
     "upload:blog-assets": "node scripts/manage-images.js",

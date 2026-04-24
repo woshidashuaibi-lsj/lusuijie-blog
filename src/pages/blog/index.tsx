@@ -16,8 +16,13 @@ export default function BlogRoute({ posts, categories, currentPage, totalPages, 
   return (
     <>
       <Head>
-        <title>文章列表 | 阿杰的博客</title>
-        <meta name="description" content="浏览所有博客文章" />
+        <title>文章列表 | 卢穗杰的博客</title>
+        <meta name="description" content="卢穗杰的博客文章，涵盖前端技术、AI、阅读笔记与生活随想。" />
+        <link rel="canonical" href="https://lusuijie.com.cn/blog/" />
+        <meta property="og:title" content="文章列表 | 卢穗杰的博客" />
+        <meta property="og:description" content="卢穗杰的博客文章，涵盖前端技术、AI、阅读笔记与生活随想。" />
+        <meta property="og:url" content="https://lusuijie.com.cn/blog/" />
+        <meta property="og:type" content="website" />
       </Head>
       <BlogListPage
         posts={posts}
