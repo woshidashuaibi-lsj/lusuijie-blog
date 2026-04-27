@@ -278,17 +278,12 @@
   letter-spacing: 0.04em;
 }
 
-/* ─── AI 提取人物卡片 ─────────────────────────────────────────────────────── */
-.cardAi {
-  border-style: dashed !important;
-  border-color: rgba(255, 255, 255, 0.12) !important;
+/* ─── 用户添加的人物卡片 ──────────────────────────────────────────────────── */
+.cardUser {
+  border-style: solid !important;
 }
 
-.cardAi:hover {
-  border-color: rgba(255, 255, 255, 0.22) !important;
-}
-
-.aiTag {
+.userTag {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
@@ -298,6 +293,377 @@
   padding: 0.18rem 0.6rem;
   border-radius: 20px;
   margin-bottom: 0.65rem;
+}
+
+/* ─── 删除按钮 ───────────────────────────────────────────────────────────── */
+.actionBtnDelete {
+  flex: 0 0 auto;
+  padding: 0.6rem 0.8rem;
+  background: rgba(255, 80, 80, 0.1);
+  color: rgba(255, 120, 120, 0.8);
+  border-color: rgba(255, 80, 80, 0.2);
+}
+
+.actionBtnDelete:hover {
+  background: rgba(255, 80, 80, 0.2);
+  color: rgba(255, 140, 140, 1);
+}
+
+/* ─── 添加人物按钮 ───────────────────────────────────────────────────────── */
+.addBtnWrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.addBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.72rem 1.8rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1.5px dashed;
+  border-radius: 40px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.02em;
+}
+
+.addBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+  border-style: solid;
+}
+
+.addBtnIcon {
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.addBtnHint {
+  padding: 0.15rem 0.55rem;
+  border-radius: 20px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* ─── 添加人物弹窗 ───────────────────────────────────────────────────────── */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal {
+  background: #0f0a2a;
+  border: 1.5px solid;
+  border-radius: 20px;
+  padding: 1.75rem;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.2s ease;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+}
+
+.modalTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.modalClose {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.modalClose:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.modalDesc {
+  font-size: 0.84rem;
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.6;
+  margin-bottom: 1.2rem;
+}
+
+/* ─── 人物名称提示 ───────────────────────────────────────────────────────── */
+.hintSection {
+  margin-bottom: 1.1rem;
+}
+
+.hintLabel {
+  font-size: 0.73rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.35);
+  margin-bottom: 0.5rem;
+}
+
+.hintTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.hintTag {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  border: 1px solid;
+  background: transparent;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.hintTag:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ─── 输入区 ─────────────────────────────────────────────────────────────── */
+.inputRow {
+  display: flex;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+
+.nameInput {
+  flex: 1;
+  padding: 0.65rem 0.95rem;
+  border-radius: 12px;
+  border: 1.5px solid;
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.nameInput::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.nameInput:disabled {
+  opacity: 0.5;
+}
+
+.generateBtn {
+  padding: 0.65rem 1.1rem;
+  border-radius: 12px;
+  border: none;
+  color: #111;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  min-width: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.generateBtn:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.generateBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btnSpinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(0, 0, 0, 0.3);
+  border-top-color: #111;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.generatingHint {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.45);
+  text-align: center;
+  padding: 0.5rem 0;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 0.8; }
+}
+
+.modalError {
+  font-size: 0.82rem;
+  color: rgba(255, 120, 100, 0.9);
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+/* ─── 预览卡片 ───────────────────────────────────────────────────────────── */
+.previewCard {
+  border: 1px solid;
+  border-radius: 14px;
+  padding: 1.1rem;
+  margin-bottom: 1.1rem;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.previewHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 0.85rem;
+}
+
+.previewAvatar {
+  font-size: 2rem;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.previewName {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.2rem;
+}
+
+.previewRole {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.previewTraits {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-bottom: 0.7rem;
+}
+
+.previewTrait {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.5;
+}
+
+.previewSpeech {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+  line-height: 1.6;
+}
+
+.previewSpeechLabel {
+  font-style: normal;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.73rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-right: 0.3rem;
+}
+
+.previewActions {
+  display: flex;
+  gap: 0.7rem;
+}
+
+.regenBtn {
+  flex: 1;
+  padding: 0.65rem;
+  border-radius: 12px;
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.regenBtn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+}
+
+.regenBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.saveBtn {
+  flex: 2;
+  padding: 0.65rem;
+  border-radius: 12px;
+  border: none;
+  color: #111;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.saveBtn:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.saveBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* ─── 骨架屏 ─────────────────────────────────────────────────────────────── */

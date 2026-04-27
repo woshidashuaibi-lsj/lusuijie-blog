@@ -952,6 +952,114 @@ ${sample}`;
   }
 });
 
+// POST /api/characters/generate-by-name - 根据人物名称 AI 生成人物图鉴
+// body: { bookSlug: string; characterName: string }
+app.post('/api/characters/generate-by-name', async (req: Request, res: Response) => {
+  const { bookSlug, characterName } = req.body as {
+    bookSlug?: string;
+    characterName?: string;
+  };
+
+  if (!bookSlug || typeof bookSlug !== 'string') {
+    return res.status(400).json({ message: 'bookSlug 不能为空' });
+  }
+  if (!characterName || typeof characterName !== 'string' || characterName.trim().length === 0) {
+    return res.status(400).json({ message: '人物名称不能为空' });
+  }
+  if (characterName.trim().length > 30) {
+    return res.status(400).json({ message: '人物名称过长' });
+  }
+
+  // 读取书籍章节内容（用于 AI 分析）
+  let chapters: { title: string; content: string }[];
+  try {
+    const bookData = loadBookData(bookSlug);
+    chapters = bookData.chapters;
+  } catch {
+    return res.status(404).json({ message: `找不到书籍数据: ${bookSlug}` });
+  }
+
+  if (!chapters || chapters.length === 0) {
+    return res.status(404).json({ message: '书籍暂无章节数据' });
+  }
+
+  const name = characterName.trim();
+
+  // 搜索含有该人物名称的章节（最多取前 15 章或含名字的章节）
+  const relevantChapters = chapters
+    .filter(ch => ch.content.includes(name) || ch.title.includes(name))
+    .slice(0, 10);
+
+  // 兜底：如果一章都没找到包含该名字的，取前 5 章
+  const sample = (relevantChapters.length > 0 ? relevantChapters : chapters.slice(0, 5))
+    .map(ch => `【${ch.title}】\n${ch.content.slice(0, 800)}`)
+    .join('\n\n---\n\n');
+
+  const systemPrompt = `你是专业的小说人物分析师。根据提供的书籍内容，为指定人物生成详细的人物图鉴卡片。
+只输出一个合法 JSON 对象，不要任何解释、代码块标记（\`\`\`）或前言。
+
+输出格式：
+{
+  "id": "unique-slug（英文小写 + 连字符，如 bai-ling-miao）",
+  "name": "人物姓名（必须与输入的名称一致）",
+  "avatar": "一个最能代表该人物性格/职业/特征的 emoji",
+  "role": "人物身份/标签（15字以内，如「白化病少女 / 药引」）",
+  "traits": [
+    "性格特征1（格式：标签：具体描述，如「善良纯真：即使身处险境也保持对他人的信任」）",
+    "性格特征2",
+    "性格特征3"
+  ],
+  "speechStyle": "说话风格描述（30字以内，描述语气、用词特点、口头禅等）",
+  "persona": "角色扮演人设描述（100字以内，第二人称描述该角色的性格核心和行为方式）",
+  "relations": []
+}
+
+注意：
+- traits 至少 2 条，最多 5 条
+- avatar 使用 emoji，不要文字
+- 如果书中没有该人物的信息，根据名字合理推断，并在 role 末尾加「（推断）」`;
+
+  const userPrompt = `请根据以下书籍内容，为人物「${name}」生成详细的人物图鉴。只输出 JSON 对象：
+
+${sample}`;
+
+  try {
+    const llmOutput = await callLLM(
+      [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
+      { temperature: 0.4, maxTokens: 2000 }
+    );
+
+    console.log('[characters/generate-by-name] llmOutput length:', llmOutput.length);
+
+    const jsonStr = extractJSON(llmOutput, 'object');
+    let character: Record<string, unknown>;
+    try {
+      character = JSON.parse(jsonStr) as Record<string, unknown>;
+    } catch (parseErr) {
+      console.error('[characters/generate-by-name] JSON.parse failed:', (parseErr as Error).message);
+      throw new Error('AI 返回的内容无法解析，请重试');
+    }
+
+    // 确保关键字段存在
+    if (!character.name) character.name = name;
+    if (!character.id) {
+      // 生成 slug：转拼音近似（简单处理，前端可覆盖）
+      character.id = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') || `char-${Date.now()}`;
+    }
+    if (!character.avatar) character.avatar = '👤';
+    if (!character.traits || !Array.isArray(character.traits)) character.traits = [];
+    if (!character.relations) character.relations = [];
+
+    return res.status(200).json({ character });
+  } catch (error) {
+    console.error('[characters/generate-by-name] 失败:', error);
+    return res.status(500).json({ message: error instanceof Error ? error.message : '人物生成失败，请重试' });
+  }
+});
+
 // 启动本地服务（本地开发用）
 if (require.main === module) {
   const PORT = process.env.PORT || 3001;

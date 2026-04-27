@@ -98,57 +98,98 @@ export async function callLLM(messages: LLMMessage[], options: CallLLMOptions = 
   }
 
   const msg = data.choices?.[0]?.message;
-  // 只取 content 字段，不 fallback 到 reasoning_content（推理内容不是业务结果）
-  // reasoning_content 是思维链文本，不能当作 JSON 或业务响应返回
   const content = msg?.content;
-  if (!content) {
-    // 调试：打印完整响应帮助排查
-    console.warn('[callLLM] content 为空, msg keys:', Object.keys(msg || {}));
-    console.warn('[callLLM] reasoning_content (500):', msg?.reasoning_content?.slice(0, 500));
-    console.warn('[callLLM] full data:', JSON.stringify(data).slice(0, 500));
-    throw new Error(`MiniMax API 返回内容为空: ${JSON.stringify(data).slice(0, 300)}`);
+
+  if (content && content.trim().length > 0) {
+    console.log('[callLLM] content OK, length:', content.length, 'preview:', content.slice(0, 200));
+    return content;
   }
-  console.log('[callLLM] content OK, length:', content.length, 'preview:', content.slice(0, 200));
-  return content;
+
+  // content 为空或空字符串时：尝试从 reasoning_content 提取 JSON
+  // MiniMax-M2.7 有时在限流/异常情况下把结果放在 reasoning_content 里，content 为空
+  const reasoning = msg?.reasoning_content || '';
+  console.warn('[callLLM] content 为空, reasoning_content length:', reasoning.length);
+  console.warn('[callLLM] reasoning_content (前300):', reasoning.slice(0, 300));
+
+  if (reasoning.trim().length > 0) {
+    // 尝试从 reasoning_content 里提取 JSON 数组或对象（给 characters/extract 等场景用）
+    const jsonMatch = reasoning.match(/```(?:json)?\s*([\s\S]*?)```/) ||
+                      reasoning.match(/(\[[\s\S]*?\]|\{[\s\S]*?\})(?:\s*$)/);
+    if (jsonMatch) {
+      const extracted = (jsonMatch[1] || jsonMatch[0]).trim();
+      console.warn('[callLLM] 从 reasoning_content 提取到 JSON, len:', extracted.length);
+      return extracted;
+    }
+    // 没有 JSON 结构，reasoning_content 是纯文本分析，不能用作业务结果
+  }
+
+  console.error('[callLLM] content 为空且无法从 reasoning 提取, full data:', JSON.stringify(data).slice(0, 500));
+  throw new Error('LLM 返回内容为空');
 }
 
 /** 流式调用，返回 Response 的 body（SSE 原始流），由调用方负责管道转发 */
 export async function callLLMStream(messages: LLMMessage[], options: CallLLMOptions = {}): Promise<ReadableStream<Uint8Array>> {
   const { apiKey } = getKeys();
 
-  // 30 秒超时，防止 fetch 无限挂起导致 "fetch failed"
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 30_000);
+  const MAX_RETRY = 3;
+  let lastErr: Error | null = null;
 
-  let res: Response;
-  try {
-    res = await fetch(MINIMAX_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: 'MiniMax-M2.7',
-        messages,
-        temperature: options.temperature ?? 0.75,
-        max_tokens: options.maxTokens ?? 8192,
-        stream: true,
-      }),
-      signal: controller.signal,
-    });
-  } finally {
-    clearTimeout(timer);
+  for (let attempt = 0; attempt < MAX_RETRY; attempt++) {
+    if (attempt > 0) {
+      // 限流重试前等待 1.5s
+      await new Promise(r => setTimeout(r, 1500));
+      console.warn(`[callLLMStream] 第 ${attempt + 1} 次重试...`);
+    }
+
+    // 30 秒超时，防止 fetch 无限挂起导致 "fetch failed"
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 30_000);
+
+    let res: Response;
+    try {
+      res = await fetch(MINIMAX_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: 'MiniMax-M2.7',
+          messages,
+          temperature: options.temperature ?? 0.75,
+          max_tokens: options.maxTokens ?? 8192,
+          stream: true,
+        }),
+        signal: controller.signal,
+      });
+    } catch (fetchErr) {
+      clearTimeout(timer);
+      lastErr = fetchErr instanceof Error ? fetchErr : new Error(String(fetchErr));
+      console.warn(`[callLLMStream] fetch 失败 (attempt ${attempt + 1}):`, lastErr.message);
+      continue;
+    } finally {
+      clearTimeout(timer);
+    }
+
+    // 529 限流：重试
+    if (res.status === 529) {
+      const errText = await res.text().catch(() => '');
+      lastErr = new Error(`MiniMax 限流: 529 ${errText.slice(0, 200)}`);
+      console.warn(`[callLLMStream] 529 限流 (attempt ${attempt + 1}), 等待重试...`);
+      continue;
+    }
+
+    if (!res.ok) {
+      const err = await res.text().catch(() => res.statusText);
+      throw new Error(`MiniMax API 错误: ${res.status} ${err}`);
+    }
+
+    if (!res.body) {
+      throw new Error('MiniMax API 未返回流');
+    }
+
+    return res.body;
   }
 
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`MiniMax API 错误: ${res.status} ${err}`);
-  }
-
-  if (!res.body) {
-    throw new Error('MiniMax API 未返回流');
-  }
-
-  return res.body;
+  throw lastErr ?? new Error('MiniMax 流式请求失败，已重试 3 次');
 }
