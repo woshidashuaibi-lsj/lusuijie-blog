@@ -5,6 +5,7 @@ import styles from './WizardNav.module.css';
 interface WizardNavProps {
   currentStep: WizardStep;
   onNavigate: (step: WizardStep) => void;
+  onBackToList?: () => void;
 }
 
 const STEPS: Array<{ key: WizardStep; label: string; icon: string }> = [
@@ -24,12 +25,17 @@ const STEP_ORDER: Record<WizardStep, number> = {
   writing: 5,
 };
 
-export default function WizardNav({ currentStep, onNavigate }: WizardNavProps) {
+export default function WizardNav({ currentStep, onNavigate, onBackToList }: WizardNavProps) {
   const currentIdx = STEP_ORDER[currentStep] ?? 0;
 
   return (
     <nav className={styles.nav}>
       <div className={styles.brand}>
+        {onBackToList && (
+          <button className={styles.backToList} onClick={onBackToList} title="返回项目列表">
+            ←
+          </button>
+        )}
         <span className={styles.brandIcon}>✦</span>
         <span className={styles.brandText}>创造世界</span>
       </div>

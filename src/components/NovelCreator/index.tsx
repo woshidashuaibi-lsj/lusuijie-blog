@@ -21,11 +21,15 @@ import styles from './index.module.css';
 interface NovelCreatorProps {
   /** 如果传入 projectId，直接加载该项目；否则创建新项目 */
   projectId?: string;
+  /** 点击「返回项目列表」时的回调 */
+  onBackToList?: () => void;
+  /** 新项目创建成功后的回调（传入真实 project id，用于更新 URL） */
+  onProjectCreated?: (id: string) => void;
 }
 
 const AUTOSAVE_DELAY = 800; // 800ms debounce
 
-export default function NovelCreator({ projectId: initialProjectId }: NovelCreatorProps) {
+export default function NovelCreator({ projectId: initialProjectId, onBackToList, onProjectCreated }: NovelCreatorProps) {
   const [project, setProject] = useState<NovelProject | null>(null);
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
@@ -50,6 +54,10 @@ export default function NovelCreator({ projectId: initialProjectId }: NovelCreat
         const newProject = createEmptyProject(id);
         await saveProject(newProject);
         setProject(newProject);
+        // 如果是新项目（没有传 initialProjectId），通知父级更新 URL
+        if (!initialProjectId) {
+          onProjectCreated?.(id);
+        }
       } catch (err) {
         console.error('[NovelCreator] 加载项目失败:', err);
         // 降级：创建内存项目
@@ -133,7 +141,7 @@ export default function NovelCreator({ projectId: initialProjectId }: NovelCreat
     <div className={styles.container}>
       {/* 向导导航（仅在准备阶段显示） */}
       {isInWizard && (
-        <WizardNav currentStep={project.currentStep} onNavigate={goToStep} />
+        <WizardNav currentStep={project.currentStep} onNavigate={goToStep} onBackToList={onBackToList} />
       )}
 
       {/* 主内容区 */}

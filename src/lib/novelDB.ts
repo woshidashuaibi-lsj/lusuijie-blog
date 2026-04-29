@@ -12,6 +12,39 @@
 import type { NovelProject, StoryBibleSnapshot } from '@/types/novel';
 import { syncProjectToCloud, deleteProjectFromCloud } from '@/lib/novelSync';
 
+// ── 云端同步防抖（全局共享，跨多次 saveProject 调用）──────────────────────────
+// 解决问题：AI 生成内容时每 800ms 触发一次 saveProject，每次都 upsert 到 Supabase
+// 实际上没必要这么频繁，只需要在最后一次写入后 3s 再同步一次即可
+
+const CLOUD_SYNC_DEBOUNCE = 3_000; // 3 秒
+
+/** 每个项目独立的同步定时器 */
+const _cloudSyncTimers = new Map<string, ReturnType<typeof setTimeout>>();
+/** 最新待同步的项目数据（同一 ID 只保留最后一次） */
+const _cloudSyncPending = new Map<string, NovelProject>();
+
+function scheduleCloudSync(project: NovelProject) {
+  const id = project.id;
+  // 更新待同步数据（只保留最新）
+  _cloudSyncPending.set(id, project);
+
+  // 清除已有定时器
+  const existing = _cloudSyncTimers.get(id);
+  if (existing) clearTimeout(existing);
+
+  // 设置新定时器
+  const timer = setTimeout(() => {
+    const toSync = _cloudSyncPending.get(id);
+    if (toSync) {
+      _cloudSyncPending.delete(id);
+      _cloudSyncTimers.delete(id);
+      syncProjectToCloud(toSync).catch(() => {});
+    }
+  }, CLOUD_SYNC_DEBOUNCE);
+
+  _cloudSyncTimers.set(id, timer);
+}
+
 const DB_NAME = 'novel-creator';
 const DB_VERSION = 1;
 const STORE_PROJECTS = 'projects';
@@ -172,8 +205,8 @@ export async function saveProject(project: NovelProject): Promise<void> {
     }
   }
 
-  // 云端同步（异步，不阻塞，失败静默）
-  syncProjectToCloud(toSave).catch(() => {});
+  // 云端同步：3s 防抖，避免 AI 生成时每次写入都触发 upsert
+  scheduleCloudSync(toSave);
 }
 
 /**

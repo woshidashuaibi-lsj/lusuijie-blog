@@ -20,6 +20,28 @@
   flex-shrink: 0;
 }
 
+.backToList {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid rgba(167, 139, 250, 0.25);
+  background: rgba(167, 139, 250, 0.08);
+  color: rgba(167, 139, 250, 0.7);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-right: 0.25rem;
+}
+
+.backToList:hover {
+  background: rgba(167, 139, 250, 0.18);
+  color: #a78bfa;
+  border-color: rgba(167, 139, 250, 0.5);
+}
+
 .brandIcon {
   font-size: 1.3rem;
   color: #f59e0b;

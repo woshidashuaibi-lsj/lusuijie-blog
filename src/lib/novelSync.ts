@@ -41,20 +41,41 @@ async function waitForSupabase(): Promise<SupabaseClient | null> {
   }
 }
 
-// ── 当前登录用户 ──────────────────────────────────────────────────────────────
+// ── 当前登录用户（带内存缓存，避免频繁发 /auth/v1/user）──────────────────────
+
+/** 缓存的用户对象，null = 未登录，undefined = 未初始化 */
+let _cachedUser: User | null | undefined = undefined;
+/** 上次刷新 user 缓存的时间戳（ms）*/
+let _userCachedAt = 0;
+/** 缓存有效期：30 秒。在此时间内不重复请求 /auth/v1/user */
+const USER_CACHE_TTL = 30_000;
 
 /**
  * 获取当前登录的 Supabase 用户（未登录返回 null）
+ * 内存缓存 30s，避免 AI 生成过程中每次 saveProject 都发请求
  */
 export async function getCurrentUser(): Promise<User | null> {
+  // 缓存命中
+  if (_cachedUser !== undefined && Date.now() - _userCachedAt < USER_CACHE_TTL) {
+    return _cachedUser;
+  }
+
   const supabase = await waitForSupabase();
   if (!supabase) return null;
   try {
     const { data: { user } } = await supabase.auth.getUser();
+    _cachedUser = user;
+    _userCachedAt = Date.now();
     return user;
   } catch {
     return null;
   }
+}
+
+/** 登出或切换账号时主动清除缓存 */
+export function clearUserCache() {
+  _cachedUser = undefined;
+  _userCachedAt = 0;
 }
 
 /**
@@ -64,6 +85,8 @@ export async function onAuthStateChange(callback: (user: User | null) => void) {
   const supabase = await waitForSupabase();
   if (!supabase) return () => {};
   const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    // auth 切换时清除缓存，下次调用 getCurrentUser 会重新请求
+    clearUserCache();
     callback(session?.user ?? null);
   });
   return () => subscription.unsubscribe();
@@ -93,6 +116,7 @@ export async function signInWithGitHub(): Promise<void> {
 export async function signOut(): Promise<void> {
   const supabase = await waitForSupabase();
   if (!supabase) return;
+  clearUserCache();
   await supabase.auth.signOut();
 }
 
