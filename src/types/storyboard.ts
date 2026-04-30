@@ -12,8 +12,10 @@ export interface StoryboardPanel {
   index: number;
   sceneType: SceneType;
   narration?: string;
-  /** Pollinations.AI 图片生成描述词（英文） */
+  /** MiniMax image-01 图片生成描述词（英文），由 storyboard API 生成 */
   imagePrompt?: string;
+  /** MiniMax image-01 生成的图片 base64（由服务端并发生成后随 panels 一起返回） */
+  imageBase64?: string;
   figures: StoryboardFigure[];
 }
 

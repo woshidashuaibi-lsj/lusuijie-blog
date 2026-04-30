@@ -55,6 +55,19 @@ export default function StoryboardPanel({ chapter, project, onStoryboardUpdate }
     }
   }, [chapter, project, generating, onStoryboardUpdate]);
 
+  // 删除单格分镜
+  const deletePanel = useCallback((index: number, e: React.MouseEvent) => {
+    e.stopPropagation(); // 阻止触发放大
+    if (!chapter.storyboard) return;
+    const newPanels = chapter.storyboard.panels.filter((p) => p.index !== index);
+    onStoryboardUpdate({
+      ...chapter.storyboard,
+      panels: newPanels,
+    });
+    // 如果正在放大查看的格被删了，关闭 modal
+    if (expanded?.index === index) setExpanded(null);
+  }, [chapter.storyboard, expanded, onStoryboardUpdate]);
+
   if (!chapter.content) {
     return (
       <div className={styles.empty}>
@@ -90,7 +103,19 @@ export default function StoryboardPanel({ chapter, project, onStoryboardUpdate }
             className={styles.canvasWrapper}
             onClick={() => setExpanded(panel)}
           >
-            <StoryboardCanvas panel={panel} width={220} height={165} />
+            <StoryboardCanvas
+              panel={panel}
+              width={220}
+              height={165}
+            />
+            {/* 删除按钮：hover 时浮现，点击删除单格 */}
+            <button
+              className={styles.deleteBtn}
+              onClick={(e) => deletePanel(panel.index, e)}
+              title="删除此格"
+            >
+              ✕
+            </button>
           </div>
         ))}
       </div>
@@ -99,7 +124,11 @@ export default function StoryboardPanel({ chapter, project, onStoryboardUpdate }
 
       {expanded && (
         <div className={styles.modal} onClick={() => setExpanded(null)}>
-          <StoryboardCanvas panel={expanded} width={440} height={330} />
+          <StoryboardCanvas
+            panel={expanded}
+            width={440}
+            height={330}
+          />
         </div>
       )}
     </div>

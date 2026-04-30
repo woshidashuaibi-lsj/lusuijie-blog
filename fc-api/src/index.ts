@@ -744,7 +744,7 @@ app.post('/api/novel/storyboard', async (req: Request, res: Response) => {
 - index：从1开始的连续整数
 - sceneType：只能是 outdoor 或 indoor 或 abstract（内心/梦境/回忆用abstract）
 - narration：场景旁白，≤20字，可省略
-- imagePrompt：英文图像描述，包含场景环境+人物动态+光线氛围+风格，必填，50字以内
+- imagePrompt：英文图像描述，只描述场景内容+人物动态+构图，不要写风格词（风格由系统统一设置），必填，50字以内
 - figures：人物数组，每格1到2人，不能为空数组
 - figures[].name：人物姓名，必须用已知人物名
 - figures[].pose：只能是 stand 或 sit 或 run 或 fight 或 fall
@@ -810,19 +810,28 @@ ${contentForLLM}`;
         ? mappedFigures
         : [{ name: defaultCharName, pose: 'stand', positionX: 'center' }];
 
+      // ── 统一风格前缀（所有分镜必须一致，保证视觉连贯性）──
+      // 手绘线稿风格：黑白墨线，漫画分镜感，不出现彩色写实
+      const STYLE_PREFIX = 'black and white manga storyboard panel, hand-drawn ink sketch, clean line art, monochrome, no color, comic book style,';
+
       // 生成 imagePrompt：优先用 LLM 返回的，否则根据场景和人物自动生成
       let imagePrompt = '';
       if (p.imagePrompt && typeof p.imagePrompt === 'string') {
-        imagePrompt = String(p.imagePrompt).slice(0, 200);
+        // 剥掉 LLM 可能写的风格词，用统一前缀替换，避免风格冲突
+        const rawPrompt = String(p.imagePrompt)
+          .replace(/anime style|manga illustration|cinematic lighting|photorealistic|realistic|colorful|vibrant/gi, '')
+          .trim()
+          .slice(0, 150);
+        imagePrompt = `${STYLE_PREFIX} ${rawPrompt}`;
       } else {
         // fallback：根据场景和人物自动拼接英文描述
         const sceneDesc = p.sceneType === 'outdoor' ? 'outdoor scene' : p.sceneType === 'indoor' ? 'indoor scene' : 'abstract dreamlike scene';
         const figDesc = figures.map((f: { name: string; pose: string }) => {
           const appearance = charAppearanceMap[f.name];
-          return appearance ? `${f.name} (${appearance}), ${f.pose}ing` : `${f.name}, ${f.pose}ing`;
+          return appearance ? `${appearance}, ${f.pose}` : `character ${f.pose}`;
         }).join(', ');
         const narration = p.narration ? String(p.narration) : '';
-        imagePrompt = `${sceneDesc}, ${figDesc}${narration ? ', ' + narration : ''}, anime style, manga panel, detailed`;
+        imagePrompt = `${STYLE_PREFIX} ${sceneDesc}, ${figDesc}${narration ? ', ' + narration : ''}`;
       }
 
       return {
@@ -834,7 +843,50 @@ ${contentForLLM}`;
       };
     });
 
-    return res.status(200).json({ panels });
+    // ── 并发调 MiniMax image-01 为每格生图 ─────────────────────────────
+    const MINIMAX_IMAGE_URL = 'https://api.minimaxi.com/v1/image_generation';
+    const imageApiKey = process.env.MINIMAX_API_KEY;
+
+    async function generatePanelImage(imagePrompt: string): Promise<string | null> {
+      if (!imageApiKey) return null;
+      try {
+        const resp = await fetch(MINIMAX_IMAGE_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${imageApiKey}`,
+          },
+          body: JSON.stringify({
+            model: 'image-01',
+            prompt: imagePrompt,
+            aspect_ratio: '4:3',  // 分镜格比例，比 16:9 更适合漫画格
+            response_format: 'base64',
+          }),
+        });
+        if (!resp.ok) {
+          console.warn('[storyboard] image-01 failed:', resp.status, await resp.text());
+          return null;
+        }
+        const data = await resp.json() as { data?: { image_base64?: string[] } };
+        return data?.data?.image_base64?.[0] ?? null;
+      } catch (e) {
+        console.warn('[storyboard] image-01 error:', (e as Error).message);
+        return null;
+      }
+    }
+
+    // 并发生图（全部格同时发，失败的格返回 null，不阻断整体）
+    const imageResults = await Promise.all(
+      panels.map((p: { imagePrompt?: string }) => generatePanelImage(p.imagePrompt || ''))
+    );
+
+    // 把 base64 合入 panels
+    const panelsWithImages = panels.map((p: Record<string, unknown>, i: number) => ({
+      ...p,
+      ...(imageResults[i] ? { imageBase64: imageResults[i] } : {}),
+    }));
+
+    return res.status(200).json({ panels: panelsWithImages });
   } catch (error) {
     console.error('[novel/storyboard] 分镜生成失败:', error);
     return res.status(500).json({ message: error instanceof Error ? error.message : '分镜生成失败' });

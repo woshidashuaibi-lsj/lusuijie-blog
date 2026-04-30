@@ -24,6 +24,7 @@
 }
 
 .canvasWrapper {
+  position: relative;
   cursor: pointer;
   border-radius: 4px;
   overflow: hidden;
@@ -32,6 +33,36 @@
 
 .canvasWrapper:hover {
   transform: scale(1.02);
+}
+
+/* 删除按鈕：hover 时才显示 */
+.deleteBtn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  border: none;
+  color: #fff;
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s;
+  z-index: 10;
+}
+
+.canvasWrapper:hover .deleteBtn {
+  opacity: 1;
+}
+
+.deleteBtn:hover {
+  background: rgba(239, 68, 68, 0.85);
 }
 
 .empty {

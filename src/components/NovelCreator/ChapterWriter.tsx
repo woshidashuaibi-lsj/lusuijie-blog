@@ -11,8 +11,8 @@ import { buildStoryBibleContext, buildSystemPrompt } from '@/lib/novelContext';
 import { createSnapshot } from '@/lib/novelDB';
 import ForeshadowPanel from './ForeshadowPanel';
 import StoryBibleDrawer from './StoryBibleDrawer';
-// import StoryboardPanel from './Storyboard';
-// import type { StoryboardScene } from '@/types/storyboard';
+import StoryboardPanel from './Storyboard';
+import type { StoryboardScene } from '@/types/storyboard';
 import styles from './ChapterWriter.module.css';
 
 // 小说创作 API 已迁移到 fc-api 云服务，线上走 NEXT_PUBLIC_API_BASE，本地开发走相对路径
@@ -39,7 +39,7 @@ export default function ChapterWriter({ project, onUpdate, onBackToWizard }: Pro
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showBible, setShowBible] = useState(false);
   const [showForeshadow, setShowForeshadow] = useState(false);
-  // const [showStoryboard, setShowStoryboard] = useState(false);
+  const [showStoryboard, setShowStoryboard] = useState(false);
   const [error, setError] = useState('');
   const editorRef = useRef<HTMLTextAreaElement>(null);
 
@@ -413,14 +413,15 @@ export default function ChapterWriter({ project, onUpdate, onBackToWizard }: Pro
                 >
                   🧵 伏笔
                 </button>
-                {/* 分镜功能暂未开放
                 <button
                   className={`${styles.actionBtn} ${showStoryboard ? styles.toolBtnActive : ''}`}
-                  onClick={() => setShowStoryboard(v => !v)}
+                  onClick={() => {
+                    setShowStoryboard(v => !v);
+                    setShowForeshadow(false);
+                  }}
                 >
                   🎬 分镜
                 </button>
-                */}
               </div>
 
               {error && (
@@ -475,8 +476,8 @@ export default function ChapterWriter({ project, onUpdate, onBackToWizard }: Pro
           )}
         </div>
 
-        {/* 右栏：伏笔面板（可折叠） */}
-        {showForeshadow && (
+        {/* 右栏：伏笔 / 分镜面板（互斥，可折叠） */}
+        {(showForeshadow || showStoryboard) && (
           <div className={styles.sidebarRight}>
             {showForeshadow && (
               <ForeshadowPanel
@@ -485,7 +486,6 @@ export default function ChapterWriter({ project, onUpdate, onBackToWizard }: Pro
                 onUpdate={(updater) => onUpdate(p => ({ ...p, foreshadows: updater(p.foreshadows) }))}
               />
             )}
-            {/* 分镜面板暂未开放
             {showStoryboard && activeChapter && (
               <StoryboardPanel
                 chapter={activeChapter}
@@ -500,7 +500,6 @@ export default function ChapterWriter({ project, onUpdate, onBackToWizard }: Pro
                 }}
               />
             )}
-            */}
           </div>
         )}
       </div>
