@@ -43,7 +43,8 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-app.use(express.json());
+// 提高 body 限制：分镜请求会携带角色标准像 URL + 场景参考图 URL（base64 data URL 可能较大）
+app.use(express.json({ limit: '20mb' }));
 
 // 健康检查
 app.get('/health', (_req: Request, res: Response) => {
@@ -696,11 +697,21 @@ app.post('/api/novel/generate', async (req: Request, res: Response) => {
 
 // POST /api/novel/storyboard - 分镜生成
 app.post('/api/novel/storyboard', async (req: Request, res: Response) => {
-  const { content, chapterNumber, chapterTitle, characters } = req.body as {
+  const { content, chapterNumber, chapterTitle, characters, worldStylePrompt, sceneAssets } = req.body as {
     content?: string;
     chapterNumber?: number;
     chapterTitle?: string;
-    characters?: { name: string; appearance?: string }[];
+    characters?: {
+      name: string;
+      appearance?: string;
+      portraitUrl?: string;       // 正面图
+      sidePortraitUrl?: string;   // 侧面图
+      promptKeywords?: string;    // 固化外貌关键词
+    }[];
+    /** 世界视觉风格词（英文），注入每格 prompt 保证背景连贯 */
+    worldStylePrompt?: string;
+    /** 场景资产库，用于按 sceneType 匹配背景参考图 */
+    sceneAssets?: { id: string; name: string; referenceImageUrl?: string; promptKeywords?: string }[];
   };
 
   if (!content || typeof content !== 'string' || content.trim().length === 0) {
@@ -752,9 +763,10 @@ app.post('/api/novel/storyboard', async (req: Request, res: Response) => {
 - figures[].dialogue：台词，≤15字，关键对白才加，可省略
 
 已知人物及外貌：${charNames || '主角'}${Object.keys(charAppearanceMap).length > 0 ? '\n人物外貌参考：' + Object.entries(charAppearanceMap).map(([n, a]) => `${n}: ${a}`).join('；') : ''}
-注意：每格 figures 不能为空！imagePrompt 必须是英文，且融入人物外貌特征！`;
+${worldStylePrompt ? `\n世界视觉风格（必须融入每格 imagePrompt）：${worldStylePrompt}` : ''}
+注意：每格 figures 不能为空！imagePrompt 必须是英文，融入人物外貌特征和世界风格！`;
 
-  const userPrompt = `请为以下章节设计完整的漫画分镜。根据故事内容自主决定格数（不要有数量限制，有几个独立场景就画几格），按叙事顺序推进。只输出JSON数组，不要其他文字：
+  const userPrompt = `请为以下章节设计漫画分镜，格数控制在 8-12 格（选最关键的场景，不要超过12格），按叙事顺序推进。只输出JSON数组，不要其他文字：
 
 第${chapterNumber}章《${chapterTitle}》
 ${contentForLLM}`;
@@ -770,9 +782,13 @@ ${contentForLLM}`;
     console.log('[storyboard] llmOutput length:', llmOutput.length);
     console.log('[storyboard] llmOutput full:', llmOutput);
 
-    const jsonStr = extractJSON(llmOutput, 'array');
+    let jsonStr = extractJSON(llmOutput, 'array');
     console.log('[storyboard] jsonStr length:', jsonStr.length);
     console.log('[storyboard] jsonStr full:', jsonStr.slice(0, 2000));
+
+    // 修复 LLM 常见输出问题：空 dialogue 字段（如 "dialogue":""）直接删掉
+    // 因为空 dialogue 在渲染时等于无，且可能导致 JSON 括号匹配误判
+    jsonStr = jsonStr.replace(/,\s*"dialogue"\s*:\s*""/g, '').replace(/"dialogue"\s*:\s*""\s*,/g, '');
 
     let parsed: Record<string, unknown>[];
     try {
@@ -793,7 +809,7 @@ ${contentForLLM}`;
     // 默认人物名（取已知人物第一个，否则用"主角"）
     const defaultCharName = charNames ? charNames.split('、')[0] : '主角';
 
-    const panels = parsed.slice(0, 40).map((p, i) => {
+    const panels = parsed.slice(0, 12).map((p, i) => {
       console.log(`[storyboard] panel[${i}] raw figures:`, JSON.stringify(p.figures));
       const rawFigures = Array.isArray(p.figures) ? p.figures : [];
       const mappedFigures = rawFigures
@@ -847,38 +863,160 @@ ${contentForLLM}`;
     const MINIMAX_IMAGE_URL = 'https://api.minimaxi.com/v1/image_generation';
     const imageApiKey = process.env.MINIMAX_API_KEY;
 
-    async function generatePanelImage(imagePrompt: string): Promise<string | null> {
-      if (!imageApiKey) return null;
+    // 构建角色资产映射表（正面图、侧面图、固化关键词）
+    const charAssetMap: Record<string, { frontUrl?: string; sideUrl?: string; keywords?: string }> = {};
+    if (Array.isArray(characters)) {
+      for (const c of characters) {
+        if (c.name) {
+          charAssetMap[c.name] = {
+            frontUrl: c.portraitUrl || undefined,
+            sideUrl: c.sidePortraitUrl || undefined,
+            keywords: c.promptKeywords || undefined,
+          };
+        }
+      }
+    }
+
+    // 场景资产：有参考图的场景按 promptKeywords 做关键词匹配
+    const sceneAssetList = Array.isArray(sceneAssets) ? sceneAssets : [];
+
+    /**
+     * 根据 narration/sceneType 匹配最合适的场景资产
+     * 策略：遍历所有场景资产，找 promptKeywords 与 narration 重叠最多的
+     */
+    function matchSceneAsset(narration: string, sceneType: string): string | null {
+      if (sceneAssetList.length === 0) return null;
+      const haystack = (narration + ' ' + sceneType).toLowerCase();
+      let bestScore = 0;
+      let bestUrl: string | null = null;
+      for (const s of sceneAssetList) {
+        if (!s.referenceImageUrl) continue;
+        const keywords = (s.promptKeywords || s.name || '').toLowerCase().split(/[,\s]+/);
+        const score = keywords.filter((kw) => kw.length > 1 && haystack.includes(kw)).length;
+        if (score > bestScore) { bestScore = score; bestUrl = s.referenceImageUrl; }
+      }
+      // 若无关键词命中但有场景图，返回第一个有图的（保证有参考图总比没有好）
+      if (!bestUrl) {
+        const fallback = sceneAssetList.find((s) => s.referenceImageUrl);
+        bestUrl = fallback?.referenceImageUrl ?? null;
+      }
+      return bestUrl;
+    }
+
+    async function generatePanelImage(
+      imagePrompt: string,
+      figureNames: string[],
+      narration: string,
+      sceneType: string
+    ): Promise<string | null> {
+      console.log('[genImg] START prompt:', imagePrompt.slice(0, 80), 'figures:', figureNames);
+
+      if (!imageApiKey) {
+        console.warn('[genImg] SKIP: imageApiKey is empty');
+        return null;
+      }
+      console.log('[genImg] apiKey exists, length:', imageApiKey.length);
+
+      // ① 角色 subject_reference
+      const charRefs: { type: string; image_file: string }[] = [];
+      for (const name of figureNames) {
+        const asset = charAssetMap[name];
+        if (asset?.frontUrl) charRefs.push({ type: 'character', image_file: asset.frontUrl });
+        if (asset?.sideUrl)  charRefs.push({ type: 'character', image_file: asset.sideUrl });
+      }
+
+      // ② 场景参考图
+      const sceneRefUrl = matchSceneAsset(narration, sceneType);
+      if (sceneRefUrl) {
+        charRefs.push({ type: 'scene', image_file: sceneRefUrl });
+      }
+
+      // ③ 固化关键词前置
+      let finalPrompt = imagePrompt;
+      const keywordsForFigures = figureNames
+        .map((n) => charAssetMap[n]?.keywords)
+        .filter(Boolean)
+        .join(', ');
+      if (keywordsForFigures) {
+        finalPrompt = `${keywordsForFigures}, ${imagePrompt}`;
+      }
+
+      const body: Record<string, unknown> = {
+        model: 'image-01',
+        prompt: finalPrompt.slice(0, 500),
+        aspect_ratio: '4:3',
+        response_format: 'base64',
+      };
+      if (charRefs.length > 0) {
+        body.subject_reference = charRefs;
+      }
+
+      console.log('[genImg] sending request to MiniMax, charRefs:', charRefs.length, 'promptLen:', finalPrompt.length);
+
       try {
         const resp = await fetch(MINIMAX_IMAGE_URL, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${imageApiKey}`,
-          },
-          body: JSON.stringify({
-            model: 'image-01',
-            prompt: imagePrompt,
-            aspect_ratio: '4:3',  // 分镜格比例，比 16:9 更适合漫画格
-            response_format: 'base64',
-          }),
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${imageApiKey}` },
+          body: JSON.stringify(body),
         });
+        console.log('[genImg] response status:', resp.status);
+
         if (!resp.ok) {
-          console.warn('[storyboard] image-01 failed:', resp.status, await resp.text());
+          const errText = await resp.text();
+          console.warn('[genImg] FAILED:', resp.status, errText.slice(0, 300));
+          // 若因 scene type 不支持报错，降级重试（去掉场景参考图）
+          if (sceneRefUrl && errText.includes('subject_reference')) {
+            console.warn('[genImg] retrying without scene ref...');
+            const bodyFallback = { ...body };
+            (bodyFallback.subject_reference as unknown[]) = charRefs.filter(
+              (r) => r.type !== 'scene'
+            );
+            const resp2 = await fetch(MINIMAX_IMAGE_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${imageApiKey}` },
+              body: JSON.stringify(bodyFallback),
+            });
+            console.log('[genImg] fallback status:', resp2.status);
+            if (!resp2.ok) return null;
+            const data2 = await resp2.json() as { data?: { image_base64?: string[] }; base_resp?: { status_code?: number; status_msg?: string } };
+            console.log('[genImg] fallback base_resp:', data2.base_resp);
+            return data2?.data?.image_base64?.[0] ?? null;
+          }
           return null;
         }
-        const data = await resp.json() as { data?: { image_base64?: string[] } };
+
+        const data = await resp.json() as { data?: { image_base64?: string[] }; base_resp?: { status_code?: number; status_msg?: string } };
+        console.log('[genImg] base_resp:', data.base_resp, 'has_image:', !!(data?.data?.image_base64?.[0]));
         return data?.data?.image_base64?.[0] ?? null;
       } catch (e) {
-        console.warn('[storyboard] image-01 error:', (e as Error).message);
+        console.warn('[genImg] EXCEPTION:', (e as Error).message);
         return null;
       }
     }
 
-    // 并发生图（全部格同时发，失败的格返回 null，不阻断整体）
-    const imageResults = await Promise.all(
-      panels.map((p: { imagePrompt?: string }) => generatePanelImage(p.imagePrompt || ''))
-    );
+    // 分批并发生图（每批 BATCH_SIZE 格，批次间 delay，避免触发 MiniMax 限流）
+    const BATCH_SIZE = 4;
+    const BATCH_DELAY_MS = 1200;
+
+    const imageResults: (string | null)[] = [];
+    for (let i = 0; i < panels.length; i += BATCH_SIZE) {
+      const batch = panels.slice(i, i + BATCH_SIZE) as Record<string, unknown>[];
+      const batchResults = await Promise.all(
+        batch.map((p) =>
+          generatePanelImage(
+            String(p.imagePrompt || ''),
+            ((p.figures as { name: string }[]) || []).map((f: { name: string }) => f.name),
+            String(p.narration || ''),
+            String(p.sceneType || '')
+          )
+        )
+      );
+      imageResults.push(...batchResults);
+      // 不是最后一批时等一下再继续
+      if (i + BATCH_SIZE < panels.length) {
+        await new Promise((resolve) => setTimeout(resolve, BATCH_DELAY_MS));
+      }
+    }
 
     // 把 base64 合入 panels
     const panelsWithImages = panels.map((p: Record<string, unknown>, i: number) => ({
@@ -890,6 +1028,211 @@ ${contentForLLM}`;
   } catch (error) {
     console.error('[novel/storyboard] 分镜生成失败:', error);
     return res.status(500).json({ message: error instanceof Error ? error.message : '分镜生成失败' });
+  }
+});
+
+// POST /api/novel/character-portrait - 为角色生成标准像资产（正面+侧面+固化关键词）
+app.post('/api/novel/character-portrait', async (req: Request, res: Response) => {
+  const { name, appearance, role, setting } = req.body as {
+    name?: string;
+    appearance?: string;
+    role?: string;
+    setting?: string;
+  };
+
+  if (!name || typeof name !== 'string') {
+    return res.status(400).json({ message: '角色名称不能为空' });
+  }
+
+  const imageApiKey = process.env.MINIMAX_API_KEY;
+  if (!imageApiKey) {
+    return res.status(500).json({ message: '未配置 MINIMAX_API_KEY' });
+  }
+
+  const appearanceDesc = appearance?.trim() || 'young person, neutral expression';
+  const settingDesc = setting?.trim() || '';
+  const roleHint =
+    role === 'protagonist'
+      ? 'protagonist character'
+      : role === 'antagonist'
+      ? 'antagonist character'
+      : 'supporting character';
+
+  const basePromptParts = [
+    'black and white manga character portrait',
+    'clean line art, ink sketch, monochrome',
+    roleHint,
+    appearanceDesc,
+    settingDesc ? `${settingDesc} setting` : '',
+    'white background, reference sheet style',
+  ].filter(Boolean);
+
+  const frontPrompt = ['full body front view standing pose', ...basePromptParts].join(', ');
+  const sidePrompt  = ['full body side view standing pose, 90 degree profile', ...basePromptParts].join(', ');
+
+  console.log('[character-portrait] name:', name);
+  console.log('[character-portrait] frontPrompt:', frontPrompt);
+  console.log('[character-portrait] sidePrompt:', sidePrompt);
+
+  // 生成单张图的辅助函数
+  async function genImage(prompt: string): Promise<string | null> {
+    try {
+      const resp = await fetch('https://api.minimaxi.com/v1/image_generation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${imageApiKey}` },
+        body: JSON.stringify({ model: 'image-01', prompt, aspect_ratio: '2:3', response_format: 'base64' }),
+      });
+      if (!resp.ok) {
+        console.warn('[character-portrait] image failed:', resp.status, await resp.text());
+        return null;
+      }
+      const data = await resp.json() as { data?: { image_base64?: string[] } };
+      return data?.data?.image_base64?.[0] ?? null;
+    } catch (e) {
+      console.warn('[character-portrait] image error:', (e as Error).message);
+      return null;
+    }
+  }
+
+  // 用 LLM 从外貌描述中提取固化英文关键词（锁定后每格分镜 prompt 强制前置）
+  async function extractKeywords(): Promise<string> {
+    try {
+      const kw = await callLLM(
+        [
+          {
+            role: 'system',
+            content: 'You are a visual keyword extractor for image generation. Given a character appearance description in Chinese, extract 6-10 precise English visual keywords that uniquely identify this character. Focus on: hair color, hair style, eye color, outfit/clothing style, body build, distinctive features. Output ONLY a comma-separated list of keywords, no explanations.',
+          },
+          {
+            role: 'user',
+            content: `Character: ${name}\nAppearance: ${appearanceDesc}\nSetting: ${settingDesc || 'unspecified'}`,
+          },
+        ],
+        { temperature: 0.1, maxTokens: 100 }
+      );
+      return kw.trim().replace(/\n/g, ', ');
+    } catch {
+      // fallback: 直接用外貌描述的前100字符
+      return appearanceDesc.slice(0, 100);
+    }
+  }
+
+  try {
+    // 三个任务并发：正面图、侧面图、关键词提取
+    const [frontBase64, sideBase64, promptKeywords] = await Promise.all([
+      genImage(frontPrompt),
+      genImage(sidePrompt),
+      extractKeywords(),
+    ]);
+
+    if (!frontBase64) {
+      return res.status(502).json({ message: '正面图生成失败' });
+    }
+
+    return res.status(200).json({
+      imageBase64: frontBase64,          // 正面图（兼容旧字段名）
+      sideImageBase64: sideBase64,       // 侧面图（可能为 null）
+      promptKeywords,                    // 固化外貌关键词
+    });
+  } catch (e) {
+    console.error('[character-portrait] error:', (e as Error).message);
+    return res.status(500).json({ message: '生成标准像失败' });
+  }
+});
+
+// POST /api/novel/scene-asset - 为小说场景生成参考图资产（用于分镜背景垫图）
+app.post('/api/novel/scene-asset', async (req: Request, res: Response) => {
+  const { name, description, worldStylePrompt, genre } = req.body as {
+    name?: string;
+    description?: string;
+    worldStylePrompt?: string;
+    genre?: string;
+  };
+
+  if (!name || typeof name !== 'string') {
+    return res.status(400).json({ message: '场景名称不能为空' });
+  }
+
+  const imageApiKey = process.env.MINIMAX_API_KEY;
+  if (!imageApiKey) {
+    return res.status(500).json({ message: '未配置 MINIMAX_API_KEY' });
+  }
+
+  const descText = description?.trim() || name;
+  const worldStyle = worldStylePrompt?.trim() || '';
+
+  // Step 1: 用 LLM 把中文场景描述转成精准英文 prompt，并提取场景关键词
+  let scenePromptEn = '';
+  let sceneKeywords = '';
+  try {
+    const llmResult = await callLLM(
+      [
+        {
+          role: 'system',
+          content: `You are a background art director for manga/anime production. Given a scene name and description in Chinese, output a JSON object with two fields:
+1. "prompt": English image generation prompt for this background scene (50-80 words), describing architecture, atmosphere, lighting, time of day, environment details. NO characters, NO figures.
+2. "keywords": 5-8 comma-separated English keywords that uniquely identify this scene for future matching.
+
+Output ONLY valid JSON, no extra text.`,
+        },
+        {
+          role: 'user',
+          content: `Scene name: ${name}\nDescription: ${descText}\nGenre/Setting: ${genre || worldStyle || 'unspecified'}`,
+        },
+      ],
+      { temperature: 0.1, maxTokens: 1000 }
+    );
+
+    try {
+      const parsed = JSON.parse(extractJSON(llmResult)) as { prompt?: string; keywords?: string };
+      scenePromptEn = parsed.prompt || descText;
+      sceneKeywords = parsed.keywords || '';
+    } catch {
+      scenePromptEn = descText;
+    }
+  } catch {
+    scenePromptEn = descText;
+  }
+
+  // Step 2: 组装最终 prompt（统一手绘风格）
+  const STYLE_PREFIX = 'black and white manga background illustration, hand-drawn ink sketch, clean line art, monochrome, no characters, no figures, establishing shot,';
+  const finalPrompt = [STYLE_PREFIX, scenePromptEn, worldStyle].filter(Boolean).join(' ');
+
+  console.log('[scene-asset] name:', name, '  finalPrompt:', finalPrompt.slice(0, 100));
+
+  // Step 3: 生成场景参考图（16:9 横向更适合背景）
+  try {
+    const resp = await fetch('https://api.minimaxi.com/v1/image_generation', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${imageApiKey}` },
+      body: JSON.stringify({
+        model: 'image-01',
+        prompt: finalPrompt,
+        aspect_ratio: '16:9',
+        response_format: 'base64',
+      }),
+    });
+
+    if (!resp.ok) {
+      const errText = await resp.text();
+      console.error('[scene-asset] image-01 failed:', resp.status, errText);
+      return res.status(502).json({ message: `生图 API 失败: ${resp.status}` });
+    }
+
+    const data = (await resp.json()) as { data?: { image_base64?: string[] } };
+    const base64 = data?.data?.image_base64?.[0];
+    if (!base64) {
+      return res.status(502).json({ message: '生图 API 返回空数据' });
+    }
+
+    return res.status(200).json({
+      imageBase64: base64,
+      promptKeywords: sceneKeywords,
+      generatedPrompt: scenePromptEn,
+    });
+  } catch (e) {
+    console.error('[scene-asset] error:', (e as Error).message);
+    return res.status(500).json({ message: '生成场景参考图失败' });
   }
 });
 

@@ -12,6 +12,7 @@ import { createSnapshot } from '@/lib/novelDB';
 import ForeshadowPanel from './ForeshadowPanel';
 import StoryBibleDrawer from './StoryBibleDrawer';
 import StoryboardPanel from './Storyboard';
+import SceneAssetsManager from './Storyboard/SceneAssetsManager';
 import type { StoryboardScene } from '@/types/storyboard';
 import styles from './ChapterWriter.module.css';
 
@@ -40,6 +41,7 @@ export default function ChapterWriter({ project, onUpdate, onBackToWizard }: Pro
   const [showBible, setShowBible] = useState(false);
   const [showForeshadow, setShowForeshadow] = useState(false);
   const [showStoryboard, setShowStoryboard] = useState(false);
+  const [showSceneAssets, setShowSceneAssets] = useState(false);
   const [error, setError] = useState('');
   const editorRef = useRef<HTMLTextAreaElement>(null);
 
@@ -326,6 +328,13 @@ export default function ChapterWriter({ project, onUpdate, onBackToWizard }: Pro
         </div>
         <div className={styles.toolbarRight}>
           <button
+            className={`${styles.toolBtn} ${showSceneAssets ? styles.toolBtnActive : ''}`}
+            onClick={() => setShowSceneAssets(v => !v)}
+            title="场景资产库"
+          >
+            🏙 场景资产
+          </button>
+          <button
             className={`${styles.toolBtn} ${showBible ? styles.toolBtnActive : ''}`}
             onClick={() => setShowBible(v => !v)}
             title="故事圣经"
@@ -503,6 +512,14 @@ export default function ChapterWriter({ project, onUpdate, onBackToWizard }: Pro
           </div>
         )}
       </div>
+
+      {/* 场景资产库抽屉 */}
+      <SceneAssetsManager
+        open={showSceneAssets}
+        onClose={() => setShowSceneAssets(false)}
+        project={project}
+        onUpdate={onUpdate}
+      />
 
       {/* 故事圣经抽屉 */}
       {showBible && (

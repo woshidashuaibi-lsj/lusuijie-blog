@@ -457,9 +457,13 @@
 }
 
 /* ===== 响应式 ===== */
+.sidebarRight::-webkit-scrollbar { width: 3px; }
+.sidebarRight::-webkit-scrollbar-track { background: transparent; }
+.sidebarRight::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 99px; }
+
 @media (max-width: 1024px) {
   .sidebarLeft { width: 160px; }
-  .sidebarRight { width: 220px; }
+  .sidebarRight { width: 260px; }
 }
 
 @media (max-width: 768px) {

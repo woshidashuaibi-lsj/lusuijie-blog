@@ -31,7 +31,9 @@ function CharacterCard({
   onUpdate,
   onDelete,
   onGenBio,
+  onGenPortrait,
   generating,
+  generatingPortrait,
 }: {
   char: CharacterProfile;
   isExpanded: boolean;
@@ -39,7 +41,9 @@ function CharacterCard({
   onUpdate: (field: keyof CharacterProfile, value: string) => void;
   onDelete: () => void;
   onGenBio: () => void;
+  onGenPortrait: () => void;
   generating: boolean;
+  generatingPortrait: boolean;
 }) {
   const roleConfig = ROLE_OPTIONS.find(r => r.value === char.role) || ROLE_OPTIONS[2];
 
@@ -122,6 +126,65 @@ function CharacterCard({
               </button>
             </div>
           </div>
+
+          {/* 分镜标准像资产 */}
+          <div className={styles.field}>
+            <label className={styles.label}>分镜标准像资产</label>
+            <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', margin: '0 0 0.6rem' }}>
+              正面 + 侧面双视角，用于分镜生图时保持外貌一致，点击生成后自动锁定外貌关键词
+            </p>
+
+            {/* 正面 + 侧面预览 */}
+            {(char.portraitUrl || char.sidePortraitUrl) && (
+              <div style={{ display: 'flex', gap: '0.6rem', marginBottom: '0.6rem' }}>
+                {char.portraitUrl && (
+                  <div style={{ textAlign: 'center' }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={char.portraitUrl}
+                      alt={`${char.name} 正面`}
+                      style={{ width: '90px', height: '120px', objectFit: 'cover', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.12)' }}
+                    />
+                    <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.3)', marginTop: '0.2rem' }}>正面</div>
+                  </div>
+                )}
+                {char.sidePortraitUrl && (
+                  <div style={{ textAlign: 'center' }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={char.sidePortraitUrl}
+                      alt={`${char.name} 侧面`}
+                      style={{ width: '90px', height: '120px', objectFit: 'cover', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.12)' }}
+                    />
+                    <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.3)', marginTop: '0.2rem' }}>侧面</div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 固化关键词展示 */}
+            {char.promptKeywords && (
+              <div style={{ fontSize: '0.72rem', color: 'rgba(167,139,250,0.7)', background: 'rgba(167,139,250,0.08)', borderRadius: '6px', padding: '0.4rem 0.6rem', marginBottom: '0.6rem', lineHeight: 1.6 }}>
+                <span style={{ color: 'rgba(255,255,255,0.3)', marginRight: '0.3rem' }}>🔒 锁定关键词：</span>
+                {char.promptKeywords}
+              </div>
+            )}
+
+            <button
+              className={styles.aiBtn}
+              onClick={onGenPortrait}
+              disabled={generatingPortrait || !char.name || !char.appearance}
+              title={!char.appearance ? '请先填写外貌特征' : ''}
+            >
+              <span className={styles.aiIcon}>🎨</span>
+              {generatingPortrait
+                ? <span>生成中（正面+侧面+关键词）<span className={styles.loadingDots}><span /><span /><span /></span></span>
+                : char.portraitUrl ? '重新生成标准像' : '生成分镜标准像（正面+侧面）'}
+            </button>
+            {!char.appearance && char.name && (
+              <span style={{ marginLeft: '0.5rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)' }}>（需先填写外貌特征）</span>
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -131,6 +194,7 @@ function CharacterCard({
 export default function CharacterForge({ project, onUpdate, onNext, onBack }: Props) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [generatingBioFor, setGeneratingBioFor] = useState<string | null>(null);
+  const [generatingPortraitFor, setGeneratingPortraitFor] = useState<string | null>(null);
   const [suggesting, setSuggesting] = useState(false);
   const [error, setError] = useState('');
 
@@ -189,6 +253,51 @@ export default function CharacterForge({ project, onUpdate, onNext, onBack }: Pr
       setError(e instanceof Error ? e.message : '生成小传失败');
     } finally {
       setGeneratingBioFor(null);
+    }
+  };
+
+  const genPortrait = async (char: CharacterProfile) => {
+    setGeneratingPortraitFor(char.id);
+    setError('');
+    try {
+      const res = await fetch('/api/novel/character-portrait', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: char.name,
+          appearance: char.appearance,
+          role: char.role,
+          setting: project.outline.setting || '',
+          projectId: project.id,
+        }),
+      });
+      const data = await res.json() as {
+        // 新格式：API 内部上传 Storage 后直接返回 URL
+        portraitUrl?: string;
+        sidePortraitUrl?: string;
+        promptKeywords?: string;
+        message?: string;
+      };
+      if (!res.ok) throw new Error(data.message || '生成标准像失败');
+      if (!data.portraitUrl) throw new Error('返回数据异常');
+
+      onUpdate(p => ({
+        ...p,
+        characters: p.characters.map(c =>
+          c.id === char.id
+            ? {
+                ...c,
+                portraitUrl: data.portraitUrl!,
+                ...(data.sidePortraitUrl ? { sidePortraitUrl: data.sidePortraitUrl } : {}),
+                ...(data.promptKeywords ? { promptKeywords: data.promptKeywords } : {}),
+              }
+            : c
+        ),
+      }));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : '生成标准像失败');
+    } finally {
+      setGeneratingPortraitFor(null);
     }
   };
 
@@ -271,7 +380,9 @@ export default function CharacterForge({ project, onUpdate, onNext, onBack }: Pr
           onUpdate={(field, value) => updateChar(char.id, field, value)}
           onDelete={() => deleteChar(char.id)}
           onGenBio={() => genBio(char)}
+          onGenPortrait={() => genPortrait(char)}
           generating={generatingBioFor === char.id}
+          generatingPortrait={generatingPortraitFor === char.id}
         />
       ))}
 

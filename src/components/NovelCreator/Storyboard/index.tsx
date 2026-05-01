@@ -1,12 +1,51 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import type { Chapter, NovelProject } from '@/types/novel';
 import type { StoryboardScene, StoryboardPanel } from '@/types/storyboard';
 import StoryboardCanvas from './StoryboardCanvas';
 import styles from './index.module.css';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || '';
+
+/** 判断是否为可直接传给 MiniMax 的远程 URL（排除 base64 data: URL） */
+function isRemoteUrl(url?: string): url is string {
+  return !!url && (url.startsWith('http://') || url.startsWith('https://'));
+}
+
+/**
+ * 根据小说大纲自动生成世界视觉风格词（英文）
+ * 优先使用用户手动设置的 project.worldStylePrompt，否则根据 genre+setting 自动映射
+ */
+function deriveWorldStylePrompt(project: NovelProject): string {
+  if (project.worldStylePrompt?.trim()) return project.worldStylePrompt.trim();
+
+  const genre = (project.outline.genre || '').toLowerCase();
+  const setting = (project.outline.setting || '').toLowerCase();
+
+  const keywords: string[] = [];
+
+  // 题材映射
+  if (/玄幻|仙侠|修仙|修真|仙/.test(genre + setting)) {
+    keywords.push('ancient Chinese xianxia fantasy', 'traditional architecture', 'mountains and mist', 'flowing robes');
+  } else if (/古代|历史|古风|武侠/.test(genre + setting)) {
+    keywords.push('ancient China setting', 'traditional architecture', 'historical costumes', 'classical landscape');
+  } else if (/科幻|未来|赛博/.test(genre + setting)) {
+    keywords.push('sci-fi futuristic setting', 'high-tech environment', 'neon lights', 'cyberpunk cityscape');
+  } else if (/都市|现代|当代/.test(genre + setting)) {
+    keywords.push('modern urban setting', 'contemporary city', 'everyday life environment');
+  } else if (/奇幻|魔法|龙|精灵/.test(genre + setting)) {
+    keywords.push('western fantasy setting', 'magical environment', 'medieval architecture');
+  } else if (/恐怖|悬疑|灵异/.test(genre + setting)) {
+    keywords.push('dark atmospheric setting', 'eerie environment', 'mysterious shadows');
+  } else if (/星际|宇宙|太空/.test(genre + setting)) {
+    keywords.push('space sci-fi setting', 'space stations and starfields', 'futuristic spacecraft');
+  } else {
+    keywords.push('detailed manga background');
+  }
+
+  return keywords.join(', ');
+}
 
 interface Props {
   chapter: Chapter;
@@ -18,6 +57,8 @@ export default function StoryboardPanel({ chapter, project, onStoryboardUpdate }
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState('');
   const [expanded, setExpanded] = useState<StoryboardPanel | null>(null);
+
+  const worldStylePrompt = useMemo(() => deriveWorldStylePrompt(project), [project]);
 
   const generate = useCallback(async () => {
     if (!chapter.content || generating) return;
@@ -32,9 +73,20 @@ export default function StoryboardPanel({ chapter, project, onStoryboardUpdate }
           content: chapter.content,
           chapterNumber: chapter.number,
           chapterTitle: chapter.title,
+          worldStylePrompt,
+          // 只传远程 URL（data: base64 体积太大且 MiniMax subject_reference 不支持）
           characters: project.characters.map((c) => ({
             name: c.name,
             appearance: c.appearance || '',
+            portraitUrl: isRemoteUrl(c.portraitUrl) ? c.portraitUrl : '',
+            sidePortraitUrl: isRemoteUrl(c.sidePortraitUrl) ? c.sidePortraitUrl : '',
+            promptKeywords: c.promptKeywords || '',
+          })),
+          sceneAssets: (project.sceneAssets || []).map((s) => ({
+            id: s.id,
+            name: s.name,
+            referenceImageUrl: isRemoteUrl(s.referenceImageUrl) ? s.referenceImageUrl : '',
+            promptKeywords: s.promptKeywords || '',
           })),
         }),
       });
@@ -53,7 +105,7 @@ export default function StoryboardPanel({ chapter, project, onStoryboardUpdate }
     } finally {
       setGenerating(false);
     }
-  }, [chapter, project, generating, onStoryboardUpdate]);
+  }, [chapter, project, generating, onStoryboardUpdate, worldStylePrompt]);
 
   // 删除单格分镜
   const deletePanel = useCallback((index: number, e: React.MouseEvent) => {

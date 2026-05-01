@@ -63,6 +63,12 @@ export interface CharacterProfile {
   role: CharacterRole;
   /** 外貌描述 */
   appearance: string;
+  /** 角色正面标准像（data URL / 远程URL，用于分镜 subject_reference） */
+  portraitUrl?: string;
+  /** 角色侧面标准像（data URL / 远程URL，与正面图一起垫图提升一致性） */
+  sidePortraitUrl?: string;
+  /** AI 提取的固化外貌英文关键词（发色/发型/服装等），锁定后每格强制前置 */
+  promptKeywords?: string;
   /** 性格特征 */
   personality: string;
   /** 人物背景与经历 */
@@ -209,6 +215,20 @@ export interface NovelStats {
   lastOpenedAt: number;
 }
 
+// ── 场景资产 ──────────────────────────────────────────────────────────────────
+export interface SceneAsset {
+  id: string;
+  /** 场景名称（中文，用于 UI 展示） */
+  name: string;
+  /** 场景描述（中文，用于生图 prompt 转换） */
+  description: string;
+  /** 场景参考图（data URL / 远程URL，用于分镜生图 subject_reference 垫图） */
+  referenceImageUrl?: string;
+  /** 场景英文关键词（AI 生成，注入分镜 prompt 保证背景风格一致） */
+  promptKeywords?: string;
+  createdAt: number;
+}
+
 // ── 完整 Novel Project（Story Bible 根节点）────────────────────────────────────
 export interface NovelProject {
   /** 项目唯一 ID（UUID） */
@@ -230,6 +250,12 @@ export interface NovelProject {
 
   // ── 章节系统 ──
   chapters: Chapter[];
+
+  // ── 分镜系统 ──
+  /** 世界视觉风格词（英文），自动从大纲映射，注入每格分镜 prompt 保证背景连贯 */
+  worldStylePrompt?: string;
+  /** 场景资产库：预生成的核心场景参考图，用于分镜生图时背景垫图 */
+  sceneAssets?: SceneAsset[];
 
   // ── 记忆系统 ──
   /** 专有名词词典（命名一致性保证） */

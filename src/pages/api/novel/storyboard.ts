@@ -1,143 +1,102 @@
 /**
- * 分镜结构生成 API
+ * 分镜生成代理 API
  * POST /api/novel/storyboard
- * Input: {
- *   content: string,          // 章节正文
- *   chapterNumber: number,
- *   chapterTitle?: string,
- *   characters?: { name: string; appearance: string }[]  // 主要角色外貌描述
- * }
- * Output: { panels: StoryboardPanel[] }
  *
- * 用 MiniMax 文本模型将章节内容拆解成 4~6 格分镜，
- * 角色外貌描述统一注入每格 imagePrompt，保证连贯性。
+ * 流程：
+ *   1. 透传请求到 fc-api（fc-api 负责 LLM 拆分镜 + MiniMax 生图）
+ *   2. fc-api 返回 panels，每格含 imageBase64
+ *   3. 将每格图片上传 Supabase Storage，替换 base64 为永久 URL
+ *   4. 返回 { panels } 给前端
+ *
+ * 如果 Supabase 上传失败，降级返回 base64 data URL（仍可展示）
  */
 
 import type { NextApiRequest, NextApiResponse } from 'next';
-import type { StoryboardPanel } from '@/types/storyboard';
-import { callLLM } from '@/lib/llm';
+import { uploadAssetBase64 } from '@/lib/novelAssetUpload';
 
-interface CharacterRef {
-  name: string;
-  appearance: string; // 中文外貌描述，将翻译并固定到每格 prompt
-}
+const FC_API_BASE = process.env.FC_API_BASE || process.env.NEXT_PUBLIC_API_BASE || '';
 
-/** 将角色列表格式化为供 LLM 参考的描述块 */
-function buildCharacterBlock(characters: CharacterRef[]): string {
-  if (!characters || characters.length === 0) return '';
-  return `\n\n【主要角色外貌（必须在每格 imagePrompt 中严格保持一致）】\n` +
-    characters.map(c => `- ${c.name}：${c.appearance}`).join('\n');
-}
+// Next.js 默认 body 限制 4mb，分镜响应可能含多张 base64 图片，需要放大
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '20mb',
+    },
+    responseLimit: '50mb',
+  },
+};
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
-  const { content, chapterNumber, chapterTitle, characters } = req.body as {
-    content: string;
-    chapterNumber: number;
+  const { content, chapterNumber, chapterTitle, characters, worldStylePrompt, sceneAssets, projectId } = req.body as {
+    content?: string;
+    chapterNumber?: number;
     chapterTitle?: string;
-    characters?: CharacterRef[];
+    characters?: unknown[];
+    worldStylePrompt?: string;
+    sceneAssets?: unknown[];
+    projectId?: string;
   };
 
-  if (!content || typeof content !== 'string' || content.trim().length < 50) {
-    return res.status(400).json({ message: '章节内容不能为空（至少 50 字）' });
+  if (!content || typeof content !== 'string' || content.trim().length < 10) {
+    return res.status(400).json({ message: '章节内容不能为空' });
   }
 
-  const chapterLabel = chapterTitle
-    ? `第${chapterNumber}章《${chapterTitle}》`
-    : `第${chapterNumber}章`;
-
-  const charBlock = buildCharacterBlock(characters || []);
-
-  const systemPrompt = `你是一位专业的漫画分镜导演，擅长将小说章节转化为电影级分镜脚本。
-你的核心职责是：从章节中提取 4~6 个最具画面感的关键场景，生成结构化分镜。
-
-【关键原则：角色一致性】
-同一角色在每一格分镜中必须使用完全相同的外貌描述词（英文），包括：
-- 发色、发型（hair color & style）
-- 眼睛颜色（eye color）
-- 服装特征（outfit keywords）
-- 体型特征（build/height）
-不允许在不同格中对同一角色使用不同描述，这会导致 AI 生图角色不连贯。${charBlock}
-
-【imagePrompt 写作规范】
-- 必须用英文
-- 格式：[角色固定描述], [当前动作/表情], [场景环境], [构图], [画风], [光线]
-- 画风统一使用：manga illustration, anime style, cinematic lighting
-- 每格 prompt 控制在 60 词以内
-- 角色描述必须完全一致（逐字复用）
-
-【输出格式】
-严格返回 JSON 数组，不包含任何前缀、说明或 markdown 代码块：
-[
-  {
-    "index": 1,
-    "sceneType": "outdoor",
-    "narration": "旁白（中文，20字以内，概述本格画面）",
-    "imagePrompt": "英文绘图提示词（60词以内）",
-    "figures": [
-      {
-        "name": "角色名",
-        "pose": "stand",
-        "positionX": "center",
-        "dialogue": "对话（可选，10字以内，没有则省略此字段）"
-      }
-    ]
+  if (!FC_API_BASE) {
+    return res.status(500).json({ message: '未配置 FC_API_BASE 环境变量' });
   }
-]
-
-【字段约束】
-- sceneType: "outdoor" | "indoor" | "abstract"
-- pose: "stand" | "sit" | "run" | "fight" | "fall"
-- positionX: "left" | "center" | "right"
-- figures 可以为空数组（纯环境/物件镜头）`;
-
-  const userPrompt = `请为以下${chapterLabel}生成 4~6 格分镜脚本：
-
-${content.trim().slice(0, 3000)}`;
 
   try {
-    const raw = await callLLM(
-      [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      { maxTokens: 4096, temperature: 0.5 }
+    // ── Step 1: 调用 fc-api 生成分镜结构 + 图片（base64） ─────────────────
+    const fcRes = await fetch(`${FC_API_BASE}/api/novel/storyboard`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content, chapterNumber, chapterTitle, characters, worldStylePrompt, sceneAssets }),
+    });
+
+    const fcData = await fcRes.json() as {
+      panels?: Array<Record<string, unknown>>;
+      message?: string;
+    };
+
+    if (!fcRes.ok) {
+      return res.status(fcRes.status).json({ message: fcData.message || '分镜生成失败' });
+    }
+
+    const panels = fcData.panels;
+    if (!Array.isArray(panels) || panels.length === 0) {
+      return res.status(200).json({ panels: [] });
+    }
+
+    // ── Step 2: 上传每格图片到 Supabase Storage ───────────────────────────
+    const pid = projectId || `storyboard-${Date.now()}`;
+
+    const panelsWithUrls = await Promise.all(
+      panels.map(async (panel, i) => {
+        const base64 = panel.imageBase64 as string | undefined;
+        if (!base64) return panel; // 生图失败的格，原样返回（无图）
+
+        try {
+          const url = await uploadAssetBase64(base64, pid, `panel-${i + 1}`);
+          // 替换 base64 为 URL，删掉 imageBase64 字段（节省传输体积）
+          const { imageBase64: _dropped, ...rest } = panel;
+          void _dropped;
+          return { ...rest, imageUrl: url };
+        } catch (uploadErr) {
+          console.warn(`[storyboard] panel[${i}] 上传失败，降级 base64:`, uploadErr);
+          // 上传失败时降级：用 base64 data URL（前端可展示但体积大）
+          return { ...panel, imageUrl: `data:image/jpeg;base64,${base64}` };
+        }
+      })
     );
 
-    // 提取 JSON，兼容 LLM 可能包裹 markdown 代码块
-    let jsonStr = raw.trim();
-    const jsonMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
-    if (jsonMatch) {
-      jsonStr = jsonMatch[1].trim();
-    }
-    // 有时 LLM 会在数组前后加多余文字，尝试提取第一个 [...] 块
-    const arrMatch = jsonStr.match(/(\[[\s\S]*\])/);
-    if (arrMatch) {
-      jsonStr = arrMatch[1];
-    }
+    return res.status(200).json({ panels: panelsWithUrls });
 
-    const panels = JSON.parse(jsonStr) as StoryboardPanel[];
-
-    if (!Array.isArray(panels) || panels.length === 0) {
-      throw new Error('LLM 返回的分镜格式不正确');
-    }
-
-    // 补全 index（防止 LLM 漏写）
-    const normalized = panels.map((p, i) => ({
-      index: p.index ?? i + 1,
-      sceneType: p.sceneType ?? 'abstract',
-      narration: p.narration ?? '',
-      imagePrompt: p.imagePrompt ?? '',
-      figures: Array.isArray(p.figures) ? p.figures : [],
-    }));
-
-    return res.status(200).json({ panels: normalized });
-  } catch (error) {
-    console.error('[novel/storyboard] 分镜生成失败:', error);
-    const message = error instanceof Error ? error.message : '分镜生成失败，请重试';
-    return res.status(500).json({ message });
+  } catch (e) {
+    console.error('[storyboard proxy]', e);
+    return res.status(500).json({ message: e instanceof Error ? e.message : '分镜生成失败' });
   }
 }
