@@ -108,11 +108,30 @@ app.post('/api/rag/stream', async (req: Request, res: Response) => {
   res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
+  // 告诉 nginx 不要缓冲 SSE 响应，立即透传
+  res.setHeader('X-Accel-Buffering', 'no');
   res.flushHeaders();
+
+  const reqId = `rag-${Date.now()}`;
+  console.log(`[${reqId}] /api/rag/stream 开始, bookSlug=${bookSlug} characterId=${characterId || 'none'} question="${question.trim().slice(0, 50)}"`);
 
   const send = (event: string, data: unknown) => {
     res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
   };
+
+  // 心跳：每 25 秒发一次 SSE 注释行，防止 nginx proxy_read_timeout（默认 60s）把连接切断
+  // MiniMax-M2.7 推理模型在开始输出之前有较长的思考沉默期，心跳能保持 nginx 不断连
+  let heartbeatCount = 0;
+  const heartbeatTimer = setInterval(() => {
+    heartbeatCount++;
+    console.log(`[${reqId}] 发送心跳 #${heartbeatCount}`);
+    try {
+      res.write(': ping\n\n'); // SSE 注释行，客户端会忽略，但能重置 nginx 空闲计时器
+    } catch {
+      // 连接已断开，停止心跳
+      clearInterval(heartbeatTimer);
+    }
+  }, 25_000);
 
   // 最多重试 3 次（应对 MiniMax 2064 限流错误）
   const MAX_RETRY = 3;
@@ -125,12 +144,17 @@ app.post('/api/rag/stream', async (req: Request, res: Response) => {
     }
 
     try {
+      console.log(`[${reqId}] 开始 queryStream (attempt ${attempt + 1})`);
+      const t0 = Date.now();
+
       const { sources, stream } = await queryStream(
         question.trim(),
         bookSlug,
         characterId,
         playerCharacterId
       );
+
+      console.log(`[${reqId}] queryStream 完成, 耗时 ${Date.now() - t0}ms, sources=${sources.length}`);
 
       // 先把 sources 发给前端（每次都发，前端会覆盖）
       send('sources', sources);
@@ -140,11 +164,16 @@ app.post('/api/rag/stream', async (req: Request, res: Response) => {
       const decoder = new TextDecoder();
       let buf = '';
       let deltaCount = 0;
+      let chunkCount = 0;
 
       while (true) {
         const { done, value } = await reader.read();
-        if (done) break;
+        if (done) {
+          console.log(`[${reqId}] 流读取完毕, 共 ${chunkCount} chunks, ${deltaCount} deltas, 总耗时 ${Date.now() - t0}ms`);
+          break;
+        }
 
+        chunkCount++;
         buf += decoder.decode(value, { stream: true });
         const lines = buf.split('\n');
         buf = lines.pop() ?? '';
@@ -152,7 +181,10 @@ app.post('/api/rag/stream', async (req: Request, res: Response) => {
         for (const line of lines) {
           if (!line.startsWith('data:')) continue;
           const raw = line.slice(5).trim();
-          if (raw === '[DONE]') continue;
+          if (raw === '[DONE]') {
+            console.log(`[${reqId}] 收到 [DONE]`);
+            continue;
+          }
           try {
             const json = JSON.parse(raw) as {
               choices?: Array<{
@@ -174,8 +206,9 @@ app.post('/api/rag/stream', async (req: Request, res: Response) => {
 
             // 安全策略触发：input_sensitive 或 output_sensitive 为 true
             if (json.input_sensitive || json.output_sensitive) {
-              console.warn('[stream] MiniMax 安全策略触发, output_sensitive_type:', json.output_sensitive_type);
+              console.warn(`[${reqId}] MiniMax 安全策略触发, output_sensitive_type:`, json.output_sensitive_type);
               send('error', { code: 'content_filter', message: '该问题触发了内容安全策略，请换个方式提问。' });
+              clearInterval(heartbeatTimer);
               res.end();
               return;
             }
@@ -219,7 +252,7 @@ app.post('/api/rag/stream', async (req: Request, res: Response) => {
                 deltaCount++;
               }
               if (deltaCount === 0) {
-                console.warn('[stream] finish 但 message 也为空，完整 choice:', JSON.stringify(choice));
+                console.warn(`[${reqId}] finish 但 message 也为空，完整 choice:`, JSON.stringify(choice));
               }
             }
           } catch (parseErr) {
@@ -232,20 +265,23 @@ app.post('/api/rag/stream', async (req: Request, res: Response) => {
         }
       }
 
+      clearInterval(heartbeatTimer);
+      console.log(`[${reqId}] 发送 done`);
       send('done', {});
       return; // 成功，退出重试循环
 
     } catch (retryErr) {
       lastError = retryErr instanceof Error ? retryErr : new Error(String(retryErr));
-      console.warn(`RAG 流式查询第 ${attempt + 1} 次失败:`, lastError.message);
+      console.warn(`[${reqId}] RAG 流式查询第 ${attempt + 1} 次失败:`, lastError.message);
       // 限流错误才重试，其他错误直接退出
       if (!lastError.message.startsWith('MiniMax 限流')) break;
     }
   }
 
   // 所有重试均失败
+  clearInterval(heartbeatTimer);
   if (lastError) {
-    console.error('RAG 流式查询失败:', lastError.message);
+    console.error(`[${reqId}] RAG 流式查询失败:`, lastError.message);
     send('error', { message: lastError.message });
   }
 

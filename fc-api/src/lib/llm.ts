@@ -141,9 +141,9 @@ export async function callLLMStream(messages: LLMMessage[], options: CallLLMOpti
       console.warn(`[callLLMStream] 第 ${attempt + 1} 次重试...`);
     }
 
-    // 30 秒超时，防止 fetch 无限挂起导致 "fetch failed"
+    // 120 秒超时（推理模型思考时间较长，30s 容易被误断）
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 30_000);
+    const timer = setTimeout(() => controller.abort(), 120_000);
 
     let res: Response;
     try {
