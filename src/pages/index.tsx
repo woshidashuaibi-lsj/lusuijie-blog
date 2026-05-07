@@ -143,7 +143,13 @@ export default function Home({ featuredPosts }: HomePageProps) {
 
 export const getStaticProps: GetStaticProps = async () => {
   const allPosts = getAllPosts();
-  const featuredPosts = allPosts.slice(0, 3); // 显示最新的3篇文章
+  // 只取最新 3 篇，且去掉 content 字段（节省 ~80% JSON 体积）
+  // wordCount 预计算好传过来，供 BlogItem 显示字数
+  const featuredPosts = allPosts.slice(0, 3).map(({ content, ...rest }) => ({
+    ...rest,
+    wordCount: content.length,
+    content: '', // 保留字段结构兼容性，但置空
+  }));
 
   return {
     props: {

@@ -1,9 +1,22 @@
 import { GetStaticPaths, GetStaticProps } from 'next';
 import Head from 'next/head';
+import dynamic from 'next/dynamic';
 import booksData from '@/data/books.json';
-import BookReader from '@/components/BookReader';
-import BookAccessGate from '@/components/BookAccessGate';
 import type { Book } from '@/components/BookReader';
+
+const BookReader = dynamic(() => import('@/components/BookReader'), {
+  ssr: false,
+  loading: () => (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', color: '#888' }}>
+      加载中…
+    </div>
+  ),
+});
+
+const BookAccessGate = dynamic(() => import('@/components/BookAccessGate'), {
+  ssr: false,
+  loading: () => null,
+});
 
 const { books } = booksData;
 

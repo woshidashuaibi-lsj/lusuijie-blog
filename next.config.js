@@ -8,7 +8,12 @@ const nextConfig = {
   trailingSlash: true,
 
   images: {
-    unoptimized: true,
+    // 静态导出（npm run export）模式下必须 unoptimized，
+    // 普通 Next.js 服务端运行时开启图片优化
+    unoptimized: isProd,
+    formats: ['image/avif', 'image/webp'],
+    // 不再需要外部域名白名单（头像已迁移本地）
+    remotePatterns: [],
   },
   
   // 基于你的package.json中的MDX依赖

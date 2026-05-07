@@ -8,6 +8,8 @@ export interface BlogPost {
   cover?: string;
   content: string;
   readingTime: number;
+  /** 预计算的字数，列表页用此字段替代 content.length，避免传输全文内容 */
+  wordCount?: number;
 }
 
 export interface BlogCategory {

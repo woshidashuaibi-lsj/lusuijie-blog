@@ -39,9 +39,16 @@ export const getStaticProps: GetStaticProps = async () => {
   const allPosts = getAllPosts();
   const categories = getAllCategories();
 
+  // 列表页不需要 content 字段，去掉以大幅减少 JSON 体积
+  const posts = allPosts.map(({ content, ...rest }) => ({
+    ...rest,
+    wordCount: content.length,
+    content: '',
+  }));
+
   return {
     props: {
-      posts: allPosts,
+      posts,
       categories,
       currentPage: 1,
       totalPages: 1,

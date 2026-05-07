@@ -1,10 +1,15 @@
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import Navigation from '@/components/Navigation';
-import BookAccessGate from '@/components/BookAccessGate';
-import booksData from '@/data/books.json';
+import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState, useCallback } from 'react';
+import Navigation from '@/components/Navigation';
+import booksData from '@/data/books.json';
 import styles from './index.module.css';
+
+const BookAccessGate = dynamic(() => import('@/components/BookAccessGate'), {
+  ssr: false,
+  loading: () => null,
+});
 
 const { books } = booksData;
 

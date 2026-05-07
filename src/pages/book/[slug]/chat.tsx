@@ -10,9 +10,23 @@
 import { GetStaticPaths, GetStaticProps } from 'next';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
+import dynamic from 'next/dynamic';
 import booksData from '@/data/books.json';
-import BookChat from '@/components/BookChat';
-import BookAccessGate from '@/components/BookAccessGate';
+
+const BookChat = dynamic(() => import('@/components/BookChat'), {
+  ssr: false,
+  loading: () => (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', color: '#888' }}>
+      加载中…
+    </div>
+  ),
+});
+
+const BookAccessGate = dynamic(() => import('@/components/BookAccessGate'), {
+  ssr: false,
+  loading: () => null,
+});
+
 import type { Character } from '@/types/character';
 
 // 静态 import 各书籍人物数据（Next.js 支持 JSON 静态导入，不触发 autoExport）

@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { GetStaticProps } from 'next';
 import { useState } from 'react';
 import Navigation from '@/components/Navigation';
-import { getDailyPostsByMonth, getAllDailyPosts } from '@/lib/daily';
+import { getDailyPostsByMonth } from '@/lib/daily';
 import type { DailyPost, DailyMonthGroup } from '@/lib/daily';
 import styles from './index.module.css';
 
@@ -145,12 +145,24 @@ export default function DailyPage({ groups, latestPost }: DailyPageProps) {
 
 export const getStaticProps: GetStaticProps = async () => {
   const groups = getDailyPostsByMonth();
-  const allPosts = getAllDailyPosts();
+
+  // groups 中每篇 content 截断到前 2000 字符，用于右侧预览
+  // 完整内容在详情页(/daily/[slug])按需加载，减少首屏 JSON 体积 ~80%
+  const trimmedGroups = groups.map(g => ({
+    ...g,
+    posts: g.posts.map(p => ({
+      ...p,
+      content: p.content.slice(0, 2000),
+    })),
+  }));
+
+  // latestPost 从已截断的 trimmedGroups 中取，无需再单独处理
+  const latestPost = trimmedGroups[0]?.posts[0] ?? null;
 
   return {
     props: {
-      groups,
-      latestPost: allPosts[0] || null,
+      groups: trimmedGroups,
+      latestPost,
     },
   };
 };

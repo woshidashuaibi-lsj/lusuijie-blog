@@ -21,11 +21,7 @@ export default function App({ Component, pageProps }: AppProps) {
         <link rel="icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" href="/favicon.jpg" />
 
-        {/* 字体 */}
-        <link
-          rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.7.0/style.css"
-        />
+        {/* 字体通过 _document.tsx 加载，此处不重复引入 */}
       </Head>
       <Component {...pageProps} />
     </>

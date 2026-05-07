@@ -6,10 +6,19 @@ import { useEffect, useState } from 'react';
 import path from 'path';
 import fs from 'fs';
 import booksData from '@/data/books.json';
+import dynamic from 'next/dynamic';
 import type { Character } from '@/types/character';
-import CharacterGallery from '@/components/CharacterGallery';
-import BookAccessGate from '@/components/BookAccessGate';
 import styles from './characters.module.css';
+
+const CharacterGallery = dynamic(() => import('@/components/CharacterGallery'), {
+  ssr: false,
+  loading: () => null,
+});
+
+const BookAccessGate = dynamic(() => import('@/components/BookAccessGate'), {
+  ssr: false,
+  loading: () => null,
+});
 
 const { books } = booksData;
 

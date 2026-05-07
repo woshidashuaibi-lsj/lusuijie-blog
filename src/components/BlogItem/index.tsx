@@ -27,7 +27,7 @@ export default function BlogItem({ post, showDivider = false }: BlogItemProps) {
           <span className={styles.separator}>·</span>
           <span className={styles.readingTime}>{post.readingTime}分钟</span>
           <span className={styles.separator}>·</span>
-          <span className={styles.wordCount}>{post.content.length}字</span>
+          <span className={styles.wordCount}>{(post.wordCount ?? post.content.length)}字</span>
         </div>
         <p className={styles.blogExcerpt}>{post.description}</p>
       </Link>

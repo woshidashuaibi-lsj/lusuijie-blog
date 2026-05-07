@@ -3,9 +3,14 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
 import booksData from '@/data/books.json';
-import BookAccessGate from '@/components/BookAccessGate';
 import styles from './world.module.css';
+
+const BookAccessGate = dynamic(() => import('@/components/BookAccessGate'), {
+  ssr: false,
+  loading: () => null,
+});
 
 const { books } = booksData;
 
