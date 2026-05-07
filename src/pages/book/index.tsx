@@ -137,7 +137,7 @@ function createRenderer(canvas: HTMLCanvasElement, state: RendererState) {
     selfRotAngle: number,
     isSelected: boolean,
     isHovered: boolean,
-    depthScale: number,
+    _depthScale: number,
   ) {
     const [cr, cg, cb] = color;
     ctx.save();
@@ -384,7 +384,7 @@ function createRenderer(canvas: HTMLCanvasElement, state: RendererState) {
     });
 
     // ── 渲染星球 ──
-    toDraw.forEach(({ slug, sx, sy, r, d, selfRot, config }) => {
+    toDraw.forEach(({ slug, sx, sy, r, d, selfRot, config: _config }) => {
       const world = BOOK_WORLDS[slug];
       if (!world) return;
       const cover = state.coverImages[slug] || null;
