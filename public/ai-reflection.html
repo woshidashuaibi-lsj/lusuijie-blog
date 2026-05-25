@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 时代的三个方向</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0d1117;
+      color: #e6edf3;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+                   'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      user-select: none;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.022) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.022) 1px, transparent 1px);
+      background-size: 64px 64px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Slides ── */
+    .slides-container { width: 100%; height: 100vh; position: relative; overflow: hidden; }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 56px 96px;
+      opacity: 0;
+      transform: translateX(100%);
+      transition: opacity .42s cubic-bezier(.4,0,.2,1), transform .42s cubic-bezier(.4,0,.2,1);
+      pointer-events: none;
+      z-index: 1;
+      overflow-y: auto;
+    }
+    .slide.active    { opacity: 1; transform: translateX(0);     pointer-events: all; }
+    .slide.exit-left { opacity: 0; transform: translateX(-6%); }
+    .slide.exit-right{ opacity: 0; transform: translateX(6%);  }
+
+    /* scrollbar */
+    .slide::-webkit-scrollbar { width: 4px; }
+    .slide::-webkit-scrollbar-track { background: transparent; }
+    .slide::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 2px; }
+
+    /* ── Per-slide ambient glow ── */
+    .s1  { background: radial-gradient(ellipse 70% 60% at 30% 55%, rgba(124,58,237,.18) 0%, transparent 70%),
+                        radial-gradient(ellipse 60% 50% at 75% 45%, rgba(0,212,255,.12) 0%, transparent 70%), #0d1117; }
+    .s2  { background: radial-gradient(ellipse 65% 65% at 25% 60%, rgba(0,212,255,.13) 0%, transparent 65%), #0d1117; }
+    .s3  { background: radial-gradient(ellipse 60% 60% at 20% 75%, rgba(124,58,237,.14) 0%, transparent 65%),
+                        radial-gradient(ellipse 50% 40% at 80% 25%, rgba(0,212,255,.08) 0%, transparent 55%), #0d1117; }
+    .s4  { background: radial-gradient(ellipse 60% 55% at 70% 45%, rgba(124,58,237,.14) 0%, transparent 65%), #0d1117; }
+    .s5  { background: radial-gradient(ellipse 65% 55% at 50% 35%, rgba(0,212,255,.13) 0%, transparent 65%), #0d1117; }
+    .s6  { background: radial-gradient(ellipse 50% 60% at 20% 50%, rgba(0,212,255,.1) 0%, transparent 55%),
+                        radial-gradient(ellipse 50% 60% at 80% 50%, rgba(124,58,237,.1) 0%, transparent 55%), #0d1117; }
+    .s7  { background: radial-gradient(ellipse 60% 55% at 60% 40%, rgba(0,212,255,.12) 0%, transparent 60%), #0d1117; }
+    .s8  { background: radial-gradient(ellipse 65% 55% at 55% 40%, rgba(124,58,237,.14) 0%, transparent 65%), #0d1117; }
+    .s9  { background: radial-gradient(ellipse 55% 55% at 30% 55%, rgba(0,212,255,.1) 0%, transparent 55%),
+                        radial-gradient(ellipse 50% 45% at 75% 40%, rgba(124,58,237,.1) 0%, transparent 55%), #0d1117; }
+    .s10 { background: radial-gradient(ellipse 60% 60% at 65% 45%, rgba(124,58,237,.15) 0%, transparent 65%), #0d1117; }
+    .s11 { background: radial-gradient(ellipse 60% 55% at 35% 55%, rgba(0,212,255,.12) 0%, transparent 60%), #0d1117; }
+    .s12 { background: radial-gradient(ellipse 65% 60% at 50% 60%, rgba(124,58,237,.16) 0%, transparent 65%), #0d1117; }
+    .s13 { background: radial-gradient(ellipse 60% 55% at 40% 45%, rgba(0,212,255,.11) 0%, transparent 60%), #0d1117; }
+    .s14 { background: radial-gradient(ellipse 55% 55% at 60% 50%, rgba(0,212,255,.09) 0%, transparent 55%),
+                        radial-gradient(ellipse 45% 45% at 30% 65%, rgba(124,58,237,.09) 0%, transparent 55%), #0d1117; }
+    .s15 { background: radial-gradient(ellipse 60% 55% at 45% 45%, rgba(124,58,237,.12) 0%, transparent 60%), #0d1117; }
+    .s16 { background: radial-gradient(ellipse 70% 65% at 50% 50%, rgba(124,58,237,.22) 0%, transparent 65%),
+                        radial-gradient(ellipse 45% 40% at 50% 50%, rgba(0,212,255,.12) 0%, transparent 45%), #0d1117; }
+
+    /* ── Content ── */
+    .slide-content { max-width: 960px; width: 100%; position: relative; z-index: 2; padding: 8px 0 40px; }
+
+    /* ── Typography ── */
+    .tag-label {
+      font-size: 11px; font-weight: 700; letter-spacing: 3.5px;
+      text-transform: uppercase; color: #00d4ff; opacity: .75; margin-bottom: 18px;
+    }
+    h1 { font-size: 68px; font-weight: 800; line-height: 1.08; letter-spacing: -2px; margin-bottom: 20px; }
+    h2 { font-size: 46px; font-weight: 700; line-height: 1.18; letter-spacing: -1px; margin-bottom: 18px; }
+
+    .lead {
+      font-size: 20px; line-height: 1.9; color: #c9d1d9; max-width: 800px; margin-bottom: 14px;
+      font-weight: 300;
+    }
+    .body-text {
+      font-size: 17px; line-height: 1.9; color: #8b949e; max-width: 820px; margin-bottom: 12px;
+    }
+    .body-text:last-child { margin-bottom: 0; }
+
+    ul.blist { list-style: none; margin: 10px 0; }
+    ul.blist li {
+      font-size: 17px; line-height: 1.85; color: #8b949e;
+      padding: 5px 0 5px 26px; position: relative; max-width: 820px;
+    }
+    ul.blist li::before { content: '▸'; position: absolute; left: 0; color: #00d4ff; }
+    ul.blist li.p::before { color: #a78bfa; }
+
+    .cyan   { color: #00d4ff; }
+    .purple { color: #a78bfa; }
+    em { font-style: normal; color: #e6edf3; font-weight: 500; }
+
+    /* ── Cover ── */
+    .cover-title {
+      font-size: 76px; font-weight: 800; line-height: 1.08; letter-spacing: -2.5px; margin-bottom: 18px;
+      background: linear-gradient(130deg, #e6edf3 0%, #00d4ff 45%, #a78bfa 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .cover-sub  { font-size: 21px; color: #8b949e; margin-bottom: 44px; line-height: 1.65; max-width: 580px; }
+    .cover-note { font-size: 14px; color: #6e7681; margin-bottom: 32px; line-height: 1.7; max-width: 560px; font-style: italic; }
+    .cover-chip {
+      display: inline-flex; align-items: center; gap: 12px;
+      background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+      border-radius: 100px; padding: 10px 22px;
+    }
+    .cover-chip-dot {
+      width: 8px; height: 8px; background: #00d4ff; border-radius: 50%;
+      animation: blink 2s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.75)} }
+    .cover-chip span { font-size: 15px; color: #a8b3cf; }
+
+    /* ── Direction badge ── */
+    .dir-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #00d4ff, #7c3aed);
+      color: #fff; font-size: 11px; font-weight: 700;
+      letter-spacing: 2.5px; text-transform: uppercase;
+      padding: 4px 14px; border-radius: 100px; margin-bottom: 20px;
+    }
+
+    /* ── Divider ── */
+    .divider {
+      width: 48px; height: 2px;
+      background: linear-gradient(90deg, #00d4ff, #7c3aed);
+      border-radius: 1px; margin: 18px 0;
+    }
+
+    /* ── Quote ── */
+    .quote {
+      border-left: 3px solid #7c3aed; background: rgba(124,58,237,.06);
+      border-radius: 0 10px 10px 0; padding: 14px 22px; margin: 18px 0;
+    }
+    .quote p { font-size: 17px; color: #a8b3cf; font-style: italic; line-height: 1.8; }
+
+    /* ── Highlight box ── */
+    .hbox {
+      background: rgba(0,212,255,.05); border: 1px solid rgba(0,212,255,.15);
+      border-radius: 10px; padding: 16px 22px; margin: 16px 0;
+    }
+    .hbox.p { background: rgba(124,58,237,.06); border-color: rgba(124,58,237,.2); }
+    .hbox p { font-size: 17px; color: #c9d1d9; line-height: 1.8; }
+
+    /* ── 3-card grid ── */
+    .cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 22px; }
+    .card {
+      background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.08);
+      border-radius: 12px; padding: 20px 18px; transition: border-color .3s;
+    }
+    .card:hover { border-color: rgba(0,212,255,.35); }
+    .card-icon  { font-size: 24px; margin-bottom: 10px; }
+    .card-title { font-size: 14px; font-weight: 600; color: #e6edf3; margin-bottom: 8px; }
+    .card-desc  { font-size: 13px; color: #8b949e; line-height: 1.65; }
+    .card-sub   { font-size: 12px; color: #6e7681; margin-top: 6px; line-height: 1.5; }
+
+    /* ── Chip row ── */
+    .chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+    .chip {
+      background: rgba(0,212,255,.08); border: 1px solid rgba(0,212,255,.2);
+      color: #00d4ff; font-size: 13px; padding: 4px 12px; border-radius: 6px;
+    }
+    .chip.p { background: rgba(124,58,237,.1); border-color: rgba(124,58,237,.25); color: #a78bfa; }
+
+    /* ── Two-column ── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 20px; }
+    .ex-box {
+      background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.08);
+      border-radius: 12px; padding: 22px;
+    }
+    .ex-box .ex-title {
+      font-size: 12px; font-weight: 700; color: #00d4ff;
+      letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px;
+    }
+    .ex-box p { font-size: 15px; color: #8b949e; line-height: 1.75; margin-bottom: 8px; }
+    .ex-box p:last-child { margin-bottom: 0; }
+    .ex-box .note { font-size: 13px; color: #6e7681; font-style: italic; }
+
+    /* ── Timeline ── */
+    .timeline { margin: 18px 0; }
+    .tl-item { display: flex; gap: 16px; padding: 10px 0; }
+    .tl-dot { flex-shrink: 0; width: 10px; height: 10px; border-radius: 50%; background: #00d4ff; margin-top: 6px; box-shadow: 0 0 8px rgba(0,212,255,.5); }
+    .tl-dot.p { background: #a78bfa; box-shadow: 0 0 8px rgba(167,139,250,.5); }
+    .tl-body p { font-size: 16px; color: #8b949e; line-height: 1.75; }
+    .tl-body strong { color: #e6edf3; font-weight: 600; }
+
+    /* ── Closing ── */
+    .closing-big {
+      font-size: 58px; font-weight: 800; line-height: 1.28; letter-spacing: -1.5px;
+      text-align: center;
+    }
+    .closing-sub { font-size: 16px; color: #6e7681; margin-top: 12px; text-align: center; line-height: 1.8; }
+
+    /* ── Counter ── */
+    .counter {
+      position: fixed; top: 28px; right: 40px;
+      font-size: 12px; color: rgba(255,255,255,.28); z-index: 100;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ── Progress dots ── */
+    .nav-dots {
+      position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 6px; z-index: 100;
+    }
+    .dot { width: 5px; height: 5px; border-radius: 3px; background: rgba(255,255,255,.18); cursor: pointer; transition: all .35s; }
+    .dot.active { background: #00d4ff; width: 20px; }
+
+    /* ── Arrow buttons ── */
+    .nav-arrows { position: fixed; bottom: 20px; right: 36px; display: flex; gap: 10px; z-index: 100; }
+    .nav-btn {
+      width: 40px; height: 40px;
+      border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.04);
+      border-radius: 50%; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: #a8b3cf; font-size: 16px; transition: all .2s;
+      backdrop-filter: blur(8px);
+    }
+    .nav-btn:hover  { border-color: #00d4ff; color: #00d4ff; background: rgba(0,212,255,.06); }
+    .nav-btn:disabled { opacity: .25; cursor: not-allowed; }
+
+    /* ── hint ── */
+    .key-hint {
+      position: fixed; bottom: 28px; left: 40px;
+      font-size: 11px; color: rgba(255,255,255,.2); z-index: 100;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 800px) {
+      .slide { padding: 36px 24px; }
+      .cover-title, h1 { font-size: 40px; }
+      h2 { font-size: 30px; }
+      .lead { font-size: 17px; }
+      .body-text, ul.blist li { font-size: 15px; }
+      .cards-grid { grid-template-columns: 1fr; }
+      .two-col { grid-template-columns: 1fr; }
+      .closing-big { font-size: 36px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="slides-container" id="container">
+
+  <!-- ══════ 01 Cover ══════ -->
+  <div class="slide s1 active" data-i="0">
+    <div class="slide-content">
+      <div class="tag-label">2026 · 个人感悟分享</div>
+      <div class="cover-title">AI 时代的<br>三个方向</div>
+      <p class="cover-sub">一个前端开发者在 AI 浪潮里的观察与思考</p>
+      <div class="cover-chip">
+        <div class="cover-chip-dot"></div>
+        <span>前端开发 / AI 探索者</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ 02 过去一年 ══════ -->
+  <!-- <div class="slide s2" data-i="1">
+    <div class="slide-content">
+      <div class="tag-label">起</div>
+      <h2>过去这一年，是我入行以来<span class="cyan">成长最快</span>的一年</h2>
+      <div class="divider"></div>
+      <p class="lead">这不是客套话。我实实在在地感受到——去年一年的学习积累，比我前三年加起来还要多。</p>
+      <p class="body-text">当然，我承认我前三年有点混，学习能力也不算强。但 AI 的出现确实从根本上改变了我学习新东西的方式。以前学一门新框架，要看文档、查配置、从头起项目，时间成本大、挫败感强；现在我几乎不看文档了，直接让 AI 帮我跑起来一个 MVP，<em>边做边学，速度快，成就感也大得多</em>。</p>
+      <p class="body-text">这种体感变化让我开始认真思考：AI 到底在改变什么？我们作为程序员，应该把精力放在哪里？</p>
+      <p class="body-text">以下是我个人认为比较重要的三个方向，以及一些题外话。</p>
+    </div>
+  </div> -->
+
+  <!-- ══════ 03 核心洞察：方向比实现重要 ══════ -->
+  <div class="slide s3" data-i="2">
+    <div class="slide-content">
+      <div class="tag-label">前置洞察</div>
+      <h2>找对<span class="cyan">方向</span>，比卷具体实现更重要</h2>
+      <div class="divider"></div>
+      <p class="body-text">其实本来是想分享一些 AI 动向和其他公司的落地案例，和一些大厂同学聊了聊，方向上其实大差不差，具体怎么落地才是千差万别的。但比起"他们怎么做"，我觉得<em>找对方向</em>更重要。</p>
+      <p class="lead">在聊三个方向之前，先说一个个人的感觉：<em>很多 AI 化的东西，看似合理，其实是伪需求，或者迟早会被大模型的能力直接覆盖。</em></p>
+      <p class="body-text">AI 发展太快了。我们在工程层面做的很多"补偿性"建设，本质上是在弥补模型当时的不足。但随着模型能力迅速提升，这些工程反而可能变成累赘——<span class="purple">过多消耗 token 和上下文空间，并没有真正增加价值</span>。如何让这些工程化内容在模型能力提升的过程中<em>自动化地退出和消亡</em>，会越来越重要。</p>
+      <div class="quote">
+        <p style="font-size:15px; font-style:normal; color:#8b949e; line-height:1.85;">
+          另外分享一篇文章的核心观点：大多数公司只是把 AI 硬接到现有流程上——效率提升 10%~20%，但结构上毫无改变，这只是 <em style="color:#e6edf3;">AI 辅助</em>。<br><br>
+          AI-first 意味着围绕 <em style="color:#e6edf3;">"AI 是主要构建者"</em> 重新设计流程与组织。不再问"AI 怎样帮助工程师"，而是问"怎样重构一切，让 AI 负责构建，工程师负责方向与判断"。<br><br>
+          快速写代码的能力每个月都在贬值，<span class="cyan">评估、批判并引导 AI 的能力则越来越值钱</span>。培养批判性思维、对优秀设计的判断力——这些能力会持续复利。
+        </p>
+        <p style="font-size:12px; color:#6e7681; margin-top:10px;">
+          原文：<a href="https://x.com/intuitiveml/article/2043545596699750791" target="_blank" style="color:#00d4ff; text-decoration:none;">x.com/intuitiveml/article/2043545596699750791</a>
+        </p>
+      </div>
+      <p class="body-text">当然以上在不同场景下并不全对，但确实值得深思。</p>
+    </div>
+  </div>
+
+  <!-- ══════ 04 那些"无效工具" ══════ -->
+  <div class="slide s4" data-i="3">
+    <div class="slide-content">
+      <div class="tag-label">真实案例</div>
+      <h2>我去年做的那些<span class="purple">「无效工具」</span></h2>
+      <div class="divider"></div>
+      <p class="lead">去年我做了不少 AI 化的工具，当时觉得很有价值，现在回头看……</p>
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-dot"></div>
+          <div class="tl-body">
+            <p><strong>代码自动化 Code Review</strong> — 当时做的时候感觉很好，能帮团队自动检查代码质量。但现在各大平台（GitHub Copilot、Cursor 等）包括catpow 和我们的那个美团的代码仓库已经内置了更好的能力，我们做的那套反而是重复建设。</p>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot p"></div>
+          <div class="tl-body">
+            <p><strong>公共组件 AI 化集成</strong> — 把常用组件包装成 AI 可调用的形式，出发点是对的，但模型现在理解代码上下文的能力已经足够强，这一层封装的必要性大大降低了。</p>
+          </div>
+        </div>
+      </div>
+      <p class="body-text" style="color:#6e7681; font-size:15px;">当然还有项目脚手架 AI 化等等，类似的事情做了不少……</p>
+      <div class="quote">
+        <p>当然在当时来说这些可能是还不错的选择，但现在来看意义不是很大。这不是浪费，而是一种学费——让我更清楚地知道，<em>什么方向才是不会被覆盖的</em>。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ 05 方向一：数据核心论 ══════ -->
+  <div class="slide s5" data-i="4">
+    <div class="slide-content">
+      <div class="dir-badge">方向 01</div>
+      <h2><span class="cyan">数据</span>是不会被覆盖的护城河</h2>
+      <div class="divider"></div>
+      <p class="lead">不管 AI 如何向前迭代，公司内部的数据，是模型永远无法获取训练的。</p>
+      <p class="body-text">这是这个方向最根本的逻辑：<em>AI 的能力是通用的，但数据是私有的</em>。同样一个问题，通用模型给出的回答，和基于你公司内部数据增强后的回答，差距是数量级的。</p>
+      <p class="body-text">所以，我们不需要过多去做编码层面的优化，或者流程化的工程建设——<span class="cyan">如何优雅地梳理内部数据，然后把它交给 AI，才是当前内部基建最核心、最重要的事</span>。</p>
+      <p class="body-text">AI 不管如何向前迭代，只要我们的数据梳理得合适、持续更新，给到 AI，我们就能很方便地做很多事情——不管是项目的 Agent 化，还是工程化的各种建设，都会有非常大的帮助。</p>
+    </div>
+  </div>
+
+  <!-- ══════ 06 数据怎么梳理 ══════ -->
+  <div class="slide s6" data-i="5">
+    <div class="slide-content">
+      <div class="tag-label">数据方向 · 具体怎么做</div>
+      <h2>数据梳理的<span class="cyan">四个层次</span></h2>
+      <div class="divider"></div>
+      <div class="cards-grid">
+        <div class="card">
+          <div class="card-icon">🗂️</div>
+          <div class="card-title">数据分层 + 结构化存储</div>
+          <div class="card-desc">以项目维度为起点，把数据向量化 + JSON 化，建立可供语义检索的知识底座。</div>
+          <div class="card-sub">这是整个体系的地基，其他层都建立在这之上。</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🔄</div>
+          <div class="card-title">LLMWiki 动态更新</div>
+          <div class="card-desc">数据不是一次性的快照，而是要跟着业务持续演进。LLMWiki 式的机制保证数据始终是最新的。</div>
+          <div class="card-sub">静态数据库会过时，动态维护才有长期价值。</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🔗</div>
+          <div class="card-title">Graph 索引</div>
+          <div class="card-desc">向量检索有一个核心缺陷：语义相似但逻辑关系错误。Graph 索引补全了数据之间的关联关系，解决幻觉问题。</div>
+          <div class="card-sub">数据相互间的索引，让 AI 真正"理解"数据。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ 07 MVP 进展 ══════ -->
+  <div class="slide s7" data-i="6">
+    <div class="slide-content">
+      <div class="tag-label">数据方向 · 当前进展</div>
+      <h2>已经在<span class="cyan">验证这件事</span>了</h2>
+      <div class="divider"></div>
+      <p class="lead">和瑞峰，以及组内一些同学，已经一起探讨过，跑了一些 MVP 来验证方向。</p>
+      <div class="hbox">
+        <p><strong>起点：项目维度的数据梳理。</strong><br>先以项目为单位，把数据向量化存储、做结构化的 JSON 化，同时结合 Graph 索引维护数据关系，用 LLMWiki 的机制来保证持续更新。这是第一步，也是最基础的一步。</p>
+      </div>
+      <p class="body-text">目前 MVP 已经有初步结果。接下来会持续完善这个方向，逐步覆盖更多的数据维度。</p>
+      <p class="body-text">这件事如果做好了，后续不管是做 Agent 还是其他 AI 化的事情，<span class="cyan">数据底座扎实了，上面的东西才能真正落地</span>，而不是在沙滩上建楼。</p>
+    </div>
+  </div>
+
+  <!-- ══════ 08 方向二：Agent 化核心论 ══════ -->
+  <div class="slide s8" data-i="7">
+    <div class="slide-content">
+      <div class="dir-badge">方向 02</div>
+      <h2>产品与平台的<span class="purple"> Agent 化</span></h2>
+      <div class="divider"></div>
+      <p class="lead">把产品或平台的能力包装成 Agent，我觉得是目前来看或许是比较不错的方向。</p>
+      <p class="body-text">但说实话：<em>如何挖掘产品和平台，做出合适的 Agent 化，是比较考验个人产品能力和产品 Sense 的</em>。我目前也没有特别好的方向。</p>
+      <p class="body-text">这里有几个值得想清楚的问题：</p>
+      <ul class="blist">
+        <li>哪些产品场景，<em>真的</em>因为 Agent 化而变得更好？而不是"看起来很酷"？</li>
+        <li class="p">哪些是伪需求，用户根本不需要，或者大模型能力提升后会直接覆盖？</li>
+        <li>Agent 化的价值，应该让用户<span class="cyan">感受到效率提升</span>，而不只是技术展示。</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ══════ 09 飞书 CLI 启发 ══════ -->
+  <div class="slide s9" data-i="8">
+    <div class="slide-content">
+      <div class="tag-label">Agent 方向 · 一个启发</div>
+      <h2>飞书 CLI 给了我很大的<span class="cyan">启发</span></h2>
+      <div class="divider"></div>
+      <p class="lead">最近深度使用了飞书的 CLI 工具，这让我看到了一种非常有意思的思路：<em>把平台能力聚合，包装成 CLI 的形式提供出去</em>。</p>
+      <p class="body-text">这和传统意义上的"做一个 App"完全不同。它不需要 UI，不需要用户去学操作界面——你告诉 AI 你想做什么，CLI 就把平台的能力调用起来帮你完成。</p>
+      <div class="hbox p">
+        <p>除了 MCP Skills 这种方向之外，<em>飞书 CLI 这种聚合平台能力、提供给 AI 调用的方式</em>，或许是一个更值得探索的产品形态。可以是内部工具，也可以是开放出去的外部产品。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ 10 产品形态猜想 ══════ -->
+  <div class="slide s10" data-i="9">
+    <div class="slide-content">
+      <div class="tag-label">Agent 方向 · 未来猜想</div>
+      <h2>也许，产品不再以 <span class="purple">App</span> 的形式存在</h2>
+      <div class="divider"></div>
+      <p class="lead">这只是我的个人猜测，但我觉得值得往这个方向想一想、试一试。</p>
+      <p class="body-text">随着硬件和手机的升级，AI 手机和 AI 设备会越来越普及。在这个场景下，用户可能不需要打开一个个 App，而是直接和 AI 对话——<em>AI 会去调用合适的 CLI 工具或接口来完成用户的需求</em>。</p>
+      <div class="quote">
+        <p>也许有一天，产品不会以 App 的形式存在，而是以 CLI 这种形式存在，提供给 AI 手机来使用。</p>
+      </div>
+      <p class="body-text">当然，这是猜想，不是判断。但<span class="purple">提前往这个方向看一看、试一试，风险不大，潜在收益可能很大</span>。</p>
+    </div>
+  </div>
+
+  <!-- ══════ 11 方向三：AI 观测核心论 ══════ -->
+  <div class="slide s11" data-i="10">
+    <div class="slide-content">
+      <div class="dir-badge">方向 03</div>
+      <h2>AI <span class="purple">观测</span>：新时代的日志与告警</h2>
+      <div class="divider"></div>
+      <p class="lead">如果说数据是地基，Agent 化是应用，那<em>观测就是整个体系的监控系统</em>。</p>
+      <p class="body-text">在传统开发体系里，日志和告警帮助我们快速找到问题、定位问题。AI 时代同样需要这样一套系统——帮我们观测 Agent 的行为，定位幻觉的成因，理解 Agent 在真实场景下的表现。</p>
+      <p class="body-text">瑞峰已经在往这个方向做了一些工作。等上面数据这块做完之后，也很期待能去加入进去做这个。</p>
+      <div class="hbox">
+        <p>这个方向的定位非常清楚：<em>不是锦上添花，而是必须有的基础设施。</em> 没有观测，你不知道 Agent 在用户侧到底发生了什么。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ 12 为什么难 ══════ -->
+  <div class="slide s12" data-i="11">
+    <div class="slide-content">
+      <div class="tag-label">观测方向 · 为什么难</div>
+      <h2>C 端用户的输入，<span class="purple">比你想象的随机得多</span></h2>
+      <div class="divider"></div>
+      <p class="lead">这是 AI 观测和传统监控最根本的区别：<em>Agent 在真实 C 端场景下，和我们个人测试时完全不一样。</em></p>
+      <p class="body-text">我们测试的时候，会按照预设路径走，输入都是"正常的"。但真实用户的输入是极度随机的——他们会说奇怪的话，会走完全意想不到的路径，会触发我们从来没想过的场景。</p>
+      <p class="body-text">这和以前"点点点"的操作是完全不同的维度。传统 log 是确定性的，一行日志对应一个确定的行为。但 <span class="purple">Agent 的轨迹是概率分布的</span>——同一个输入，不同时刻可能走完全不同的路径。</p>
+      <ul class="blist">
+        <li>如何<em>通用化</em>地观测各类不同 Agent，是核心难题</li>
+        <li class="p">如何判断哪次是"好的输出"，哪次是幻觉，需要新的评估语义</li>
+        <li>幻觉的成因分析，比找到幻觉本身更难、更有价值</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ══════ 13 题外话：学习红利 ══════ -->
+  <div class="slide s13" data-i="12">
+    <div class="slide-content">
+      <div class="tag-label">题外话</div>
+      <h2>AI 给普通人最大的红利：<br><span class="cyan">超强的辅助学习能力</span></h2>
+      <div class="divider"></div>
+      <p class="lead">有个问题想问问大家：AI 时代对我们程序员最大的好处是什么？我的个人觉得是：<em>学习能力的根本性提升</em>。</p>
+      <p class="lead" style="color:#e6edf3; font-size:22px; font-weight:500;">去年一年的成长，比我前三年加起来还多。</p>
+      <p class="body-text">AI 把学习的门槛，从"你需要先建立完整的知识体系"，直接降到了<span class="cyan">「只需要有一个想法」</span>。</p>
+      <p class="body-text">以前学一门新框架，要先看官方文档，搞懂配置，踩一堆坑才能起项目，时间成本很高，挫败感很强。现在，我直接告诉 AI："用这个技术框架帮我跑一个 MVP"，然后边做需求边学——<em>学习速度快，而且每一步都有成就感，完全没有挫败感</em>。</p>
+      <p class="body-text">AI 的到来确实给了我们很大的危机感，但同样也给了我们非常大的机会。<span class="purple">这是一个让人既害怕又兴奋的时代。</span></p>
+    </div>
+  </div>
+
+  <!-- ══════ 14 两个例子 ══════ -->
+  <div class="slide s14" data-i="13">
+    <div class="slide-content">
+      <div class="tag-label">题外话 · 两个亲身经历</div>
+      <h2>从<span class="cyan">框架</span>到<span class="purple">硬件</span>，门槛都被打碎了</h2>
+      <div class="divider"></div>
+      <div class="two-col">
+        <div class="ex-box">
+          <div class="ex-title">📦 新框架上手</div>
+          <p>之前学新框架，要看文档、查配置、从头起项目，时间成本大，而且非常有挫败感。</p>
+          <p>现在：<em>直接告诉 AI 用这个技术跑一个 MVP，边学边做需求</em>。学习速度快，每做出一点东西都很有成就感。我现在几乎不看官方文档了。</p>
+        </div>
+        <div class="ex-box">
+          <div class="ex-title">🍓 树莓派·一周</div>
+          <p>之前完全没接触过硬件，硬件对我是一个完全的黑盒。但我告诉 AI："我想做一个语音控制的小车"，它从怎么买材料、怎么刷机开始，一步一步教我。</p>
+          <p><em>不到一周，就用树莓派接入耳机，实现了语音输入输出</em>——这是我大学时代就想做却不知道怎么入手的事。</p>
+          <p class="note">代价：正负极接反，把屏幕插冒烟了……硬件还是有些门槛的。</p>
+        </div>
+      </div>
+      <p class="body-text" style="margin-top:16px;">这两个例子想说的是同一件事：<span class="cyan">AI 让我们没有门槛和大成本地去学习很多东西</span>，跨领域不再是难事。</p>
+    </div>
+  </div>
+
+  <!-- ══════ 15 三件事总结 ══════ -->
+  <div class="slide s15" data-i="14">
+    <div class="slide-content">
+      <div class="tag-label">总结</div>
+      <h2>三个方向，一个共同的底层逻辑</h2>
+      <div class="divider"></div>
+      <p class="lead">回过头来看，这三个方向其实都指向同一件事：<em>找到那些不会被模型能力覆盖的、真正有长期价值的事情去做</em>。</p>
+      <ul class="blist">
+        <li><span class="cyan">数据</span> — 内部数据是私有的，无论模型多强都无法替代。梳理好数据，就等于掌握了一个持续有效的杠杆。</li>
+        <li class="p"><span class="purple">Agent 化</span> — 不是所有东西都值得 Agent 化。关键是找到那些真正能提升用户体验的场景，而不是为了 AI 而 AI。</li>
+        <li><span class="cyan">AI 观测</span> — Agent 上线之后，你需要一套眼睛，帮你看到用户侧真实发生了什么，快速定位和修复问题。</li>
+      </ul>
+      <div class="quote">
+        <p>这三件事，是我现在认为前端和 AI 结合最值得投入的方向。当然这只是个人判断，欢迎大家一起讨论，我也可能是错的。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ 16 结语 ══════ -->
+  <div class="slide s16" data-i="15">
+    <div class="slide-content" style="text-align:center;">
+      <div class="tag-label" style="text-align:center;">结语</div>
+      <div class="closing-big">
+        这是一个<br>
+        <span class="purple">令人害怕</span><br>
+        又<span class="cyan">令人兴奋</span><br>
+        的时代。
+      </div>
+      <div class="divider" style="margin: 24px auto;"></div>
+      <p class="closing-sub">
+        数据 · Agent 化 · AI 观测<br>
+        找到合适的方向，持续探索，保持对变化的敏感<br><br>
+        <span style="color: rgba(255,255,255,.18); font-size:13px;">感谢帮忙带讲的同事 ❤</span>
+      </p>
+    </div>
+  </div>
+
+</div>
+
+<!-- Counter -->
+<div class="counter"><span id="cur">1</span> / <span id="tot"></span></div>
+
+<!-- Dots -->
+<div class="nav-dots" id="dots"></div>
+
+<!-- Arrows -->
+<div class="nav-arrows">
+  <button class="nav-btn" id="prevBtn" onclick="go(cur_i-1)" disabled>←</button>
+  <button class="nav-btn" id="nextBtn" onclick="go(cur_i+1)">→</button>
+</div>
+
+<!-- Hint -->
+<div class="key-hint">← → 键盘导航 · 滑动翻页</div>
+
+<script>
+  const slides = [...document.querySelectorAll('.slide')];
+  const total  = slides.length;
+  let cur_i    = 0;
+
+  document.getElementById('tot').textContent = total;
+
+  // Build dots
+  const dotsEl = document.getElementById('dots');
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => go(i);
+    dotsEl.appendChild(d);
+  });
+
+  function go(next) {
+    if (next < 0 || next >= total || next === cur_i) return;
+    const prev = cur_i;
+    const dir  = next > prev ? 'exit-left' : 'exit-right';
+
+    slides[prev].classList.remove('active');
+    slides[prev].classList.add(dir);
+    const prevEl = slides[prev];
+    setTimeout(() => prevEl.classList.remove(dir), 480);
+
+    // position incoming slide off-screen
+    const incoming = slides[next];
+    incoming.style.transition = 'none';
+    incoming.style.transform  = next > prev ? 'translateX(100%)' : 'translateX(-100%)';
+    incoming.style.opacity    = '0';
+    incoming.classList.remove('exit-left', 'exit-right');
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        incoming.style.transition = '';
+        incoming.style.transform  = '';
+        incoming.style.opacity    = '';
+        incoming.classList.add('active');
+        // scroll to top when entering a new slide
+        incoming.scrollTop = 0;
+      });
+    });
+
+    cur_i = next;
+    sync();
+  }
+
+  function sync() {
+    document.getElementById('cur').textContent = cur_i + 1;
+    document.getElementById('prevBtn').disabled = cur_i === 0;
+    document.getElementById('nextBtn').disabled = cur_i === total - 1;
+    document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === cur_i));
+  }
+
+  // Keyboard
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go(cur_i + 1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   go(cur_i - 1);
+  });
+
+  // Touch swipe
+  let tx = 0;
+  document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
+  document.addEventListener('touchend',   e => {
+    const dx = tx - e.changedTouches[0].clientX;
+    if (Math.abs(dx) > 48) go(dx > 0 ? cur_i + 1 : cur_i - 1);
+  });
+
+  // Init: hide non-active slides
+  slides.forEach((s, i) => {
+    if (i !== 0) { s.style.transform = 'translateX(100%)'; s.style.opacity = '0'; }
+  });
+
+  sync();
+</script>
+
+</body>
+</html>
