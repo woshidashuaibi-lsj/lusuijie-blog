@@ -8,6 +8,7 @@ import fs from 'fs';
 import booksData from '@/data/books.json';
 import dynamic from 'next/dynamic';
 import type { Character } from '@/types/character';
+import { NODE_API_ENABLED } from '@/lib/features';
 import styles from './characters.module.css';
 
 const CharacterGallery = dynamic(() => import('@/components/CharacterGallery'), {
@@ -143,6 +144,7 @@ export default function CharactersPage({ slug, title, characters }: CharactersPa
   // 检测 URL 中的 playAs 参数，弹出人物选择框
   useEffect(() => {
     const { playAs } = router.query;
+    if (!NODE_API_ENABLED) return;
     if (playAs && typeof playAs === 'string') {
       setPlayAsId(playAs);
       setShowSelector(true);

@@ -28,6 +28,8 @@ const BookAccessGate = dynamic(() => import('@/components/BookAccessGate'), {
 });
 
 import type { Character } from '@/types/character';
+import Link from 'next/link';
+import { NODE_API_ENABLED } from '@/lib/features';
 
 // 静态 import 各书籍人物数据（Next.js 支持 JSON 静态导入，不触发 autoExport）
 import daoGuiCharactersData from '@/data/characters/dao-gui-yi-xian.json';
@@ -49,6 +51,18 @@ interface ChatPageProps {
 export default function BookChatPage({ slug, title, characters }: ChatPageProps) {
   const router = useRouter();
   const { character, playerCharacter, aiCharacter } = router.query;
+
+  if (!NODE_API_ENABLED) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#060c1a', color: '#e5e7eb', padding: '2rem' }}>
+        <div style={{ maxWidth: 420, textAlign: 'center' }}>
+          <h1 style={{ fontSize: '1.4rem', marginBottom: '0.75rem' }}>角色对话暂时关闭</h1>
+          <p style={{ color: '#9ca3af', lineHeight: 1.7 }}>服务器到期后，对话和角色扮演先停用。阅读还可以继续。</p>
+          <Link href={`/book/${slug}`} style={{ display: 'inline-block', marginTop: '1.5rem', color: '#38bdf8' }}>返回阅读</Link>
+        </div>
+      </div>
+    );
+  }
 
   // 静态导出下 router.query 首次渲染为空，等 isReady 后再挂载 BookChat
   // 避免 characterId 初始化为 undefined 导致 AI 走主角 fallback

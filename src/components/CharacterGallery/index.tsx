@@ -3,6 +3,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import type { Character } from '@/types/character';
 import styles from './index.module.css';
+import { NODE_API_ENABLED } from '@/lib/features';
 
 // API 地址
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'https://lusuijie.com.cn:3001';
@@ -211,7 +212,7 @@ function CharacterCard({ character, isExpanded, onExpand, onCollapse, onDelete, 
             </div>
           )}
 
-          {/* 行动按钮 */}
+          {NODE_API_ENABLED && (
           <div className={styles.actionBtns} onClick={(e) => e.stopPropagation()}>
             <button className={`${styles.actionBtn} ${styles.actionBtnTalk}`} onClick={handleTalk}>
               💬 与 TA 对话
@@ -229,6 +230,7 @@ function CharacterCard({ character, isExpanded, onExpand, onCollapse, onDelete, 
               </button>
             )}
           </div>
+          )}
         </div>
       )}
     </div>
@@ -540,7 +542,7 @@ export default function CharacterGallery({ bookSlug, characters, bookColor }: Ga
       </div>
 
       {/* 添加人物按钮 */}
-      {!loadingUserChars && (
+      {NODE_API_ENABLED && !loadingUserChars && (
         <div className={styles.addBtnWrap}>
           <button
             className={styles.addBtn}

@@ -3,6 +3,7 @@ import { getAllPosts, getPostBySlug, markdownToHtml } from '@/lib/blog';
 import type { BlogPost } from '@/types/blog';
 import BlogPostPage from '@/pages/BlogPostPage';
 import Head from 'next/head';
+import { SITE_URL } from '@/lib/site';
 
 interface BlogPostProps {
   post: BlogPost;
@@ -19,12 +20,12 @@ export default function BlogPost({ post, htmlContent }: BlogPostProps) {
       <Head>
         <title>{post.title} | 卢穗杰的博客</title>
         <meta name="description" content={post.description || `阅读《${post.title}》- 卢穗杰的博客`} />
-        <link rel="canonical" href={`https://lusuijie.com.cn/blog/${post.slug}/`} />
+        <link rel="canonical" href={`${SITE_URL}/blog/${post.slug}/`} />
         <meta property="og:title" content={post.title} />
         <meta property="og:description" content={post.description || `阅读《${post.title}》- 卢穗杰的博客`} />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content={`https://lusuijie.com.cn/blog/${post.slug}/`} />
-        <meta property="og:image" content={post.cover || 'https://lusuijie.com.cn/favicon.jpg'} />
+        <meta property="og:url" content={`${SITE_URL}/blog/${post.slug}/`} />
+        <meta property="og:image" content={post.cover || `${SITE_URL}/favicon.jpg`} />
         <meta property="article:published_time" content={post.date} />
         <meta property="article:author" content="卢穗杰" />
         <script
@@ -39,10 +40,10 @@ export default function BlogPost({ post, htmlContent }: BlogPostProps) {
               author: {
                 '@type': 'Person',
                 name: '卢穗杰',
-                url: 'https://lusuijie.com.cn',
+                url: SITE_URL,
               },
-              url: `https://lusuijie.com.cn/blog/${post.slug}/`,
-              image: post.cover || 'https://lusuijie.com.cn/favicon.jpg',
+              url: `${SITE_URL}/blog/${post.slug}/`,
+              image: post.cover || `${SITE_URL}/favicon.jpg`,
             }),
           }}
         />

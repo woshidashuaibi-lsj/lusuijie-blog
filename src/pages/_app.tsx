@@ -1,5 +1,6 @@
 import type { AppProps } from 'next/app';
 import Head from 'next/head';
+import { withBase } from '@/lib/site';
 import '../styles/globals.css';
 
 export default function App({ Component, pageProps }: AppProps) {
@@ -18,8 +19,8 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta property="og:locale" content="zh_CN" />
 
         {/* favicon */}
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/favicon.jpg" />
+        <link rel="icon" href={withBase('/favicon.ico')} />
+        <link rel="apple-touch-icon" href={withBase('/favicon.jpg')} />
 
         {/* 字体通过 _document.tsx 加载，此处不重复引入 */}
       </Head>

@@ -5,6 +5,7 @@ import { useRouter } from 'next/router';
 import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import booksData from '@/data/books.json';
+import { NODE_API_ENABLED } from '@/lib/features';
 import styles from './world.module.css';
 
 const BookAccessGate = dynamic(() => import('@/components/BookAccessGate'), {
@@ -265,7 +266,7 @@ export default function WorldPage({ slug, title, author, cover }: WorldProps) {
               </button>
 
               {/* 与人物对话 */}
-              {world.chatEnabled ? (
+              {NODE_API_ENABLED && world.chatEnabled ? (
                 <button
                   className={styles.gateBtn}
                   onClick={() => navigateTo(chatPath)}

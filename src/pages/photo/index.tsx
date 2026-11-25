@@ -3,6 +3,7 @@ import { getPhotosByCategories, getAllCategories, getAllPhotos } from '@/lib/pho
 import type { Photo, PhotoCategory } from '@/types/photo';
 import InstantPage from '@/pages/PhotoPage';
 import Head from 'next/head';
+import { SITE_URL } from '@/lib/site';
 
 interface PhotoPageProps {
   photosByCategories: Record<string, Photo[]>;
@@ -16,10 +17,10 @@ export default function PhotoRoute({ photosByCategories, categories, allPhotos }
       <Head>
         <title>照片墙 | 卢穗杰的博客</title>
         <meta name="description" content="卢穗杰的照片墙，记录生活中的美好瞬间与旅行风景。" />
-        <link rel="canonical" href="https://lusuijie.com.cn/photo/" />
+        <link rel="canonical" href={`${SITE_URL}/photo/`} />
         <meta property="og:title" content="照片墙 | 卢穗杰的博客" />
         <meta property="og:description" content="记录生活中的美好瞬间与旅行风景。" />
-        <meta property="og:url" content="https://lusuijie.com.cn/photo/" />
+        <meta property="og:url" content={`${SITE_URL}/photo/`} />
         <meta property="og:type" content="website" />
       </Head>
       <InstantPage

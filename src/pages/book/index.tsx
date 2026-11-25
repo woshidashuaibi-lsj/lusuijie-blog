@@ -4,6 +4,8 @@ import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import Navigation from '@/components/Navigation';
 import booksData from '@/data/books.json';
+import { NODE_API_ENABLED } from '@/lib/features';
+import { SITE_URL } from '@/lib/site';
 import styles from './index.module.css';
 
 const BookAccessGate = dynamic(() => import('@/components/BookAccessGate'), {
@@ -666,10 +668,10 @@ export default function BookListPage() {
       <Head>
         <title>书单 - 星际图书馆 | 卢穗杰的博客</title>
         <meta name="description" content="卢穗杰的书单与阅读笔记，在星际图书馆中漫游探索每一本书的世界。" />
-        <link rel="canonical" href="https://lusuijie.com.cn/book/" />
+        <link rel="canonical" href={`${SITE_URL}/book/`} />
         <meta property="og:title" content="书单 - 星际图书馆 | 卢穗杰的博客" />
         <meta property="og:description" content="卢穗杰的书单，在星际图书馆中漫游探索每一本书的世界。" />
-        <meta property="og:url" content="https://lusuijie.com.cn/book/" />
+        <meta property="og:url" content={`${SITE_URL}/book/`} />
         <meta property="og:type" content="website" />
       </Head>
       <Navigation />
@@ -748,7 +750,7 @@ export default function BookListPage() {
             );
           })}
 
-          {/* 创造世界入口 */}
+          {NODE_API_ENABLED && (
           <div
             className={styles.bookHintItem}
             style={{
@@ -761,6 +763,7 @@ export default function BookListPage() {
             <span style={{ color: '#f59e0b' }}>✦</span>
             <span style={{ color: '#fbbf24', fontWeight: 700 }}>创造世界</span>
           </div>
+          )}
         </div>
 
         {/* 缩放控件 */}

@@ -4,6 +4,7 @@ import matter from 'gray-matter';
 import { remark } from 'remark';
 import html from 'remark-html';
 import remarkGfm from 'remark-gfm';
+import { prefixRootPaths } from '@/lib/site';
 
 const dailyDirectory = path.join(process.cwd(), 'posts/daily');
 
@@ -99,5 +100,5 @@ export async function dailyMarkdownToHtml(markdown: string): Promise<string> {
     .use(remarkGfm)
     .use(html, { sanitize: false })
     .process(markdown);
-  return result.toString();
+  return prefixRootPaths(result.toString());
 }

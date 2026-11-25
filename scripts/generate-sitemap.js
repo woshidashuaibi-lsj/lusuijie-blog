@@ -8,7 +8,7 @@ const fs = require('fs');
 const path = require('path');
 const matter = require('gray-matter');
 
-const SITE_URL = 'https://lusuijie.com.cn';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://woshidashuaibi-lsj.github.io/lusuijie-blog';
 const OUT_DIR = path.join(__dirname, '..', 'out');
 const POSTS_DIR = path.join(__dirname, '..', 'posts');
 

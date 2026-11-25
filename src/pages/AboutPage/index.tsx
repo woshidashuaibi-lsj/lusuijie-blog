@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Navigation from '@/components/Navigation';
+import { withBase } from '@/lib/site';
 import styles from './index.module.css';
 
 const skills = [
@@ -60,6 +61,7 @@ export default function AboutPage() {
   return (
     <>
       <Navigation />
+      <style>{`.${styles.heroSection}::before{background-image:url('${withBase('/images/hero-bg.jpg')}')}`}</style>
       <div className="container">
         <div className={styles.aboutPage}>
           {/* 个人简介区域 */}
@@ -68,7 +70,7 @@ export default function AboutPage() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               ref={heroBgRef}
-              src="/images/hero-bg.jpg"
+              src={withBase('/images/hero-bg.jpg')}
               alt=""
               aria-hidden="true"
               className={styles.heroBg}

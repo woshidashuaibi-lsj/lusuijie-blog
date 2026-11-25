@@ -12,7 +12,9 @@ import {
   signInWithGitHub,
   signOut,
 } from '@/lib/novelSync';
+import Link from 'next/link';
 import NovelCreator from '@/components/NovelCreator';
+import { NODE_API_ENABLED } from '@/lib/features';
 import BookAccessGate from '@/components/BookAccessGate';
 import styles from './create.module.css';
 
@@ -134,6 +136,18 @@ export default function CreatePage() {
     }
     setRestoring(false);
   };
+
+  if (!NODE_API_ENABLED) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#060c1a', color: '#e5e7eb', padding: '2rem' }}>
+        <div style={{ maxWidth: 420, textAlign: 'center' }}>
+          <h1 style={{ fontSize: '1.4rem', marginBottom: '0.75rem' }}>创造世界暂时关闭</h1>
+          <p style={{ color: '#9ca3af', lineHeight: 1.7 }}>创作工坊需要服务器，等机器恢复后再开放。</p>
+          <Link href="/book" style={{ display: 'inline-block', marginTop: '1.5rem', color: '#fbbf24' }}>返回书单</Link>
+        </div>
+      </div>
+    );
+  }
 
   // ── 渲染：等待路由就绪 ────────────────────────────────────────────────────
 

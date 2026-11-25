@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import ReaderSettings, { ReaderSettings as ReaderSettingsType, loadSettings } from '@/components/ReaderSettings';
 import styles from './index.module.css';
+import { NODE_API_ENABLED } from '@/lib/features';
 
 // 支持 AI 问答的书籍 slug 列表
 const AI_CHAT_ENABLED_SLUGS = ['wo-kanjian-de-shijie', 'dao-gui-yi-xian'];
@@ -89,7 +90,7 @@ export default function BookReader({ book }: BookReaderProps) {
           <span className={styles.chapterTitle}>{chapter.title}</span>
         </div>
         <div className={styles.topBarActions}>
-          {AI_CHAT_ENABLED_SLUGS.includes(book.slug) && (
+          {NODE_API_ENABLED && AI_CHAT_ENABLED_SLUGS.includes(book.slug) && (
             <Link
               href={`/book/${book.slug}/chat`}
               className={styles.chatBtn}

@@ -5,6 +5,7 @@ import { remark } from "remark";
 import html from "remark-html";
 import remarkGfm from "remark-gfm";
 import { BlogPost, BlogCategory } from "@/types/blog";
+import { prefixRootPaths } from "@/lib/site";
 
 const postsDirectory = path.join(process.cwd(), "posts");
 
@@ -107,7 +108,7 @@ export async function markdownToHtml(markdown: string): Promise<string> {
     .use(html, { sanitize: false })
     .process(markdown);
 
-  return result.toString();
+  return prefixRootPaths(result.toString());
 }
 
 export function getAllCategories(): BlogCategory[] {

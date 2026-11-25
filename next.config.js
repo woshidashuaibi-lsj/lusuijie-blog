@@ -1,10 +1,16 @@
 /** @type {import('next').NextConfig} */
 const isProd = process.env.NODE_ENV === 'production' && process.env.STATIC_EXPORT === 'true';
 
+// 仓库页 GitHub Pages 地址是 /lusuijie-blog/。本地 dev 不加前缀。
+const basePath = isProd ? '/lusuijie-blog' : '';
+
 const nextConfig = {
   // output: 'export' 仅在静态导出构建时启用（npm run export）
   // 开发模式下必须关闭，否则 API Routes 全部 404
-  ...(isProd ? { output: 'export' } : {}),
+  ...(isProd ? { output: 'export', basePath, assetPrefix: basePath } : {}),
+  env: {
+    NEXT_PUBLIC_BASE_PATH: basePath,
+  },
   trailingSlash: true,
 
   images: {

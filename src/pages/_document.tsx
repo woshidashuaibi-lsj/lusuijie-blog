@@ -1,11 +1,12 @@
 import { Html, Head, Main, NextScript } from 'next/document';
+import { withBase } from '@/lib/site';
 
 export default function Document() {
   return (
     <Html lang="zh-CN">
       <Head>
-        <link rel="icon" href="/favicon.jpg" type="image/jpeg" />
-        <link rel="apple-touch-icon" href="/favicon.jpg" />
+        <link rel="icon" href={withBase('/favicon.jpg')} type="image/jpeg" />
+        <link rel="apple-touch-icon" href={withBase('/favicon.jpg')} />
 
         {/* CDN preconnect：减少 DNS 查询 + TLS 握手耗时 */}
         <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />

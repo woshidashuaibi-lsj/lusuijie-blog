@@ -3,12 +3,11 @@ import { getAllPosts } from '@/lib/blog';
 import type { BlogPost } from '@/types/blog';
 import HomePage from './HomePage';
 import Head from 'next/head';
+import { SITE_URL } from '@/lib/site';
 
 interface HomePageProps {
   featuredPosts: BlogPost[];
 }
-
-const SITE_URL = 'https://lusuijie.com.cn';
 
 // JSON-LD 结构化数据：WebSite + Person + SiteNavigationElement
 const jsonLd = {

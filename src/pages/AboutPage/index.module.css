@@ -29,7 +29,6 @@
   content: '';
   position: absolute;
   inset: -30% 0; /* 上下多出一些，给滚动留余量 */
-  background-image: url('/images/hero-bg.jpg');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
