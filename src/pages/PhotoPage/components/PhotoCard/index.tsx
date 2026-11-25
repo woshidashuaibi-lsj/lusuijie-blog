@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import { Photo } from '@/types/photo';
 import { withBase } from '@/lib/site';
 import styles from './index.module.css';
@@ -55,7 +54,7 @@ export default function PhotoCard({ photo, onClick }: PhotoCardProps) {
         </div>
         
         {/* 实际图片 */}
-        <Image
+        <img
           src={withBase(photo.src)}
           alt={photo.alt}
           width={photo.width}
@@ -63,6 +62,9 @@ export default function PhotoCard({ photo, onClick }: PhotoCardProps) {
           className={`${styles.image} ${isLoaded ? styles.visible : ''}`}
           onLoad={handleLoad}
           onError={handleError}
+          ref={(node) => {
+            if (node?.complete && node.naturalWidth > 0) handleLoad();
+          }}
           loading="lazy"
         />
         
