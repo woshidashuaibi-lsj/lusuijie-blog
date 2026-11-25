@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import Image from 'next/image';
 import { Photo } from '@/types/photo';
+import { withBase } from '@/lib/site';
 import styles from './index.module.css';
 
 interface PhotoModalProps {
@@ -99,7 +100,7 @@ export default function PhotoModal({
           {/* 图片容器 */}
           <div className={styles.imageContainer}>
             <Image
-              src={photo.src}
+              src={withBase(photo.src)}
               alt={photo.alt}
               fill
               className={styles.image}

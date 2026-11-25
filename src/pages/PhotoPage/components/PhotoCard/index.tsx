@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { Photo } from '@/types/photo';
+import { withBase } from '@/lib/site';
 import styles from './index.module.css';
 
 interface PhotoCardProps {
@@ -55,7 +56,7 @@ export default function PhotoCard({ photo, onClick }: PhotoCardProps) {
         
         {/* 实际图片 */}
         <Image
-          src={photo.src}
+          src={withBase(photo.src)}
           alt={photo.alt}
           width={photo.width}
           height={photo.height}

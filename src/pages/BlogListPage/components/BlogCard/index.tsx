@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { BlogPost } from '@/types/blog';
+import { withBase } from '@/lib/site';
 import { format } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import styles from './index.module.css';
@@ -40,7 +41,7 @@ export default function BlogCard({ post }: BlogCardProps) {
           {post.cover && (
             <div className={styles.imageContainer}>
               <Image
-                src={post.cover}
+                src={withBase(post.cover)}
                 alt={post.title}
                 width={200}
                 height={120}

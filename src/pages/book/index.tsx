@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import Navigation from '@/components/Navigation';
 import booksData from '@/data/books.json';
 import { NODE_API_ENABLED } from '@/lib/features';
-import { SITE_URL } from '@/lib/site';
+import { SITE_URL, withBase } from '@/lib/site';
 import styles from './index.module.css';
 
 const BookAccessGate = dynamic(() => import('@/components/BookAccessGate'), {
@@ -478,7 +478,7 @@ export default function BookListPage() {
     books.forEach(book => {
       const img = new Image();
       img.crossOrigin = 'anonymous';
-      img.src = book.cover;
+      img.src = withBase(book.cover);
       img.onload = () => {
         stateRef.current.coverImages[book.slug] = img;
       };

@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import booksData from '@/data/books.json';
 import { NODE_API_ENABLED } from '@/lib/features';
+import { withBase } from '@/lib/site';
 import styles from './world.module.css';
 
 const BookAccessGate = dynamic(() => import('@/components/BookAccessGate'), {
@@ -213,7 +214,7 @@ export default function WorldPage({ slug, title, author, cover }: WorldProps) {
               style={{ boxShadow: `0 0 60px ${world.glowColor}, 0 0 120px ${world.glowColor}` }}
             >
               <img
-                src={cover}
+                src={withBase(cover)}
                 alt={title}
                 className={styles.cover}
               />

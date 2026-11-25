@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { withBase } from '@/lib/site';
 import styles from './index.module.css';
 
 export default function HeroSection() {
@@ -13,7 +14,7 @@ export default function HeroSection() {
           </div>
           <div className={styles.heroAvatar}>
             <Image
-              src="/images/avatar.png"
+              src={withBase('/images/avatar.png')}
               alt="个人头像"
               width={150}
               height={150}
